@@ -2,6 +2,7 @@
 
 #include "core/CoreExecution.hpp"
 #include "fixtures/FixtureCheck.hpp"
+#include "fixtures/FixtureForce.hpp"
 #include "particles/buffer/ParticleAccelerationBuffer.hpp"
 #include "particles/buffer/ParticleBuffer.hpp"
 #include "solvers/barnes_hut/BhSolver.hpp"
@@ -215,7 +216,8 @@ bool RunSolverCase(Solver& solver, blitzar_particles::ParticleBuffer& particles,
     blitzar_physics::ConservationMetrics metrics{};
 
     return solver.Prepare(particles.Count()) == BLITZAR_STATUS_OK &&
-           solver.Compute(particles.State(), accelerations.View(), settings) == BLITZAR_STATUS_OK &&
+           blitzar_tests::EvaluateLocal(
+               solver, particles.State(), accelerations.View(), settings) == BLITZAR_STATUS_OK &&
            blitzar_physics::ComputeConservationMetrics(particles.State(), gravity, metrics) ==
                BLITZAR_STATUS_OK &&
            metrics.IsFinite();

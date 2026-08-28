@@ -178,19 +178,6 @@ blitzar_status Sim::SetBarnesHut(blitzar_barnes_hut::BarnesHutSettings candidate
         return Remember(BLITZAR_STATUS_INVALID_ARGUMENT);
     }
 
-    blitzar_solver_threading::ThreadStackPool candidate_stack_pool(0, 0);
-
-    try {
-        candidate_stack_pool = blitzar_solver_threading::ThreadStackPool(
-            candidate_settings.max_cells, candidate_settings.max_depth);
-    }
-    catch (const std::length_error&) {
-        return Remember(BLITZAR_STATUS_INVALID_ARGUMENT);
-    }
-    catch (const std::bad_alloc&) {
-        return Remember(BLITZAR_STATUS_ALLOCATION_FAILURE);
-    }
-
     if (solver_kind_ == BLITZAR_SOLVER_BARNES_HUT || solver_kind_ == BLITZAR_SOLVER_FMM) {
         SolverVariant candidate_solver(
             std::in_place_type<DirectSolverBundle>, gravity_, particle_count_);
@@ -204,7 +191,6 @@ blitzar_status Sim::SetBarnesHut(blitzar_barnes_hut::BarnesHutSettings candidate
         solver_ = std::move(candidate_solver);
     }
 
-    traversal_stacks_ = std::move(candidate_stack_pool);
     barnes_hut_ = candidate_settings;
 
     return Remember(BLITZAR_STATUS_OK);

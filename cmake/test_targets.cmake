@@ -169,6 +169,16 @@ target_include_directories(blitzar_spatial_resource_test PRIVATE
 blitzar_enable_warnings(blitzar_spatial_resource_test)
 blitzar_enable_warnings(blitzar_solver_resource_contract_test)
 
+add_executable(blitzar_force_provider_test
+    tests/contracts/ContractForceProviderTest.cpp
+)
+target_link_libraries(blitzar_force_provider_test PRIVATE blitzar)
+target_compile_features(blitzar_force_provider_test PRIVATE cxx_std_20)
+target_include_directories(blitzar_force_provider_test PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/src
+    ${CMAKE_CURRENT_SOURCE_DIR}/tests)
+blitzar_enable_warnings(blitzar_force_provider_test)
+
 add_executable(blitzar_abi_test
     tests/contracts/ContractAbiTest.c
 )

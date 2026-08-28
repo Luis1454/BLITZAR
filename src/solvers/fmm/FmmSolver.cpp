@@ -62,75 +62,30 @@ std::size_t FmmSolver::LocalCellCapacity(
     return std::min(configured_cells, particle_cells);
 }
 
-blitzar_status FmmSolver::Compute(blitzar_core::ParticleStateView particles,
-    blitzar_core::ForceView forces, const blitzar_core::ExecutionSettings& settings) noexcept
+blitzar_status FmmSolver::Evaluate(
+    const blitzar_solvers::SolverForceRequest::Tree& request) noexcept
 {
-    return Compute(particles, forces, settings, stack_pool_);
+    std::vector<Multipole>& multipoles =
+        request.source_kind == blitzar_solvers::SolverForceSourceKind::Local ? multipoles_
+                                                                             : remote_multipoles_;
+
+    const TreeComputeRequest evaluation{request.resource, request.tree, multipoles, request.targets,
+        request.sources, request.forces, request.settings, stack_pool_, request.accumulate,
+        request.skip_self};
+
+    const blitzar_status status = ComputeTree(evaluation);
+
+    return status == BLITZAR_STATUS_OK ? CommitStagedForces(request.forces) : status;
 }
 
-blitzar_status FmmSolver::Compute(blitzar_core::ParticleStateView particles,
-    blitzar_core::ForceView forces, const blitzar_core::ExecutionSettings& settings,
-    blitzar_solver_threading::ThreadStackPool& stack_pool) noexcept
+blitzar_solvers::SolverTreeResources& FmmSolver::Resources() noexcept
 {
-    const blitzar_status prepare_status = Prepare(particles.count);
-
-    if (prepare_status != BLITZAR_STATUS_OK) {
-        return prepare_status;
-    }
-
-    const blitzar_status resource_status = resources_.get().Local().Prepare(particles);
-
-    if (resource_status != BLITZAR_STATUS_OK) {
-        return resource_status;
-    }
-
-    const blitzar_status status =
-        ComputeTree({resources_.get().Local(), resources_.get().Local().View(), multipoles_,
-            particles, particles, forces, settings, stack_pool, false, true});
-
-    return status == BLITZAR_STATUS_OK ? CommitStagedForces(forces) : status;
+    return resources_.get();
 }
 
-blitzar_status FmmSolver::ComputeSplit(const FmmSplitRequest& request) noexcept
+const blitzar_solvers::SolverTreeResources& FmmSolver::Resources() const noexcept
 {
-    return ComputeSplit(request, stack_pool_);
-}
-
-blitzar_status FmmSolver::ComputeSplit(
-    const FmmSplitRequest& request, blitzar_solver_threading::ThreadStackPool& stack_pool) noexcept
-{
-    const blitzar_status prepare_status = Prepare(request.local.count);
-
-    if (prepare_status != BLITZAR_STATUS_OK) {
-        return prepare_status;
-    }
-
-    const blitzar_status local_resource_status = resources_.get().Local().Prepare(request.local);
-
-    if (local_resource_status != BLITZAR_STATUS_OK) {
-        return local_resource_status;
-    }
-
-    const blitzar_status local_status = ComputeTree(
-        {resources_.get().Local(), resources_.get().Local().View(), multipoles_, request.local,
-            request.local, request.forces, request.settings, stack_pool, false, true});
-
-    if (local_status != BLITZAR_STATUS_OK || request.remote.SourceCount() == 0) {
-        return local_status == BLITZAR_STATUS_OK ? CommitStagedForces(request.forces)
-                                                 : local_status;
-    }
-
-    const blitzar_status remote_resource_status = resources_.get().Remote().Prepare(request.remote);
-
-    if (remote_resource_status != BLITZAR_STATUS_OK) {
-        return remote_resource_status;
-    }
-
-    const blitzar_status remote_status = ComputeTree({resources_.get().Remote(),
-        resources_.get().Remote().View(), remote_multipoles_, request.local, request.remote,
-        request.forces, request.settings, stack_pool, true, false});
-
-    return remote_status == BLITZAR_STATUS_OK ? CommitStagedForces(request.forces) : remote_status;
+    return resources_.get();
 }
 
 blitzar_status FmmSolver::EnsureLocalCapacity(std::size_t particle_capacity) noexcept

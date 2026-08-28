@@ -1,6 +1,7 @@
 #include "core/CoreExecution.hpp"
 #include "fixtures/FixtureAllocationMonitor.hpp"
 #include "fixtures/FixtureCheck.hpp"
+#include "fixtures/FixtureForce.hpp"
 #include "particles/buffer/ParticleAccelerationBuffer.hpp"
 #include "particles/buffer/ParticleBuffer.hpp"
 #include "solvers/direct/DirectSolver.hpp"
@@ -58,8 +59,10 @@ void FillParticles(blitzar_particles::ParticleBuffer& particles) noexcept
     blitzar_fmm::FmmSolver fmm(gravity, settings, ParticleCount, resources);
     const blitzar_core::ExecutionSettings execution{};
 
-    if (direct.Compute(particles.State(), direct_force.View(), execution) != BLITZAR_STATUS_OK ||
-        fmm.Compute(particles.State(), fmm_force.View(), execution) != BLITZAR_STATUS_OK ||
+    if (blitzar_tests::EvaluateLocal(direct, particles.State(), direct_force.View(), execution) !=
+            BLITZAR_STATUS_OK ||
+        blitzar_tests::EvaluateLocal(fmm, particles.State(), fmm_force.View(), execution) !=
+            BLITZAR_STATUS_OK ||
         fmm.Kind() != blitzar_solvers::SolverKind::Fmm || fmm.BuildCount() != 1) {
         return false;
     }
@@ -93,8 +96,10 @@ void FillParticles(blitzar_particles::ParticleBuffer& particles) noexcept
     blitzar_fmm::FmmSolver fmm(gravity, settings, ParticleCount, resources);
     const blitzar_core::ExecutionSettings execution{};
 
-    if (direct.Compute(particles.State(), direct_force.View(), execution) != BLITZAR_STATUS_OK ||
-        fmm.Compute(particles.State(), fmm_force.View(), execution) != BLITZAR_STATUS_OK) {
+    if (blitzar_tests::EvaluateLocal(direct, particles.State(), direct_force.View(), execution) !=
+            BLITZAR_STATUS_OK ||
+        blitzar_tests::EvaluateLocal(fmm, particles.State(), fmm_force.View(), execution) !=
+            BLITZAR_STATUS_OK) {
         return false;
     }
 
@@ -141,8 +146,8 @@ void FillParticles(blitzar_particles::ParticleBuffer& particles) noexcept
     auto resources = MakeResources(settings, 3);
     blitzar_fmm::FmmSolver fmm({1.0, 0.0}, settings, 3, resources);
 
-    const blitzar_status status =
-        fmm.Compute(particles.State(), view, blitzar_core::ExecutionSettings{});
+    const blitzar_status status = blitzar_tests::EvaluateLocal(
+        fmm, particles.State(), view, blitzar_core::ExecutionSettings{});
 
     if (status != BLITZAR_STATUS_SINGULARITY) {
         return false;
@@ -171,7 +176,9 @@ void FillParticles(blitzar_particles::ParticleBuffer& particles) noexcept
     blitzar_fmm::FmmSolver fmm(gravity, settings, ParticleCount, resources);
     const blitzar_core::ExecutionSettings execution{};
     const auto first_start = std::chrono::steady_clock::now();
-    const blitzar_status first_status = fmm.Compute(particles.State(), forces.View(), execution);
+    const blitzar_status first_status =
+        blitzar_tests::EvaluateLocal(fmm, particles.State(), forces.View(), execution);
+
     const auto first_end = std::chrono::steady_clock::now();
 
     if (first_status != BLITZAR_STATUS_OK || fmm.BuildCount() != 1) {
@@ -181,7 +188,9 @@ void FillParticles(blitzar_particles::ParticleBuffer& particles) noexcept
     blitzar_tests::BeginAllocationCounting();
 
     const auto second_start = std::chrono::steady_clock::now();
-    const blitzar_status second_status = fmm.Compute(particles.State(), forces.View(), execution);
+    const blitzar_status second_status =
+        blitzar_tests::EvaluateLocal(fmm, particles.State(), forces.View(), execution);
+
     const auto second_end = std::chrono::steady_clock::now();
     const std::size_t allocations = blitzar_tests::EndAllocationCounting();
 

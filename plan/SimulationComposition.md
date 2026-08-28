@@ -12,15 +12,14 @@ a generic state aggregate and it does not change the public ABI.
 | --- | --- | --- | --- | --- |
 | `runtime_` | `Sim` owns `SimRuntime` by value | `MpiExchange` borrows its `MpiContext` and `MpiDomainDecomposition` | construction, particle distribution, ghost exchange, migration, gather, HIP dispatch | `MpiContext::Status`, exchange capacity, and synchronized MPI status |
 | `particle_state_` | `Sim` owns `SimParticleState` by value | `ParticleBuffer`, `ParticleAccelerationBuffer`, and `KdkCheckpoint` borrow its `ParticleArena` | input commit, KDK, migration, rollback | buffer status and transaction validation |
-| `particle_source_` | `Sim` owns the remote source buffer | none | ghost completion, remote force evaluation, abort | source capacity and dispatcher status |
+| `particle_source_` | `Sim` owns the remote source buffer | none | ghost completion, remote force evaluation, abort | source capacity and force-provider status |
 | `gravity_`, `barnes_hut_` | `Sim` owns value configuration | candidate solver borrows configuration only during construction | configuration mutators and solver rebuild | candidate validation and `Remember` |
-| `solver_` | `Sim` owns the in-place `SolverVariant` | dispatchers borrow the active solver for one step | configuration rebuild and KDK step | solver status synchronized by the active execution path |
-| `integrator_` | `Sim` owns the KDK integrator | advance requests borrow buffers and dispatchers for one call | KDK step and rollback hooks | advance status and transaction abort |
-| `traversal_stacks_` | `Sim` owns the Barnes-Hut workspace pool | advance and dispatcher requests borrow it for one call | solver preparation and force evaluation | solver capacity status |
+| `solver_` | `Sim` owns the in-place `SolverVariant` | force providers borrow the active solver for one step | configuration rebuild and KDK step | solver status synchronized by the active execution path |
+| `integrator_` | `Sim` owns the KDK integrator | advance requests borrow buffers and force providers for one call | KDK step and rollback hooks | advance status and transaction abort |
 | `particle_ids_`, `local_particle_count_` | `Sim` owns distributed ownership metadata | packet requests borrow spans during distribution and migration | input commit, migration, rollback, gather | packet validation and synchronized migration status |
 | packet buffers | `Sim` owns each buffer by value | exchange, transaction, and gather operations borrow one phase buffer | distribution, ghost exchange, migration, rollback, gather | bounded-capacity checks before mutation |
 | `last_status_`, `last_backend_` | `Sim` owns atomic result state | no borrowed ownership | status publication after public operations | `Remember` is the single public status writer |
-| `overlap_mode_`, `overlap_trace_` | `Sim` owns test/measurement state | distributed dispatcher borrows the trace for one step | overlap test setup and distributed force evaluation | exchange and dispatcher status |
+| `overlap_mode_`, `overlap_trace_` | `Sim` owns test/measurement state | distributed force provider borrows the trace for one step | overlap test setup and distributed force evaluation | exchange and provider status |
 
 ## Lifetime Order
 
@@ -57,15 +56,18 @@ Sim
   |     +-- ParticleAccelerationBuffer
   |     +-- KdkCheckpoint
   +-- ParticleSourceBuffer
-  +-- SolverVariant and KdkLeapfrog
+  +-- SolverVariant, force providers, and KdkLeapfrog
   +-- configuration values and work buffers
 ```
 
 `ParticleSourceBuffer`, solver configuration, ownership IDs, packet buffers, and
 transaction state are not grouped because they have different mutation
-phases, rollback semantics, or owners. `DistributedDispatcher` remains a
-non-owning per-step adapter. Its compile-time branches are strategy dispatch
-for solver capabilities, not runtime state ownership.
+phases, rollback semantics, or owners. `SolverForceEvaluation` is the
+non-owning per-step contract consumed by KDK. `SolverCpuForceProvider`,
+`SimBackendForceProvider`, and `SimDistributedForceProvider` adapt that
+contract to solver capabilities, optional backends, and communication without
+exposing those concerns to the integrator. `std::variant` remains confined to
+the composition boundary.
 
 ## Regression Contract
 

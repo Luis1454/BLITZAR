@@ -1,23 +1,23 @@
-#ifndef BLITZAR_SIMULATION_STEP_SIM_OVERLAP_DISPATCH_HPP
-#define BLITZAR_SIMULATION_STEP_SIM_OVERLAP_DISPATCH_HPP
+#ifndef BLITZAR_SIMULATION_STEP_SIM_DISTRIBUTED_FORCE_PROVIDER_HPP
+#define BLITZAR_SIMULATION_STEP_SIM_DISTRIBUTED_FORCE_PROVIDER_HPP
 
 #include "mpi/exchange/MpiExchange.hpp"
 #include "mpi/exchange/MpiExchangeTrace.hpp"
-#include "simulation/solver/SimSolverDispatch.hpp"
+#include "simulation/solver/SimBackendForceProvider.hpp"
 #include "simulation/step/SimOverlapClock.hpp"
 #include "simulation/step/SimPacketStoreRequest.hpp"
 
+#include <blitzar/blitzar.h>
 #include <cstdint>
 #include <span>
-#include <type_traits>
 #include <vector>
 
 namespace blitzar_sim {
 
-template <typename Solver> class DistributedDispatcher final {
+template <typename Solver> class SimDistributedForceProvider final {
 public:
-    struct DispatchContext final {
-        SolverDispatchContext<Solver> solver;
+    struct ProviderContext final {
+        SimBackendForceContext<Solver> backend;
         blitzar_parallel::MpiExchange& exchange;
         blitzar_particles::ParticleSourceBuffer& sources;
         std::vector<std::uint64_t>& ids;
@@ -27,25 +27,21 @@ public:
         blitzar_parallel::MpiOverlapTrace& overlap_trace;
     };
 
-    explicit DistributedDispatcher(DispatchContext state) noexcept
-        : base_(state.solver), exchange_(state.exchange), sources_(state.sources), ids_(state.ids),
-          ghosts_(state.ghosts), halo_(state.halo), overlap_mode_(state.overlap_mode),
-          overlap_trace_(state.overlap_trace)
+    explicit SimDistributedForceProvider(ProviderContext context) noexcept
+        : base_(context.backend), exchange_(context.exchange), sources_(context.sources),
+          ids_(context.ids), ghosts_(context.ghosts), halo_(context.halo),
+          overlap_mode_(context.overlap_mode), overlap_trace_(context.overlap_trace)
     {
     }
 
-    [[nodiscard]] blitzar_status Compute(blitzar_core::ParticleStateView local_state,
-        blitzar_core::ForceView forces, const blitzar_core::ExecutionSettings& settings) noexcept
+    [[nodiscard]] blitzar_status Evaluate(
+        const blitzar_solvers::SolverForceEvaluation& request) noexcept
     {
-        return ComputeWithOverlap(local_state, forces, settings, {});
-    }
+        if (request.source_kind != blitzar_solvers::SolverForceSourceKind::Local) {
+            return BLITZAR_STATUS_UNSUPPORTED;
+        }
 
-    [[nodiscard]] blitzar_status Compute(blitzar_core::ParticleStateView local_state,
-        blitzar_core::ForceView forces, const blitzar_core::ExecutionSettings& settings,
-        blitzar_solver_threading::ThreadStackPool& stack_pool) noexcept
-    {
-        return ComputeWithOverlap(local_state, forces, settings,
-            std::span<blitzar_solver_threading::ThreadStackPool>(&stack_pool, 1));
+        return RunOverlap(request);
     }
 
     void Abort() noexcept
@@ -60,10 +56,7 @@ private:
     using TraceTime = SimOverlapClock::Time;
 
     struct OverlapRequest final {
-        blitzar_core::ParticleStateView local_state;
-        blitzar_core::ForceView forces;
-        const blitzar_core::ExecutionSettings& settings;
-        std::span<blitzar_solver_threading::ThreadStackPool> stack_pool;
+        blitzar_solvers::SolverForceEvaluation evaluation;
         TraceTime operation_start;
     };
 
@@ -80,14 +73,15 @@ private:
     {
         overlap_trace_.Reset(overlap_mode_);
 
-        overlap_trace_.local_packets = request.local_state.count;
+        overlap_trace_.local_packets = request.evaluation.targets.count;
 
-        const bool ids_valid = ids_.size() >= request.local_state.count;
+        const bool ids_valid = ids_.size() >= request.evaluation.targets.count;
         const std::span<const std::uint64_t> local_ids =
-            ids_valid ? std::span<const std::uint64_t>(ids_).first(request.local_state.count)
+            ids_valid ? std::span<const std::uint64_t>(ids_).first(request.evaluation.targets.count)
                       : std::span<const std::uint64_t>{};
 
-        const blitzar_status status = exchange_.BeginGhosts(request.local_state, local_ids, halo_);
+        const blitzar_status status =
+            exchange_.BeginGhosts(request.evaluation.targets, local_ids, halo_);
 
         overlap_trace_.begin_end_ns =
             SimOverlapClock::Elapsed(request.operation_start, TraceClock::now());
@@ -95,22 +89,13 @@ private:
         return status;
     }
 
-    [[nodiscard]] blitzar_status ComputeLocal(const OverlapRequest& request) noexcept
+    [[nodiscard]] blitzar_status EvaluateLocal(const OverlapRequest& request) noexcept
     {
-        if constexpr (std::is_same_v<Solver, blitzar_direct::DirectSolver>) {
-            return base_.ComputeRange(request.local_state, request.forces, request.settings,
-                {0, request.local_state.count, false});
-        }
-        else if constexpr (std::is_same_v<Solver, blitzar_fmm::FmmSolver>) {
-            return base_.Compute(request.local_state, request.forces, request.settings);
-        }
-        else if (!request.stack_pool.empty()) {
-            return base_.Compute(
-                request.local_state, request.forces, request.settings, request.stack_pool.front());
-        }
-        else {
-            return base_.Compute(request.local_state, request.forces, request.settings);
-        }
+        const blitzar_solvers::SolverForceEvaluation local_request{request.evaluation.targets,
+            request.evaluation.targets, request.evaluation.forces, request.evaluation.settings,
+            blitzar_solvers::SolverForceSourceKind::Local};
+
+        return base_.Evaluate(local_request);
     }
 
     [[nodiscard]] blitzar_status RunLocal(const OverlapRequest& request) noexcept
@@ -118,7 +103,7 @@ private:
         overlap_trace_.local_start_ns =
             SimOverlapClock::Elapsed(request.operation_start, TraceClock::now());
 
-        const blitzar_status status = ComputeLocal(request);
+        const blitzar_status status = EvaluateLocal(request);
 
         overlap_trace_.local_end_ns =
             SimOverlapClock::Elapsed(request.operation_start, TraceClock::now());
@@ -139,28 +124,25 @@ private:
         return status;
     }
 
-    [[nodiscard]] blitzar_status ComputeRemote(const OverlapRequest& request) noexcept
+    [[nodiscard]] blitzar_status EvaluateRemote(const OverlapRequest& request) noexcept
     {
         const blitzar_core::ParticleStateView remote_state = sources_.State();
 
         overlap_trace_.remote_start_ns =
             SimOverlapClock::Elapsed(request.operation_start, TraceClock::now());
 
-        blitzar_status status = BLITZAR_STATUS_OK;
+        if (remote_state.SourceCount() == 0) {
+            overlap_trace_.remote_end_ns =
+                SimOverlapClock::Elapsed(request.operation_start, TraceClock::now());
 
-        if constexpr (std::is_same_v<Solver, blitzar_direct::DirectSolver>) {
-            status = base_.ComputeRemote(
-                request.local_state, remote_state, request.forces, request.settings);
+            return BLITZAR_STATUS_OK;
         }
-        else if (!request.stack_pool.empty()) {
-            status = base_.ComputeSplit(
-                {request.local_state, remote_state, request.forces, request.settings},
-                request.stack_pool.front());
-        }
-        else {
-            status = base_.ComputeSplit(
-                {request.local_state, remote_state, request.forces, request.settings});
-        }
+
+        const blitzar_solvers::SolverForceEvaluation remote_request{request.evaluation.targets,
+            remote_state, request.evaluation.forces, request.evaluation.settings,
+            blitzar_solvers::SolverForceSourceKind::Remote};
+
+        const blitzar_status status = base_.Evaluate(remote_request);
 
         overlap_trace_.remote_end_ns =
             SimOverlapClock::Elapsed(request.operation_start, TraceClock::now());
@@ -192,7 +174,7 @@ private:
             return FinishTrace(synchronized_append_status, request.operation_start);
         }
 
-        const blitzar_status remote_status = ComputeRemote(request);
+        const blitzar_status remote_status = EvaluateRemote(request);
         const blitzar_status synchronized_remote_status =
             exchange_.SynchronizeStatus(remote_status, "force-remote");
 
@@ -203,11 +185,10 @@ private:
         return FinishTrace(synchronized_remote_status, request.operation_start);
     }
 
-    [[nodiscard]] blitzar_status ComputeWithOverlap(blitzar_core::ParticleStateView local_state,
-        blitzar_core::ForceView forces, const blitzar_core::ExecutionSettings& settings,
-        std::span<blitzar_solver_threading::ThreadStackPool> stack_pool) noexcept
+    [[nodiscard]] blitzar_status RunOverlap(
+        const blitzar_solvers::SolverForceEvaluation& evaluation) noexcept
     {
-        const OverlapRequest request{local_state, forces, settings, stack_pool, TraceClock::now()};
+        const OverlapRequest request{evaluation, TraceClock::now()};
 
         const blitzar_status begin_status = BeginOverlap(request);
 
@@ -238,7 +219,7 @@ private:
         return FinishRemote(request, local_status, complete_status);
     }
 
-    SolverDispatcher<Solver> base_;
+    SimBackendForceProvider<Solver> base_;
     blitzar_parallel::MpiExchange& exchange_;
     blitzar_particles::ParticleSourceBuffer& sources_;
     std::vector<std::uint64_t>& ids_;

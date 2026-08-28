@@ -91,7 +91,7 @@
         "state": "unsupported"
       }
     ],
-    "ownership_boundary": "concrete Octree views and solver tree-resource bundles are implemented by issue 681"
+    "ownership_boundary": "concrete Octree views and solver tree-resource bundles are implemented by issue 681; typed force evaluation and provider dispatch are implemented by issue 682"
   },
   "features": [
     {

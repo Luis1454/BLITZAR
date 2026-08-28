@@ -2,6 +2,7 @@
 #include "integration/kdk/KdkCheckpoint.hpp"
 #include "particles/buffer/ParticleAccelerationBuffer.hpp"
 #include "particles/buffer/ParticleBuffer.hpp"
+#include "solvers/SolverCpuForceProvider.hpp"
 #include "solvers/direct/DirectSolver.hpp"
 
 #include <algorithm>
@@ -9,7 +10,6 @@
 #include <cmath>
 #include <cstdint>
 #include <new>
-#include <span>
 
 #if defined(_WIN32)
 // MinGW's PSAPI declarations require the Win32 base types first.
@@ -141,11 +141,10 @@ bool RunCpuOracle(const Config& config, const State& input, State& expected)
     const blitzar_core::ExecutionSettings settings{
         config.seed, blitzar_core::ExecutionMode::Deterministic};
 
-    std::span<std::size_t> scratch;
+    blitzar_solvers::SolverCpuForceProvider<blitzar_direct::DirectSolver> force_provider(solver);
 
-    blitzar_integration_kdk::AdvanceState<blitzar_direct::DirectSolver, std::span<std::size_t>>
-        state{particles, accelerations, checkpoint, solver, 0.001, settings, scratch,
-            particles.State()};
+    blitzar_integration_kdk::AdvanceState<decltype(force_provider)> state{
+        particles, accelerations, checkpoint, force_provider, 0.001, settings, particles.State()};
 
     const int step_count = config.warmup_steps + config.timed_steps;
 
