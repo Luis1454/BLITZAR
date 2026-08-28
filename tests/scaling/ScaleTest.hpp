@@ -14,6 +14,7 @@ namespace blitzar_scaling {
 
 enum class SolverKind : std::uint8_t { Direct, BarnesHut, Fmm };
 enum class OverlapMode : std::uint8_t { Overlapped, Serialized };
+enum class DistributionKind : std::uint8_t { BoxPair, BoundaryCrossing };
 
 struct Config final {
     std::size_t particle_count{16};
@@ -23,6 +24,7 @@ struct Config final {
     double oracle_tolerance{0.05};
     SolverKind solver{SolverKind::Direct};
     OverlapMode overlap{OverlapMode::Overlapped};
+    DistributionKind distribution{DistributionKind::BoxPair};
     bool oracle{false};
     bool migration{false};
 };
@@ -47,7 +49,12 @@ struct Result final {
     std::size_t local_before{};
     std::size_t local_after{};
     std::uint64_t elapsed_ns{};
+    std::uint64_t mean_step_ns{};
+    std::uint64_t min_step_ns{};
+    std::uint64_t max_step_ns{};
+    std::size_t allocation_count{};
     std::uint64_t peak_rss_bytes{};
+    double throughput_particles_per_second{};
     double oracle_max_error{};
     bool oracle_checked{};
     bool oracle_pass{};
@@ -55,13 +62,14 @@ struct Result final {
     blitzar_parallel::MpiMigrationTrace migration_trace{};
 };
 
-[[nodiscard]] State MakeState(std::size_t count, std::uint64_t seed, bool migration);
+[[nodiscard]] State MakeState(std::size_t count, std::uint64_t seed, DistributionKind distribution);
 [[nodiscard]] blitzar_core::ParticleStateView InputView(const State& state) noexcept;
 [[nodiscard]] blitzar_core::ParticleOutputView OutputView(State& state) noexcept;
 [[nodiscard]] bool Configure(
     blitzar_sim::Sim& simulation, const Config& config, const State& input) noexcept;
 [[nodiscard]] std::string_view SolverName(SolverKind solver) noexcept;
 [[nodiscard]] std::string_view OverlapName(OverlapMode mode) noexcept;
+[[nodiscard]] std::string_view DistributionName(DistributionKind distribution) noexcept;
 [[nodiscard]] blitzar_solver_kind PublicSolver(SolverKind solver) noexcept;
 [[nodiscard]] bool Run(const Config& config, Result& result);
 

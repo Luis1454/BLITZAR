@@ -2,7 +2,7 @@
 
 Status: **FROZEN**  
 Product/API version: **1.0.0**
-Plan version: **1.0.41**
+Plan version: **1.0.42**
 
 This repository is a clean-room rewrite. The old repository, its source tree,
 its issues, and its documentation are not implementation inputs. Requirements
@@ -64,8 +64,13 @@ solvers with the Direct CPU oracle when the selected mode is CPU-qualified.
 
 `tools/evidence/release_evidence.py` expands the strong-scaling, weak-scaling,
 migration, and overlap workloads; `tools/evidence/release_evidence_test.py` verifies the
-contract expansion and record parser. It records the exact command, Git revision,
-plan version, compiler/toolchain, operating system, CPU topology, rank count,
+contract expansion, record parser, and benchmark metric invariants. The v2
+contract names the deterministic `box-pair-v1` and `boundary-crossing-v1`
+distributions, records wall time plus per-step timing, steady-state allocation
+count, peak resident memory, and derived particle throughput, and requires every
+rank record to identify its schema and distribution. It records the exact
+command, Git revision, plan version, compiler/toolchain, operating system, CPU
+capability, GPU capability, thread count, problem-size field, rank count,
 backend, precision, seed, tolerances, memory result, communication volume,
 overlap timeline, migration result, and raw rank output. Generated logs and
 tables are written outside the source tree; only the contract and reporting

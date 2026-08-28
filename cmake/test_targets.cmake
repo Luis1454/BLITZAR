@@ -260,6 +260,7 @@ target_include_directories(blitzar_accelerator_test PRIVATE ${CMAKE_CURRENT_SOUR
 blitzar_enable_warnings(blitzar_accelerator_test)
 
 add_executable(blitzar_scaling_test
+    tests/fixtures/FixtureAllocationMonitor.cpp
     tests/scaling/ScaleTest.cpp
     tests/scaling/ScaleRunTest.cpp
     tests/scaling/ScaleWorkloadTest.cpp

@@ -1,6 +1,7 @@
 {
-  "schema_version": 1,
-  "plan_version": "1.0.16",
+  "schema_version": 2,
+  "plan_version": "1.0.42",
+  "record_schema_version": 2,
   "target": "blitzar_scaling_test",
   "runner": "tools/evidence/release_evidence.py",
   "precision": "float64",
@@ -8,10 +9,49 @@
   "warmup_steps": 1,
   "timed_steps": 3,
   "oracle_tolerance": 0.05,
+  "distributions": [
+    {
+      "id": "box-pair-v1",
+      "kind": "seeded_uniform_box",
+      "definition": "Two fixed particles at (-4,-4,-4) and (4,4,4); remaining particles use SplitMix64-derived coordinates in [-3,3] and small seeded symmetric velocities.",
+      "mass_rule": "1.0 + 0.25 * (index mod 5)"
+    },
+    {
+      "id": "boundary-crossing-v1",
+      "kind": "deterministic_boundary_crossing",
+      "definition": "Two fixed boundary particles at x=-1 and x=1; remaining particles alternate x=-0.02 and x=0.02 with x velocities of +50 and -50.",
+      "mass_rule": "1.0 + 0.25 * (index mod 5)"
+    }
+  ],
+  "metrics": {
+    "wall_time_ns": "elapsed_ns",
+    "mean_step_time_ns": "mean_step_ns",
+    "minimum_step_time_ns": "min_step_ns",
+    "maximum_step_time_ns": "max_step_ns",
+    "steady_state_allocations": "allocation_count",
+    "memory_footprint_bytes": "peak_rss_bytes",
+    "throughput_particles_per_second": "derived_from_particles_steps_and_elapsed"
+  },
+  "allocation_policy": "zero_after_warmup",
+  "oracle": {
+    "solver": "direct",
+    "backend": "cpu",
+    "comparison": "max_abs_state_error",
+    "tolerance_field": "oracle_tolerance"
+  },
+  "metadata_fields": [
+    "compiler",
+    "backend",
+    "cpu_capability",
+    "gpu_capability",
+    "thread_count",
+    "problem_size"
+  ],
   "workloads": [
     {
       "id": "strong-scaling",
       "kind": "strong",
+      "distribution": "box-pair-v1",
       "particle_counts": [32, 64],
       "particles_per_rank": 0,
       "ranks": [1, 2, 4],
@@ -23,6 +63,7 @@
     {
       "id": "weak-scaling",
       "kind": "weak",
+      "distribution": "box-pair-v1",
       "particle_counts": [],
       "particles_per_rank": 32,
       "ranks": [1, 2, 4],
@@ -34,6 +75,7 @@
     {
       "id": "migration",
       "kind": "migration",
+      "distribution": "boundary-crossing-v1",
       "particle_counts": [64],
       "particles_per_rank": 0,
       "ranks": [2, 4],
@@ -45,6 +87,7 @@
     {
       "id": "overlap",
       "kind": "overlap",
+      "distribution": "box-pair-v1",
       "particle_counts": [64],
       "particles_per_rank": 0,
       "ranks": [2, 4],

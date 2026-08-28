@@ -94,6 +94,23 @@ bool ParseOverlap(std::string_view text, blitzar_scaling::OverlapMode& mode) noe
     return false;
 }
 
+bool ParseDistribution(
+    std::string_view text, blitzar_scaling::DistributionKind& distribution) noexcept
+{
+    if (text == "box-pair-v1") {
+        distribution = blitzar_scaling::DistributionKind::BoxPair;
+
+        return true;
+    }
+    if (text == "boundary-crossing-v1") {
+        distribution = blitzar_scaling::DistributionKind::BoundaryCrossing;
+
+        return true;
+    }
+
+    return false;
+}
+
 bool ParseArguments(int argc, char** argv, Arguments& arguments)
 {
     for (int index = 1; index < argc; ++index) {
@@ -111,6 +128,7 @@ bool ParseArguments(int argc, char** argv, Arguments& arguments)
         }
         if (option == "--migration") {
             arguments.config.migration = true;
+            arguments.config.distribution = blitzar_scaling::DistributionKind::BoundaryCrossing;
 
             continue;
         }
@@ -141,9 +159,13 @@ bool ParseArguments(int argc, char** argv, Arguments& arguments)
         else if (option == "--overlap" && !ParseOverlap(value, arguments.config.overlap)) {
             return false;
         }
+        else if (option == "--distribution" &&
+                 !ParseDistribution(value, arguments.config.distribution)) {
+            return false;
+        }
         else if (option != "--particles" && option != "--warmup" && option != "--steps" &&
                  option != "--seed" && option != "--tolerance" && option != "--solver" &&
-                 option != "--overlap") {
+                 option != "--overlap" && option != "--distribution") {
             return false;
         }
     }
@@ -151,7 +173,9 @@ bool ParseArguments(int argc, char** argv, Arguments& arguments)
     return arguments.config.particle_count > 0 && arguments.config.particle_count <= 1000000 &&
            arguments.config.warmup_steps >= 0 && arguments.config.timed_steps > 0 &&
            std::isfinite(arguments.config.oracle_tolerance) &&
-           arguments.config.oracle_tolerance >= 0.0;
+           arguments.config.oracle_tolerance >= 0.0 &&
+           (!arguments.config.migration || arguments.config.distribution ==
+                                               blitzar_scaling::DistributionKind::BoundaryCrossing);
 }
 
 void PrintUsage() noexcept
@@ -159,7 +183,8 @@ void PrintUsage() noexcept
     std::fprintf(stdout,
         "usage: blitzar_scaling_test [--particles N] [--warmup N] [--steps N] "
         "[--seed N] [--solver direct|barnes-hut|fmm] "
-        "[--overlap overlapped|serialized] [--tolerance X] [--oracle] [--migration]\n");
+        "[--overlap overlapped|serialized] [--distribution box-pair-v1|boundary-crossing-v1] "
+        "[--tolerance X] [--oracle] [--migration]\n");
 }
 
 void PrintResult(
@@ -169,24 +194,33 @@ void PrintResult(
     const auto& migration = result.migration_trace;
 
     std::fprintf(stdout,
-        "BLITZAR SCALE schema=1 rank=%d ranks=%d particles=%zu warmup_steps=%d "
-        "timed_steps=%d seed=%llu solver=%.*s overlap=%.*s status=%d backend=%d "
-        "elapsed_ns=%llu peak_rss_bytes=%llu local_before=%zu local_after=%zu "
+        "BLITZAR SCALE schema=2 rank=%d ranks=%d particles=%zu warmup_steps=%d "
+        "timed_steps=%d seed=%llu distribution=%.*s solver=%.*s overlap=%.*s "
+        "status=%d backend=%d elapsed_ns=%llu mean_step_ns=%llu min_step_ns=%llu "
+        "max_step_ns=%llu allocation_count=%zu allocation_free=%d peak_rss_bytes=%llu "
+        "throughput_particles_per_second=%.17g local_before=%zu local_after=%zu "
         "migration_observed=%d migration_sent_remote=%zu migration_received_remote=%zu "
         "overlap_has_overlap=%d local_packets=%zu ghost_packets=%zu send_bytes=%zu "
         "receive_bytes=%zu oracle_checked=%d oracle_pass=%d oracle_max_error=%.17g\n",
         result.rank, result.ranks, config.particle_count, config.warmup_steps, config.timed_steps,
         static_cast<unsigned long long>(config.seed),
+        static_cast<int>(blitzar_scaling::DistributionName(config.distribution).size()),
+        blitzar_scaling::DistributionName(config.distribution).data(),
         static_cast<int>(blitzar_scaling::SolverName(config.solver).size()),
         blitzar_scaling::SolverName(config.solver).data(),
         static_cast<int>(blitzar_scaling::OverlapName(config.overlap).size()),
         blitzar_scaling::OverlapName(config.overlap).data(), static_cast<int>(result.status),
         static_cast<int>(result.backend), static_cast<unsigned long long>(result.elapsed_ns),
-        static_cast<unsigned long long>(result.peak_rss_bytes), result.local_before,
-        result.local_after, migration.observed ? 1 : 0, migration.sent_remote,
-        migration.received_remote, overlap.HasOverlap() ? 1 : 0, overlap.local_packets,
-        overlap.ghost_packets, overlap.send_bytes, overlap.receive_bytes,
-        result.oracle_checked ? 1 : 0, result.oracle_pass ? 1 : 0, result.oracle_max_error);
+        static_cast<unsigned long long>(result.mean_step_ns),
+        static_cast<unsigned long long>(result.min_step_ns),
+        static_cast<unsigned long long>(result.max_step_ns), result.allocation_count,
+        result.allocation_count == 0 ? 1 : 0,
+        static_cast<unsigned long long>(result.peak_rss_bytes),
+        result.throughput_particles_per_second, result.local_before, result.local_after,
+        migration.observed ? 1 : 0, migration.sent_remote, migration.received_remote,
+        overlap.HasOverlap() ? 1 : 0, overlap.local_packets, overlap.ghost_packets,
+        overlap.send_bytes, overlap.receive_bytes, result.oracle_checked ? 1 : 0,
+        result.oracle_pass ? 1 : 0, result.oracle_max_error);
 }
 
 } // namespace

@@ -48,6 +48,18 @@ add_test(NAME TST-P0-005 COMMAND blitzar_abi_test)
 add_test(NAME TST-P0-006 COMMAND blitzar_capability_test)
 add_test(NAME TST-P1-001 COMMAND blitzar_dynamics_test)
 add_test(NAME TST-P1-003 COMMAND blitzar_allocation_test)
+add_test(
+    NAME TST-P1-004
+    COMMAND blitzar_scaling_test
+        --particles 32
+        --warmup 1
+        --steps 3
+        --seed 424242
+        --distribution box-pair-v1
+        --solver barnes-hut
+        --tolerance 0.05
+        --oracle
+)
 add_test(NAME TST-P3-001 COMMAND blitzar_hierarchy_test)
 add_test(NAME TST-P3-002 COMMAND blitzar_fmm_test)
 add_test(NAME TST-P3-003 COMMAND blitzar_solver_resource_contract_test)

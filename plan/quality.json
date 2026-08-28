@@ -116,6 +116,12 @@
       "phase": "P1"
     },
     {
+      "id": "TST-P1-004",
+      "name": "performance-benchmark-metrics-and-oracle",
+      "command": "blitzar_scaling_test --particles 32 --warmup 1 --steps 3 --seed 424242 --distribution box-pair-v1 --solver barnes-hut --tolerance 0.05 --oracle",
+      "phase": "P1"
+    },
+    {
       "id": "TST-P2-001",
       "name": "c-example",
       "command": "blitzar_c_example",

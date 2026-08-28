@@ -74,6 +74,7 @@
     {"path": "plan/decisions/054-cli-human-summary.md", "lifecycle": "active"},
     {"path": "plan/decisions/055-solver-resource-contract.md", "lifecycle": "active"},
     {"path": "plan/decisions/056-spatial-resource-bundles.md", "lifecycle": "active"},
-    {"path": "plan/decisions/057-typed-force-evaluation.md", "lifecycle": "active"}
+    {"path": "plan/decisions/057-typed-force-evaluation.md", "lifecycle": "active"},
+    {"path": "plan/decisions/058-performance-benchmark-contract.md", "lifecycle": "active"}
   ]
 }

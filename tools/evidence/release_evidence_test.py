@@ -7,8 +7,14 @@ from unittest.mock import patch
 
 sys.path.insert(0, str(pathlib.Path(__file__).resolve().parent))
 
-from tools.evidence.evidence_contract import aggregate_records, expand_workloads, load_contract, parse_scale_record, validate_contract
-from tools.evidence.release_evidence import is_inside, probe_gpu
+from tools.evidence.evidence_contract import (
+    aggregate_records,
+    expand_workloads,
+    load_contract,
+    parse_scale_record,
+    validate_contract,
+)
+from tools.evidence.release_evidence import is_inside, probe_gpu, repository_revision
 
 
 class ReleaseEvidenceTests(unittest.TestCase):
@@ -23,6 +29,8 @@ class ReleaseEvidenceTests(unittest.TestCase):
         expanded = expand_workloads(load_contract(root))
 
         self.assertEqual(len(expanded), 33)
+        self.assertEqual(expanded[0]["distribution"], "box-pair-v1")
+        self.assertEqual(expanded[0]["record_schema_version"], 2)
         self.assertEqual(
             sum(item["kind"] == "migration" for item in expanded),
             2,
@@ -34,9 +42,12 @@ class ReleaseEvidenceTests(unittest.TestCase):
 
     def test_scale_record_parser_converts_measurements(self) -> None:
         line = (
-            "BLITZAR SCALE schema=1 rank=1 ranks=2 particles=64 warmup_steps=1 "
-            "timed_steps=3 seed=424242 solver=direct overlap=overlapped status=0 backend=0 "
-            "elapsed_ns=42 peak_rss_bytes=99 local_before=32 local_after=31 "
+            "BLITZAR SCALE schema=2 rank=1 ranks=2 particles=64 warmup_steps=1 "
+            "timed_steps=3 seed=424242 distribution=box-pair-v1 solver=direct "
+            "overlap=overlapped status=0 backend=0 elapsed_ns=42 mean_step_ns=14 "
+            "min_step_ns=12 max_step_ns=16 allocation_count=0 allocation_free=1 "
+            "peak_rss_bytes=99 throughput_particles_per_second=4571428571.0 "
+            "local_before=32 local_after=31 "
             "migration_observed=1 migration_sent_remote=4 migration_received_remote=3 "
             "overlap_has_overlap=1 local_packets=31 ghost_packets=33 send_bytes=496 "
             "receive_bytes=528 oracle_checked=1 oracle_pass=1 oracle_max_error=1.5e-8"
@@ -46,7 +57,11 @@ class ReleaseEvidenceTests(unittest.TestCase):
 
         self.assertIsNotNone(record)
         self.assertEqual(record["rank"], 1)
+        self.assertEqual(record["schema"], 2)
+        self.assertEqual(record["distribution"], "box-pair-v1")
         self.assertEqual(record["elapsed_ns"], 42)
+        self.assertEqual(record["allocation_count"], 0)
+        self.assertEqual(record["mean_step_ns"], 14)
         self.assertTrue(record["migration_observed"])
         self.assertEqual(record["oracle_max_error"], 1.5e-8)
 
@@ -56,6 +71,10 @@ class ReleaseEvidenceTests(unittest.TestCase):
             "kind": "migration",
             "particles": 64,
             "ranks": 2,
+            "timed_steps": 1,
+            "distribution": "boundary-crossing-v1",
+            "record_schema_version": 2,
+            "allocation_policy": "zero_after_warmup",
             "solver": "direct",
             "overlap": "overlapped",
             "migration": True,
@@ -64,8 +83,15 @@ class ReleaseEvidenceTests(unittest.TestCase):
             {
                 "rank": 0,
                 "status": 0,
+                "schema": 2,
+                "distribution": "boundary-crossing-v1",
                 "backend": 0,
                 "elapsed_ns": 20,
+                "mean_step_ns": 20,
+                "min_step_ns": 20,
+                "max_step_ns": 20,
+                "allocation_count": 0,
+                "allocation_free": True,
                 "peak_rss_bytes": 100,
                 "local_before": 32,
                 "local_after": 31,
@@ -82,8 +108,15 @@ class ReleaseEvidenceTests(unittest.TestCase):
             {
                 "rank": 1,
                 "status": 0,
+                "schema": 2,
+                "distribution": "boundary-crossing-v1",
                 "backend": 0,
                 "elapsed_ns": 24,
+                "mean_step_ns": 24,
+                "min_step_ns": 24,
+                "max_step_ns": 24,
+                "allocation_count": 0,
+                "allocation_free": True,
                 "peak_rss_bytes": 120,
                 "local_before": 32,
                 "local_after": 33,
@@ -103,6 +136,9 @@ class ReleaseEvidenceTests(unittest.TestCase):
 
         self.assertTrue(aggregate["ranks_complete"])
         self.assertEqual(aggregate["elapsed_ns"], 24)
+        self.assertEqual(aggregate["allocation_count"], 0)
+        self.assertEqual(aggregate["mean_step_ns"], 24)
+        self.assertGreater(aggregate["throughput_particles_per_second"], 0.0)
         self.assertEqual(aggregate["send_bytes"], 1024)
         self.assertEqual(aggregate["local_after"], 64)
         self.assertTrue(aggregate["migration_observed"])
@@ -117,11 +153,29 @@ class ReleaseEvidenceTests(unittest.TestCase):
 
         self.assertTrue(any("ranks" in error for error in errors))
 
+    def test_contract_rejects_undeclared_distribution(self) -> None:
+        root = pathlib.Path(__file__).resolve().parents[2]
+        contract = load_contract(root)
+        invalid = copy.deepcopy(contract)
+        invalid["workloads"][0]["distribution"] = "unknown-v1"
+
+        errors = validate_contract(invalid)
+
+        self.assertTrue(any("distribution" in error for error in errors))
+
     def test_evidence_path_must_be_external(self) -> None:
         root = pathlib.Path("C:/repo").resolve()
 
         self.assertTrue(is_inside(root / "plan" / "run", root))
         self.assertFalse(is_inside(root.parent / "evidence", root))
+
+    def test_repository_revision_is_captured_from_worktree(self) -> None:
+        root = pathlib.Path(__file__).resolve().parents[2]
+
+        revision = repository_revision(root)
+
+        self.assertIsNotNone(revision)
+        self.assertRegex(revision or "", r"^[0-9a-f]{40}$")
 
     def test_gpu_probe_uses_accelerator_qualification_target(self) -> None:
         with TemporaryDirectory() as directory:
