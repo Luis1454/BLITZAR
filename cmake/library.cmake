@@ -71,7 +71,12 @@ set(BLITZAR_LIBRARY_SOURCES
     src/io/snapshot/SnapshotReader.cpp
     src/io/metadata/MetadataManifest.cpp
     src/io/metadata/MetadataManifestJson.cpp
+    src/io/metadata/MetadataCursor.cpp
+    src/io/metadata/MetadataFields.cpp
+    src/io/metadata/MetadataReader.cpp
+    src/io/metadata/MetadataReaderJson.cpp
     src/io/metadata/MetadataRun.cpp
+    src/io/metadata/MetadataText.cpp
     src/simulation/Sim.cpp
     src/simulation/runtime/SimRuntime.cpp
     src/simulation/state/SimParticleState.cpp
@@ -82,6 +87,7 @@ set(BLITZAR_LIBRARY_SOURCES
     src/simulation/config/SimConfigPhysics.cpp
     src/simulation/config/SimConfigOutput.cpp
     src/simulation/config/SimConfigDiagnostics.cpp
+    src/simulation/config/SimConfigRestart.cpp
     src/simulation/config/SimConfigRun.cpp
     src/simulation/initialization/SimConfigState.cpp
     src/simulation/state/SimParticleSet.cpp

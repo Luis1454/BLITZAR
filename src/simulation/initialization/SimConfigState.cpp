@@ -20,6 +20,11 @@ blitzar_core::ParticleOutputView SimConfigState::Output() noexcept
         velocity_z, mass};
 }
 
+std::span<const std::uint64_t> SimConfigState::Ids() const noexcept
+{
+    return ids;
+}
+
 blitzar_status BuildState(const SimConfigRun& config, SimConfigState& destination) noexcept
 {
     if (config.particle_count <= 0 || config.particle_count > SimConfigRun::MaxParticleCount) {
@@ -31,6 +36,7 @@ blitzar_status BuildState(const SimConfigRun& config, SimConfigState& destinatio
     try {
         const std::size_t count = static_cast<std::size_t>(config.particle_count);
 
+        candidate.ids.resize(count);
         candidate.position_x.resize(count);
         candidate.position_y.resize(count);
         candidate.position_z.resize(count);
@@ -40,6 +46,8 @@ blitzar_status BuildState(const SimConfigRun& config, SimConfigState& destinatio
         candidate.mass.resize(count);
 
         for (std::size_t index = 0; index < count; ++index) {
+            candidate.ids[index] = static_cast<std::uint64_t>(index);
+
             const std::uint64_t mixed_seed =
                 config.seed + static_cast<std::uint64_t>(index) * UINT64_C(0x9E3779B97F4A7C15);
 

@@ -54,14 +54,14 @@ namespace {
 }
 
 [[nodiscard]] blitzar_core::SnapshotFrameView MakeFrame(std::uint64_t step,
-    blitzar_core::ParticleOutputView state, std::span<const std::uint64_t> ids,
-    blitzar_core::Scalar timestep) noexcept
+    blitzar_core::Scalar time, blitzar_core::ParticleOutputView state,
+    std::span<const std::uint64_t> ids) noexcept
 {
     blitzar_core::SnapshotHeader header{};
 
     header.particle_count = state.count;
     header.step = step;
-    header.time = static_cast<blitzar_core::Scalar>(step) * timestep;
+    header.time = time;
 
     const blitzar_core::SnapshotPayloadView payload{ids,
         std::span<const blitzar_core::Scalar>(state.x),
@@ -79,7 +79,7 @@ namespace {
 
 BlitzarOutput::BlitzarOutput(const blitzar_sim::SimConfigRun& config) noexcept : config_(config) {}
 
-blitzar_status BlitzarOutput::Prepare() noexcept
+blitzar_status BlitzarOutput::Prepare(std::span<const std::uint64_t> ids) noexcept
 {
     if (prepared_) {
         return BLITZAR_STATUS_INVALID_ARGUMENT;
@@ -91,18 +91,13 @@ blitzar_status BlitzarOutput::Prepare() noexcept
         return BLITZAR_STATUS_OK;
     }
 
-    if (!HasValidParticleCount(config_)) {
+    if (!HasValidParticleCount(config_) ||
+        ids.size() != static_cast<std::size_t>(config_.particle_count)) {
         return BLITZAR_STATUS_INVALID_ARGUMENT;
     }
 
     try {
-        const std::size_t count = static_cast<std::size_t>(config_.particle_count);
-
-        ids_.resize(count);
-
-        for (std::size_t index = 0; index < count; ++index) {
-            ids_[index] = static_cast<std::uint64_t>(index);
-        }
+        ids_ = ids;
 
         run_.emplace(config_.output.directory, MakeMetadataInfo(config_));
 
@@ -110,7 +105,8 @@ blitzar_status BlitzarOutput::Prepare() noexcept
 
         if (status != BLITZAR_STATUS_OK) {
             run_.reset();
-            ids_.clear();
+
+            ids_ = {};
 
             return status;
         }
@@ -121,19 +117,22 @@ blitzar_status BlitzarOutput::Prepare() noexcept
     }
     catch (const std::bad_alloc&) {
         run_.reset();
-        ids_.clear();
+
+        ids_ = {};
 
         return BLITZAR_STATUS_ALLOCATION_FAILURE;
     }
     catch (const std::length_error&) {
         run_.reset();
-        ids_.clear();
+
+        ids_ = {};
 
         return BLITZAR_STATUS_INVALID_ARGUMENT;
     }
     catch (const std::filesystem::filesystem_error&) {
         run_.reset();
-        ids_.clear();
+
+        ids_ = {};
 
         return BLITZAR_STATUS_INTERNAL_ERROR;
     }
@@ -146,11 +145,11 @@ bool BlitzarOutput::ShouldWriteInitial() const noexcept
 
 bool BlitzarOutput::ShouldWriteStep(std::uint64_t step) const noexcept
 {
-    if (!config_.output.enabled || config_.output.every_steps <= 0 || step == 0) {
+    if (!config_.output.enabled || config_.output.every_steps <= 0 || step <= config_.StartStep()) {
         return false;
     }
 
-    const std::uint64_t final_step = static_cast<std::uint64_t>(config_.steps);
+    const std::uint64_t final_step = config_.FinalStep();
     const std::uint64_t interval = static_cast<std::uint64_t>(config_.output.every_steps);
 
     if (step > final_step) {
@@ -165,13 +164,17 @@ blitzar_status BlitzarOutput::Publish(
 {
     if (!prepared_ || !run_.has_value() || !HasValidParticleCount(config_) ||
         state.count != static_cast<std::size_t>(config_.particle_count) ||
-        ids_.size() != state.count || !blitzar_core::IsValid(state) ||
-        step > static_cast<std::uint64_t>(config_.steps)) {
+        ids_.size() != state.count || !blitzar_core::IsValid(state) || step < config_.StartStep() ||
+        step > config_.FinalStep()) {
         return BLITZAR_STATUS_INVALID_ARGUMENT;
     }
 
-    const blitzar_core::SnapshotFrameView frame =
-        MakeFrame(step, state, std::span<const std::uint64_t>(ids_), config_.timestep);
+    const std::uint64_t start_step = config_.StartStep();
+    const blitzar_core::Scalar time = step == start_step
+        ? config_.StartTime()
+        : static_cast<blitzar_core::Scalar>(step) * config_.timestep;
+
+    const blitzar_core::SnapshotFrameView frame = MakeFrame(step, time, state, ids_);
 
     return run_->PublishSnapshot(frame);
 }

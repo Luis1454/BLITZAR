@@ -72,6 +72,7 @@ blitzar_enable_warnings(blitzar_metadata_io_test)
 
 add_executable(blitzar_cli_output_test
     apps/blitzar/BlitzarOutput.cpp
+    apps/blitzar/BlitzarRestart.cpp
     apps/blitzar/BlitzarSummary.cpp
     apps/blitzar/BlitzarRun.cpp
     tests/io/IoCliOutputTest.cpp
@@ -85,6 +86,7 @@ blitzar_enable_warnings(blitzar_cli_output_test)
 
 add_executable(blitzar_cli_summary_test
     apps/blitzar/BlitzarOutput.cpp
+    apps/blitzar/BlitzarRestart.cpp
     apps/blitzar/BlitzarSummary.cpp
     apps/blitzar/BlitzarRun.cpp
     tests/io/IoCliSummaryTest.cpp
@@ -95,6 +97,20 @@ target_include_directories(blitzar_cli_summary_test PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/apps/blitzar
     ${CMAKE_CURRENT_SOURCE_DIR}/src)
 blitzar_enable_warnings(blitzar_cli_summary_test)
+
+add_executable(blitzar_cli_restart_test
+    apps/blitzar/BlitzarOutput.cpp
+    apps/blitzar/BlitzarRestart.cpp
+    apps/blitzar/BlitzarSummary.cpp
+    apps/blitzar/BlitzarRun.cpp
+    tests/io/IoCliRestartTest.cpp
+)
+target_link_libraries(blitzar_cli_restart_test PRIVATE blitzar)
+target_compile_features(blitzar_cli_restart_test PRIVATE cxx_std_20)
+target_include_directories(blitzar_cli_restart_test PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/apps/blitzar
+    ${CMAKE_CURRENT_SOURCE_DIR}/src)
+blitzar_enable_warnings(blitzar_cli_restart_test)
 
 add_executable(blitzar_bounded_contract_test
     tests/contracts/ContractBoundedTest.cpp
@@ -232,6 +248,7 @@ set(BLITZAR_TEST_TARGETS
     blitzar_metadata_io_test
     blitzar_cli_output_test
     blitzar_cli_summary_test
+    blitzar_cli_restart_test
     blitzar_bounded_contract_test
     blitzar_abi_test
     blitzar_capability_test
