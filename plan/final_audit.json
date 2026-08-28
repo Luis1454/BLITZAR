@@ -606,7 +606,7 @@
     {
       "issue": 647,
       "title": "Add deterministic snapshot restart",
-      "commit": "158e32d",
+      "commit": "158e32dac0dd381168520e3583405713556105f8",
       "pull_request": "https://github.com/Luis1454/BLITZAR/pull/665",
       "evidence": [
         "TST-P6-008",
