@@ -26,6 +26,10 @@ launches the production `blitzar_cli --config` entrypoint and compares an
 uninterrupted run with a split-and-restarted run. Both tests acquire a bounded,
 race-safe temporary directory and fail when cleanup reports an error.
 
+The process test's `main` argument array is registered as a borrowed execution
+boundary in the pointer ownership contract. It is used only to receive the
+CLI executable path; no ownership is transferred across that boundary.
+
 ## Boundaries
 
 This decision remains limited to single-rank CPU restart behavior. It does not

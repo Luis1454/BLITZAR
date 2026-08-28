@@ -629,6 +629,7 @@
         "CHK-P0-006",
         "CHK-P0-007",
         "CHK-P0-009",
+        "CHK-P0-016",
         "plan/decisions/051-restart-boundary-hardening.md"
       ]
     }
