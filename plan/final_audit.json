@@ -661,6 +661,22 @@
         "CHK-P0-009",
         "plan/decisions/053-mpi-hip-output-qualification.md"
       ]
+    },
+    {
+      "issue": 670,
+      "title": "Add human-readable shell result format",
+      "commit": "ee214f2f68027ae868be28240e2e482c7c9e2316",
+      "pull_request": "https://github.com/Luis1454/BLITZAR/pull/679",
+      "evidence": [
+        "TST-P6-006",
+        "TST-P6-007",
+        "TST-P6-010",
+        "CHK-P0-001",
+        "CHK-P0-006",
+        "CHK-P0-007",
+        "CHK-P0-009",
+        "plan/decisions/054-cli-human-summary.md"
+      ]
     }
   ],
   "non_claims": [
