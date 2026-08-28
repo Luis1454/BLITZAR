@@ -254,6 +254,14 @@
       "contract": "FMM reference and capacity"
     },
     {
+      "id": "TST-P3-003",
+      "entrypoint": "tests/contracts/ContractSolverResourceTest.cpp",
+      "responsibility": "tests/contracts/ContractSolverResourceTest.cpp",
+      "mode": "",
+      "ranks": 1,
+      "contract": "orthogonal solver and resource requirements"
+    },
+    {
       "id": "TST-P4-001",
       "entrypoint": "tests/gpu/GpuHipTest.cpp",
       "responsibility": "tests/gpu/GpuHipTest.cpp",

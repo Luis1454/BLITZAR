@@ -151,6 +151,15 @@ target_compile_features(blitzar_bounded_contract_test PRIVATE cxx_std_20)
 target_include_directories(blitzar_bounded_contract_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
 blitzar_enable_warnings(blitzar_bounded_contract_test)
 
+add_executable(blitzar_solver_resource_contract_test
+    tests/contracts/ContractSolverResourceTest.cpp
+)
+target_link_libraries(blitzar_solver_resource_contract_test PRIVATE blitzar)
+target_compile_features(blitzar_solver_resource_contract_test PRIVATE cxx_std_20)
+target_include_directories(blitzar_solver_resource_contract_test PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/src)
+blitzar_enable_warnings(blitzar_solver_resource_contract_test)
+
 add_executable(blitzar_abi_test
     tests/contracts/ContractAbiTest.c
 )
@@ -283,6 +292,7 @@ set(BLITZAR_TEST_TARGETS
     blitzar_cli_process_restart_test
     blitzar_cli_postprocess_test
     blitzar_bounded_contract_test
+    blitzar_solver_resource_contract_test
     blitzar_abi_test
     blitzar_capability_test
     blitzar_dynamics_test
