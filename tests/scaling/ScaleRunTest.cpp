@@ -1,4 +1,5 @@
 #include "ScaleTest.hpp"
+#include "fixtures/FixtureAllocationMonitor.hpp"
 #include "integration/kdk/KdkCheckpoint.hpp"
 #include "particles/buffer/ParticleAccelerationBuffer.hpp"
 #include "particles/buffer/ParticleBuffer.hpp"
@@ -9,6 +10,7 @@
 #include <chrono>
 #include <cmath>
 #include <cstdint>
+#include <limits>
 #include <new>
 
 #if defined(_WIN32)
@@ -90,39 +92,96 @@ void CopyFromParticles(const blitzar_particles::ParticleBuffer& particles, State
 void MergeMigrationTrace(const blitzar_parallel::MpiMigrationTrace& current,
     blitzar_parallel::MpiMigrationTrace& aggregate) noexcept;
 
-blitzar_status RunTimedSteps(blitzar_sim::Sim& simulation, const Config& config,
-    std::uint64_t& elapsed_ns, blitzar_parallel::MpiMigrationTrace& migration_trace) noexcept
+class AllocationCapture final {
+public:
+    AllocationCapture() noexcept
+    {
+        blitzar_tests::BeginAllocationCounting();
+    }
+
+    ~AllocationCapture() noexcept
+    {
+        (void)Stop();
+    }
+
+    [[nodiscard]] std::size_t Stop() noexcept
+    {
+        if (active_) {
+            count_ = blitzar_tests::EndAllocationCounting();
+            active_ = false;
+        }
+
+        return count_;
+    }
+
+private:
+    bool active_{true};
+
+    std::size_t count_{};
+};
+
+blitzar_status RunTimedSteps(
+    blitzar_sim::Sim& simulation, const Config& config, Result& result) noexcept
 {
-    migration_trace = {};
+    result.migration_trace = {};
 
     for (int step = 0; step < config.warmup_steps; ++step) {
         const blitzar_status status = simulation.Step();
 
-        MergeMigrationTrace(simulation.LastMpiMigrationTrace(), migration_trace);
+        MergeMigrationTrace(simulation.LastMpiMigrationTrace(), result.migration_trace);
 
         if (status != BLITZAR_STATUS_OK) {
             return status;
         }
     }
 
+    AllocationCapture allocation_capture;
     const auto start = std::chrono::steady_clock::now();
+    blitzar_status status = BLITZAR_STATUS_OK;
+    std::uint64_t minimum_step_ns = std::numeric_limits<std::uint64_t>::max();
+    std::uint64_t maximum_step_ns = 0;
+    int completed_steps = 0;
 
     for (int step = 0; step < config.timed_steps; ++step) {
-        const blitzar_status status = simulation.Step();
+        const auto step_start = std::chrono::steady_clock::now();
 
-        MergeMigrationTrace(simulation.LastMpiMigrationTrace(), migration_trace);
+        status = simulation.Step();
+
+        const auto step_end = std::chrono::steady_clock::now();
+
+        MergeMigrationTrace(simulation.LastMpiMigrationTrace(), result.migration_trace);
 
         if (status != BLITZAR_STATUS_OK) {
-            return status;
+            break;
         }
+
+        const std::uint64_t step_elapsed_ns = static_cast<std::uint64_t>(
+            std::chrono::duration_cast<std::chrono::nanoseconds>(step_end - step_start).count());
+
+        minimum_step_ns = std::min(minimum_step_ns, step_elapsed_ns);
+        maximum_step_ns = std::max(maximum_step_ns, step_elapsed_ns);
+
+        ++completed_steps;
     }
 
     const auto end = std::chrono::steady_clock::now();
 
-    elapsed_ns = static_cast<std::uint64_t>(
+    result.elapsed_ns = static_cast<std::uint64_t>(
         std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count());
 
-    return BLITZAR_STATUS_OK;
+    result.allocation_count = allocation_capture.Stop();
+
+    if (completed_steps > 0) {
+        result.mean_step_ns = result.elapsed_ns / static_cast<std::uint64_t>(completed_steps);
+        result.min_step_ns = minimum_step_ns;
+        result.max_step_ns = maximum_step_ns;
+        result.throughput_particles_per_second =
+            result.elapsed_ns == 0 ? 0.0
+                                   : static_cast<double>(config.particle_count) * completed_steps *
+                                         1'000'000'000.0 / static_cast<double>(result.elapsed_ns);
+    }
+
+    return status;
 }
 
 bool RunCpuOracle(const Config& config, const State& input, State& expected)
@@ -208,8 +267,8 @@ bool Run(const Config& config, Result& result)
         result.rank = simulation.MpiRank();
         result.ranks = simulation.MpiSize();
 
-        const State input =
-            MakeState(result.rank == 0 ? config.particle_count : 0, config.seed, config.migration);
+        const State input = MakeState(
+            result.rank == 0 ? config.particle_count : 0, config.seed, config.distribution);
 
         State output(config.particle_count);
 
@@ -221,8 +280,7 @@ bool Run(const Config& config, Result& result)
 
         result.local_before = simulation.LocalParticleCount();
 
-        const blitzar_status step_status =
-            RunTimedSteps(simulation, config, result.elapsed_ns, result.migration_trace);
+        const blitzar_status step_status = RunTimedSteps(simulation, config, result);
 
         result.status = step_status;
         result.local_after = simulation.LocalParticleCount();

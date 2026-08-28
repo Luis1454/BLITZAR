@@ -128,18 +128,18 @@
       "decision": "The scaling CLI keeps option parsing and stable record emission together so every workload invocation has the same machine-readable fields; its branching is test-harness local and is covered by the evidence runner fixtures."
     },
     {
-      "path": "tests/scaling/ScaleRunTest.cpp",
-      "signals": ["branching"],
-      "issue": 612,
-      "status": "accepted",
-      "decision": "The runner fixture owns timing, CPU-oracle comparison, process memory sampling, and migration aggregation for one simulation execution; the signal is explicit because these measurements must share one state boundary."
-    },
-    {
       "path": "tools/evidence/evidence_contract.py",
       "signals": ["allocation", "branching"],
       "issue": 612,
       "status": "accepted",
       "decision": "The pure contract module validates and expands one versioned workload schema and parses rank records; its report-list allocations and validation branches are policy-local, deterministic, and covered by release_evidence_test.py."
+    },
+    {
+      "path": "tools/evidence/release_evidence.py",
+      "signals": ["branching"],
+      "issue": 671,
+      "status": "accepted",
+      "decision": "The evidence runner keeps command execution, rank validation, capability metadata, and external artifact publication in one benchmark boundary; its branching is the explicit state policy for passed, failed, skipped, and unknown evidence."
     },
     {
       "path": "src/mpi/exchange/MpiMigration.cpp",

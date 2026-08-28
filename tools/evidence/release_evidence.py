@@ -21,6 +21,7 @@ from tools.evidence.evidence_contract import (
     expand_workloads,
     load_contract,
     parse_scale_record,
+    REQUIRED_RECORD_FIELDS,
     validate_contract,
 )
 
@@ -91,6 +92,8 @@ def selected_environment(environment: dict[str, str]) -> dict[str, str]:
         "CMAKE_HIP_PLATFORM",
         "HIP_PLATFORM",
         "OMP_NUM_THREADS",
+        "OMP_PLACES",
+        "OMP_PROC_BIND",
         "OMPI_ALLOW_RUN_AS_ROOT",
         "OMPI_ALLOW_RUN_AS_ROOT_CONFIRM",
         "OMPI_MCA_rmaps_base_oversubscribe",
@@ -147,6 +150,8 @@ def workload_command(
         str(contract["timed_steps"]),
         "--seed",
         str(contract["seed"]),
+        "--distribution",
+        str(workload["distribution"]),
         "--solver",
         str(workload["solver"]),
         "--overlap",
@@ -186,11 +191,37 @@ def validate_result(result: dict[str, Any]) -> tuple[str, str]:
         return "failed", f"command returned {result['returncode']}"
     if not result["records"]:
         return "failed", "no BLITZAR SCALE record was emitted"
+    missing = sorted(
+        field
+        for record in result["records"]
+        for field in REQUIRED_RECORD_FIELDS
+        if field not in record
+    )
+    if missing:
+        return "failed", f"rank records are missing fields: {sorted(set(missing))}"
+    if any(
+        record["schema"] != result["workload"]["record_schema_version"]
+        for record in result["records"]
+    ):
+        return "failed", "rank record schema does not match the contract"
+    if any(
+        record["distribution"] != result["workload"]["distribution"]
+        for record in result["records"]
+    ):
+        return "failed", "rank record distribution does not match the workload"
     aggregate = result["aggregate"]
     if not aggregate["ranks_complete"]:
         return "failed", "rank records are incomplete"
     if not aggregate["status_ok"]:
         return "failed", f"rank status codes: {aggregate['status_codes']}"
+    if aggregate["elapsed_ns"] <= 0 or aggregate["mean_step_ns"] <= 0:
+        return "failed", "timing metrics are not positive"
+    if aggregate["min_step_ns"] > aggregate["max_step_ns"]:
+        return "failed", "step timing bounds are inconsistent"
+    if result["workload"]["allocation_policy"] == "zero_after_warmup" and not aggregate[
+        "allocation_free"
+    ]:
+        return "failed", "steady-state allocation policy was violated"
     if result["workload"]["oracle"] and not aggregate["oracle_pass"]:
         return "failed", "Direct CPU oracle parity failed"
     if result["workload"]["kind"] == "migration" and not aggregate["migration_observed"]:
@@ -329,10 +360,39 @@ def capture_command(command: list[str], root: pathlib.Path) -> str | None:
     return str(result["stdout"]).strip()
 
 
+def worktree_git_dir(root: pathlib.Path) -> pathlib.Path | None:
+    git_file = root / ".git"
+    if not git_file.is_file():
+        return None
+    content = git_file.read_text(encoding="utf-8").strip()
+    prefix = "gitdir:"
+    if not content.lower().startswith(prefix):
+        return None
+    raw_path = content[len(prefix) :].strip()
+    candidate = pathlib.Path(raw_path)
+    if not candidate.is_dir() and re.match(r"^[A-Za-z]:[\\/]", raw_path):
+        drive = raw_path[0].lower()
+        relative = raw_path[2:].replace("\\", "/").lstrip("/")
+        candidate = pathlib.Path("/mnt") / drive / relative
+    return candidate if candidate.is_dir() else None
+
+
+def repository_revision(root: pathlib.Path) -> str | None:
+    git_dir = worktree_git_dir(root)
+    if git_dir is not None:
+        revision = capture_command(["git", f"--git-dir={git_dir}", "rev-parse", "HEAD"], root)
+        if revision is not None:
+            return revision
+    return capture_command(["git", "rev-parse", "HEAD"], root)
+
+
 def collect_metadata(root: pathlib.Path, contract: dict[str, Any]) -> dict[str, Any]:
     compiler = os.environ.get("CXX", "c++")
+    environment = dict(os.environ)
+    compiler_path = shutil.which(compiler)
+    thread_count = environment.get("OMP_NUM_THREADS") or "runtime-default"
     return {
-        "revision": capture_command(["git", "rev-parse", "HEAD"], root),
+        "revision": repository_revision(root),
         "platform": {
             "system": platform.system(),
             "release": platform.release(),
@@ -341,10 +401,36 @@ def collect_metadata(root: pathlib.Path, contract: dict[str, Any]) -> dict[str, 
             "hostname": socket.gethostname(),
         },
         "cpu_count": os.cpu_count(),
+        "execution": {
+            "compiler": {
+                "name": compiler,
+                "path": compiler_path,
+                "version": capture_command([compiler, "--version"], root),
+            },
+            "backend": "recorded_per_workload",
+            "cpu_capability": {
+                "architecture": platform.machine(),
+                "processor": platform.processor(),
+                "logical_threads": os.cpu_count(),
+            },
+            "gpu_capability": {
+                "hipcc": shutil.which("hipcc"),
+                "nvcc": shutil.which("nvcc"),
+                "nvidia_smi": shutil.which("nvidia-smi"),
+                "rocminfo": shutil.which("rocminfo"),
+                "cuda_visible_devices": environment.get("CUDA_VISIBLE_DEVICES"),
+                "rocr_visible_devices": environment.get("ROCR_VISIBLE_DEVICES"),
+            },
+            "thread_count": thread_count,
+            "problem_size": {
+                "field": "results[].aggregate.particles",
+                "unit": "particles",
+            },
+        },
         "toolchain": {
             "cc": os.environ.get("CC"),
             "cxx": compiler,
-            "cxx_path": shutil.which(compiler),
+            "cxx_path": compiler_path,
             "cxx_version": capture_command([compiler, "--version"], root),
             "cmake_version": capture_command(["cmake", "--version"], root),
             "mpiexec": shutil.which("mpiexec") or shutil.which("mpirun"),
@@ -353,12 +439,18 @@ def collect_metadata(root: pathlib.Path, contract: dict[str, Any]) -> dict[str, 
             "nvidia_smi": shutil.which("nvidia-smi"),
             "rocminfo": shutil.which("rocminfo"),
         },
-        "environment": selected_environment(dict(os.environ)),
+        "environment": selected_environment(environment),
         "contract": {
+            "schema_version": contract["schema_version"],
+            "record_schema_version": contract["record_schema_version"],
             "plan_version": contract["plan_version"],
             "precision": contract["precision"],
             "seed": contract["seed"],
             "oracle_tolerance": contract["oracle_tolerance"],
+            "distributions": [item["id"] for item in contract["distributions"]],
+            "metrics": contract["metrics"],
+            "oracle": contract["oracle"],
+            "allocation_policy": contract["allocation_policy"],
         },
         "topology": {
             "scope": "single-host",
@@ -408,16 +500,18 @@ def render_summary(
         "",
         "## Workloads",
         "",
-        "| State | Workload | Kind | Particles | Ranks | Solver | Mode | Backend | Elapsed ns | Peak RSS | Send bytes | Receive bytes | Oracle error | Scope | Reason |",
-        "| --- | --- | --- | ---: | ---: | --- | --- | --- | ---: | ---: | ---: | ---: | ---: | --- | --- |",
+        "| State | Workload | Distribution | Kind | Particles | Ranks | Solver | Mode | Backend | Elapsed ns | Mean step ns | Allocations | Throughput/s | Peak RSS | Oracle error | Scope | Reason |",
+        "| --- | --- | --- | --- | ---: | ---: | --- | --- | --- | ---: | ---: | ---: | ---: | ---: | ---: | --- | --- |",
     ]
     for result in results:
         aggregate = result.get("aggregate") or {}
         lines.append(
-            "| {state} | {workload} | {kind} | {particles} | {ranks} | {solver} | {mode} | "
-            "{backend} | {elapsed} | {rss} | {send} | {receive} | {error} | {scope} | {reason} |".format(
+            "| {state} | {workload} | {distribution} | {kind} | {particles} | {ranks} | "
+            "{solver} | {mode} | {backend} | {elapsed} | {mean_step} | {allocations} | "
+            "{throughput:.6g} | {rss} | {error} | {scope} | {reason} |".format(
                 state=result["state"],
                 workload=result["workload"]["id"],
+                distribution=result["workload"]["distribution"],
                 kind=result["workload"]["kind"],
                 particles=result["workload"]["particles"],
                 ranks=result["workload"]["ranks"],
@@ -425,9 +519,10 @@ def render_summary(
                 mode=result["workload"]["overlap"],
                 backend=aggregate.get("backend", "unknown"),
                 elapsed=aggregate.get("elapsed_ns", 0),
+                mean_step=aggregate.get("mean_step_ns", 0),
+                allocations=aggregate.get("allocation_count", 0),
+                throughput=aggregate.get("throughput_particles_per_second", 0.0),
                 rss=aggregate.get("peak_rss_bytes", 0),
-                send=aggregate.get("send_bytes", 0),
-                receive=aggregate.get("receive_bytes", 0),
                 error=aggregate.get("oracle_max_error", 0.0),
                 scope=aggregate.get("scope", "unavailable"),
                 reason=result["reason"] or "none",
@@ -488,6 +583,8 @@ def main(argv: list[str] | None = None) -> int:
             raise ValueError("evidence output must be outside the source tree")
         build_dir = arguments.build_dir.resolve()
         metadata = collect_metadata(root, contract)
+        if not metadata["revision"]:
+            raise ValueError("Git revision could not be captured")
         executable = executable_path(build_dir, contract["target"])
         context = RunContext(root, output, executable, contract, arguments.timeout)
         results = [run_workload(context, workload) for workload in expand_workloads(contract)]

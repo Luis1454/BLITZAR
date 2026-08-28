@@ -30,14 +30,14 @@ State::State(std::size_t count)
 {
 }
 
-State MakeState(std::size_t count, std::uint64_t seed, bool migration)
+State MakeState(std::size_t count, std::uint64_t seed, DistributionKind distribution)
 {
     State state(count);
 
     for (std::size_t index = 0; index < count; ++index) {
         const bool even = index % 2 == 0;
 
-        if (migration) {
+        if (distribution == DistributionKind::BoundaryCrossing) {
             state.x[index] = index == 0 ? -1.0 : index == 1 ? 1.0 : even ? -0.02 : 0.02;
             state.y[index] = 0.0;
             state.z[index] = 0.0;
@@ -139,6 +139,12 @@ std::string_view SolverName(SolverKind solver) noexcept
 std::string_view OverlapName(OverlapMode mode) noexcept
 {
     return mode == OverlapMode::Overlapped ? "overlapped" : "serialized";
+}
+
+std::string_view DistributionName(DistributionKind distribution) noexcept
+{
+    return distribution == DistributionKind::BoundaryCrossing ? "boundary-crossing-v1"
+                                                              : "box-pair-v1";
 }
 
 blitzar_solver_kind PublicSolver(SolverKind solver) noexcept

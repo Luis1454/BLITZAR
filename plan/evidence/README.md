@@ -5,11 +5,12 @@ following command from the repository root after building
 `blitzar_scaling_test`:
 
 ```text
-python -m tools.evidence.release_evidence --root . --build-dir ../.blitzar-build/evidence --output ../.blitzar-evidence/run
+python -m tools.evidence.release_evidence --root . --build-dir ../.blitzar-build/evidence --output ../.blitzar-evidence/run --strict
 ```
 
 The output directory contains the exact metadata, one raw log per command,
 machine-readable results, and a Markdown summary. The summary must distinguish
 CPU, MPI local-rank, multi-node, HIP compile, HIP fallback, and HIP device
-execution. Missing hardware or launchers produce `skipped` or `unknown`, not a
-passing performance claim.
+execution. Each result also contains the v2 wall/per-step timing, allocation,
+memory, throughput, distribution, and oracle fields. Missing hardware or
+launchers produce `skipped` or `unknown`, not a passing performance claim.

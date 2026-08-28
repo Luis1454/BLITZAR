@@ -11,6 +11,17 @@ from typing import Any
 KINDS = {"strong", "weak", "migration", "overlap"}
 SOLVERS = {"direct", "barnes-hut", "fmm"}
 OVERLAP_MODES = {"overlapped", "serialized"}
+SCHEMA_VERSION = 2
+RECORD_SCHEMA_VERSION = 2
+REQUIRED_METRICS = {
+    "wall_time_ns": "elapsed_ns",
+    "mean_step_time_ns": "mean_step_ns",
+    "minimum_step_time_ns": "min_step_ns",
+    "maximum_step_time_ns": "max_step_ns",
+    "steady_state_allocations": "allocation_count",
+    "memory_footprint_bytes": "peak_rss_bytes",
+    "throughput_particles_per_second": "derived_from_particles_steps_and_elapsed",
+}
 INTEGER_FIELDS = {
     "rank",
     "ranks",
@@ -30,12 +41,54 @@ INTEGER_FIELDS = {
     "receive_bytes",
     "migration_sent_remote",
     "migration_received_remote",
+    "schema",
+    "mean_step_ns",
+    "min_step_ns",
+    "max_step_ns",
+    "allocation_count",
 }
 BOOLEAN_FIELDS = {
+    "allocation_free",
     "migration_observed",
     "overlap_has_overlap",
     "oracle_checked",
     "oracle_pass",
+}
+FLOAT_FIELDS = {"oracle_max_error", "throughput_particles_per_second"}
+REQUIRED_RECORD_FIELDS = {
+    "schema",
+    "rank",
+    "ranks",
+    "particles",
+    "warmup_steps",
+    "timed_steps",
+    "seed",
+    "distribution",
+    "solver",
+    "overlap",
+    "status",
+    "backend",
+    "elapsed_ns",
+    "mean_step_ns",
+    "min_step_ns",
+    "max_step_ns",
+    "allocation_count",
+    "allocation_free",
+    "peak_rss_bytes",
+    "throughput_particles_per_second",
+    "local_before",
+    "local_after",
+    "migration_observed",
+    "migration_sent_remote",
+    "migration_received_remote",
+    "overlap_has_overlap",
+    "local_packets",
+    "ghost_packets",
+    "send_bytes",
+    "receive_bytes",
+    "oracle_checked",
+    "oracle_pass",
+    "oracle_max_error",
 }
 
 
@@ -53,8 +106,10 @@ def load_contract(root: pathlib.Path) -> dict[str, Any]:
 
 def validate_contract(contract: dict[str, Any]) -> list[str]:
     errors: list[str] = []
-    if contract.get("schema_version") != 1:
-        errors.append("schema_version must be 1")
+    if contract.get("schema_version") != SCHEMA_VERSION:
+        errors.append(f"schema_version must be {SCHEMA_VERSION}")
+    if contract.get("record_schema_version") != RECORD_SCHEMA_VERSION:
+        errors.append(f"record_schema_version must be {RECORD_SCHEMA_VERSION}")
     if not isinstance(contract.get("plan_version"), str):
         errors.append("plan_version must be a string")
     if contract.get("target") != "blitzar_scaling_test":
@@ -72,16 +127,85 @@ def validate_contract(contract: dict[str, Any]) -> list[str]:
     tolerance = contract.get("oracle_tolerance")
     if not isinstance(tolerance, (int, float)) or not math.isfinite(tolerance) or tolerance < 0:
         errors.append("oracle_tolerance must be a non-negative finite number")
+    distributions = contract.get("distributions")
+    errors.extend(validate_distributions(distributions))
+    distribution_ids = (
+        {
+            item["id"]
+            for item in distributions
+            if isinstance(item, dict) and isinstance(item.get("id"), str)
+        }
+        if isinstance(distributions, list)
+        else set()
+    )
+    errors.extend(validate_metrics(contract.get("metrics")))
+    errors.extend(validate_oracle(contract.get("oracle")))
+    if contract.get("allocation_policy") != "zero_after_warmup":
+        errors.append("allocation_policy must be zero_after_warmup")
+    metadata_fields = contract.get("metadata_fields")
+    required_metadata = {
+        "compiler",
+        "backend",
+        "cpu_capability",
+        "gpu_capability",
+        "thread_count",
+        "problem_size",
+    }
+    if not isinstance(metadata_fields, list) or set(metadata_fields) != required_metadata:
+        errors.append("metadata_fields must list the benchmark environment fields")
     workloads = contract.get("workloads")
     if not isinstance(workloads, list) or not workloads:
         errors.append("workloads must be a non-empty list")
     else:
-        errors.extend(validate_workloads(workloads))
+        errors.extend(validate_workloads(workloads, distribution_ids))
     errors.extend(validate_artifacts(contract.get("artifacts")))
     return errors
 
 
-def validate_workloads(workloads: list[Any]) -> list[str]:
+def validate_distributions(distributions: Any) -> list[str]:
+    if not isinstance(distributions, list) or not distributions:
+        return ["distributions must be a non-empty list"]
+    errors: list[str] = []
+    seen: set[str] = set()
+    for index, distribution in enumerate(distributions):
+        prefix = f"distributions[{index}]"
+        if not isinstance(distribution, dict):
+            errors.append(f"{prefix} must be an object")
+            continue
+        identifier = distribution.get("id")
+        if not isinstance(identifier, str) or not identifier:
+            errors.append(f"{prefix}.id must be a non-empty string")
+        elif identifier in seen:
+            errors.append(f"duplicate distribution id: {identifier}")
+        else:
+            seen.add(identifier)
+        for field in ("kind", "definition", "mass_rule"):
+            if not isinstance(distribution.get(field), str) or not distribution[field]:
+                errors.append(f"{prefix}.{field} must be a non-empty string")
+    return errors
+
+
+def validate_metrics(metrics: Any) -> list[str]:
+    if not isinstance(metrics, dict) or metrics != REQUIRED_METRICS:
+        return ["metrics must declare the complete benchmark metric mapping"]
+    return []
+
+
+def validate_oracle(oracle: Any) -> list[str]:
+    required = {
+        "solver": "direct",
+        "backend": "cpu",
+        "comparison": "max_abs_state_error",
+        "tolerance_field": "oracle_tolerance",
+    }
+    if not isinstance(oracle, dict) or oracle != required:
+        return ["oracle must declare the Direct CPU max_abs_state_error comparison"]
+    return []
+
+
+def validate_workloads(
+    workloads: list[Any], distribution_ids: set[str] | None = None
+) -> list[str]:
     errors: list[str] = []
     seen: set[str] = set()
     for index, workload in enumerate(workloads):
@@ -96,11 +220,13 @@ def validate_workloads(workloads: list[Any]) -> list[str]:
             errors.append(f"duplicate workload id: {workload_id}")
         else:
             seen.add(workload_id)
-        errors.extend(validate_workload(prefix, workload))
+        errors.extend(validate_workload(prefix, workload, distribution_ids))
     return errors
 
 
-def validate_workload(prefix: str, workload: dict[str, Any]) -> list[str]:
+def validate_workload(
+    prefix: str, workload: dict[str, Any], distribution_ids: set[str] | None = None
+) -> list[str]:
     errors: list[str] = []
     kind = workload.get("kind")
     if kind not in KINDS:
@@ -128,6 +254,11 @@ def validate_workload(prefix: str, workload: dict[str, Any]) -> list[str]:
         errors.append(f"{prefix}.oracle must be boolean")
     if not isinstance(workload.get("migration"), bool):
         errors.append(f"{prefix}.migration must be boolean")
+    distribution = workload.get("distribution")
+    if not isinstance(distribution, str) or not distribution:
+        errors.append(f"{prefix}.distribution must be a non-empty string")
+    elif distribution_ids is not None and distribution not in distribution_ids:
+        errors.append(f"{prefix}.distribution is not declared")
     errors.extend(validate_workload_shape(prefix, workload))
     return errors
 
@@ -155,6 +286,8 @@ def validate_workload_shape(prefix: str, workload: dict[str, Any]) -> list[str]:
         errors.append(f"{prefix} non-overlap workloads must select one overlap mode")
     if kind != "migration" and workload.get("migration"):
         errors.append(f"{prefix} only migration workloads may enable migration")
+    if kind == "migration" and workload.get("distribution") != "boundary-crossing-v1":
+        errors.append(f"{prefix} migration must use boundary-crossing-v1")
     return errors
 
 
@@ -191,8 +324,12 @@ def expand_workloads(contract: dict[str, Any]) -> list[dict[str, Any]]:
                             {
                                 "id": workload["id"],
                                 "kind": workload["kind"],
+                                "distribution": workload["distribution"],
                                 "particles": particles,
                                 "ranks": ranks,
+                                "record_schema_version": contract["record_schema_version"],
+                                "timed_steps": contract["timed_steps"],
+                                "allocation_policy": contract["allocation_policy"],
                                 "solver": solver,
                                 "overlap": overlap,
                                 "oracle": workload["oracle"] and solver != "direct",
@@ -214,7 +351,7 @@ def parse_scale_record(line: str) -> dict[str, Any] | None:
             record[key] = int(value)
         elif key in BOOLEAN_FIELDS:
             record[key] = value == "1"
-        elif key == "oracle_max_error":
+        elif key in FLOAT_FIELDS:
             record[key] = float(value)
         else:
             record[key] = value
@@ -231,9 +368,19 @@ def aggregate_records(records: list[dict[str, Any]], workload: dict[str, Any]) -
         "ranks": ranks,
         "ranks_complete": ranks == list(range(workload["ranks"])),
         "status_codes": sorted({int(record.get("status", -1)) for record in records}),
+        "record_schema_version": max(int(record.get("schema", -1)) for record in records),
+        "distribution": sorted({str(record.get("distribution", "unknown")) for record in records}),
         "status_ok": all(record.get("status") == 0 for record in records),
         "backend": backends[0] if len(backends) == 1 else "mixed",
         "elapsed_ns": max(int(record.get("elapsed_ns", 0)) for record in records),
+        "mean_step_ns": max(int(record.get("mean_step_ns", 0)) for record in records),
+        "min_step_ns": max(int(record.get("min_step_ns", 0)) for record in records),
+        "max_step_ns": max(int(record.get("max_step_ns", 0)) for record in records),
+        "allocation_count": sum(int(record.get("allocation_count", 0)) for record in records),
+        "allocation_free": all(
+            record.get("allocation_free", int(record.get("allocation_count", 0)) == 0)
+            for record in records
+        ),
         "peak_rss_bytes": max(int(record.get("peak_rss_bytes", 0)) for record in records),
         "local_before": sum(int(record.get("local_before", 0)) for record in records),
         "local_after": sum(int(record.get("local_after", 0)) for record in records),
@@ -257,6 +404,12 @@ def aggregate_records(records: list[dict[str, Any]], workload: dict[str, Any]) -
         "oracle_pass": all(record.get("oracle_pass", False) for record in checked),
         "oracle_max_error": max(
             (float(record.get("oracle_max_error", 0.0)) for record in checked), default=0.0
+        ),
+        "throughput_particles_per_second": (
+            workload["particles"] * workload.get("timed_steps", 1) * 1_000_000_000.0
+            / max(int(record.get("elapsed_ns", 0)) for record in records)
+            if max(int(record.get("elapsed_ns", 0)) for record in records) > 0
+            else 0.0
         ),
         "particles": workload["particles"],
         "solver": workload["solver"],
