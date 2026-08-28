@@ -99,6 +99,15 @@
       "contract": "absolute-step deterministic snapshot restart, static compatibility rejection, transactional restore, checksum/truncation rejection, and uninterrupted versus split-run byte parity"
     },
     {
+      "id": "TST-P6-009",
+      "entrypoint": "tests/io/IoCliProcessRestartTest.cpp",
+      "responsibility": "tests/io/IoCliProcessRestartTest.cpp",
+      "mode": "production-entrypoint",
+      "ranks": 1,
+      "phase": "P6",
+      "contract": "production blitzar_cli --config entrypoint, isolated concurrent test artifacts, and deterministic restart byte parity"
+    },
+    {
       "id": "TST-P0-004",
       "entrypoint": "tests/contracts/ContractBoundedTest.cpp",
       "responsibility": "tests/contracts/ContractBoundedTest.cpp",

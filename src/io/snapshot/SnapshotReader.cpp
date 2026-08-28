@@ -82,12 +82,13 @@ namespace {
     return true;
 }
 
-[[nodiscard]] bool ValidateScalars(SnapshotWireReader& wire, std::size_t count) noexcept
+[[nodiscard]] bool ValidateScalars(
+    SnapshotWireReader& wire, std::size_t count, bool require_non_negative) noexcept
 {
     for (std::size_t index = 0; index < count; ++index) {
         blitzar_core::Scalar value{};
 
-        if (!wire.Read(value) || !std::isfinite(value)) {
+        if (!wire.Read(value) || !std::isfinite(value) || (require_non_negative && value < 0.0)) {
             return false;
         }
     }
@@ -97,10 +98,10 @@ namespace {
 
 [[nodiscard]] bool ValidatePayload(SnapshotWireReader& wire, std::size_t count) noexcept
 {
-    return ValidateIds(wire, count) && ValidateScalars(wire, count) &&
-           ValidateScalars(wire, count) && ValidateScalars(wire, count) &&
-           ValidateScalars(wire, count) && ValidateScalars(wire, count) &&
-           ValidateScalars(wire, count) && ValidateScalars(wire, count);
+    return ValidateIds(wire, count) && ValidateScalars(wire, count, false) &&
+           ValidateScalars(wire, count, false) && ValidateScalars(wire, count, false) &&
+           ValidateScalars(wire, count, false) && ValidateScalars(wire, count, false) &&
+           ValidateScalars(wire, count, false) && ValidateScalars(wire, count, true);
 }
 
 void DecodeIds(SnapshotWireReader& wire, std::size_t count, std::span<std::uint64_t> ids) noexcept

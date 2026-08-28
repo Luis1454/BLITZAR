@@ -382,6 +382,7 @@ EXPECTED_OUTPUT_CONTRACT = {
         "checksum": "FNV-1a-64",
         "atomic_publication": True,
         "max_particle_count": 100000,
+        "mass_validation": "finite_nonnegative",
     },
     "semantics": {
         "single_rank": "implemented_first",

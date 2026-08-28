@@ -63,6 +63,7 @@
     {"path": "plan/decisions/047-cross-platform-qualification.md", "lifecycle": "active"},
     {"path": "plan/decisions/048-conservation-metrics-contract.md", "lifecycle": "active"},
     {"path": "plan/decisions/049-cli-production-summary.md", "lifecycle": "active"},
-    {"path": "plan/decisions/050-deterministic-snapshot-restart.md", "lifecycle": "active"}
+    {"path": "plan/decisions/050-deterministic-snapshot-restart.md", "lifecycle": "active"},
+    {"path": "plan/decisions/051-restart-boundary-hardening.md", "lifecycle": "active"}
   ]
 }

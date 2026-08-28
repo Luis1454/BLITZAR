@@ -29,6 +29,10 @@ add_test(NAME TST-P6-006 COMMAND blitzar_cli_summary_test)
 add_test(NAME TST-P6-008 COMMAND blitzar_cli_restart_test)
 if(BLITZAR_BUILD_CLI)
     add_test(
+        NAME TST-P6-009
+        COMMAND blitzar_cli_process_restart_test $<TARGET_FILE:blitzar_cli>
+    )
+    add_test(
         NAME TST-P6-007
         COMMAND cmake
             -DBLITZAR_CLI=$<TARGET_FILE:blitzar_cli>
