@@ -9,6 +9,7 @@
 #include <fstream>
 #include <iterator>
 #include <span>
+#include <sstream>
 #include <string>
 #include <string_view>
 
@@ -39,6 +40,14 @@ units(length_scale=1.0, mass_scale=1.0, time_scale=1.0)
 generation(seed=42, deterministic=true)
 run(steps=3)
 output(directory="output", every_steps=10, write_initial=false, write_final=true)
+)";
+
+constexpr std::string_view NoOutputConfig =
+    R"(simulation(particle_count=4, dt=0.01, solver=direct, integrator=leapfrog_kdk)
+gravity(gravitational_constant=1.0, softening=0.01)
+units(length_scale=1.0, mass_scale=1.0, time_scale=1.0)
+generation(seed=42, deterministic=true)
+run(steps=2)
 )";
 
 struct ExpectedFrame final {
@@ -184,6 +193,38 @@ int RunCase(const std::filesystem::path& base, std::string_view source,
     return 0;
 }
 
+int CheckTiming(const std::filesystem::path& base, std::string_view source,
+    std::uint64_t expected_checkpoint_count)
+{
+    RemoveTree(base);
+    std::filesystem::create_directories(base);
+
+    const std::filesystem::path config = base / "run.ini";
+
+    BLITZAR_CHECK(WriteConfig(config, source) == 0);
+
+    std::ostringstream standard_output;
+    std::ostringstream standard_error;
+    blitzar_cli::BlitzarRunTiming timing;
+
+    BLITZAR_CHECK(blitzar_cli::RunConfig(config, {standard_output, standard_error}, timing) == 0);
+
+    BLITZAR_CHECK(standard_error.str().empty());
+    BLITZAR_CHECK(timing.physics_elapsed_ns > 0U);
+    BLITZAR_CHECK(timing.output_checkpoint_count == expected_checkpoint_count);
+
+    if (expected_checkpoint_count == 0U) {
+        BLITZAR_CHECK(timing.output_elapsed_ns == 0U);
+    }
+    else {
+        BLITZAR_CHECK(timing.output_elapsed_ns > 0U);
+    }
+
+    RemoveTree(base);
+
+    return 0;
+}
+
 } // namespace
 
 int main()
@@ -205,6 +246,8 @@ int main()
 
     BLITZAR_CHECK(RunCase(base / "periodic-only", PeriodicOnlyConfig, periodic_only, false) == 0);
     BLITZAR_CHECK(RunCase(base / "final-only", FinalOnlyConfig, final_only, false) == 0);
+    BLITZAR_CHECK(CheckTiming(base / "timing-output", InitialPeriodicFinalConfig, 3U) == 0);
+    BLITZAR_CHECK(CheckTiming(base / "timing-none", NoOutputConfig, 0U) == 0);
 
     RemoveTree(base);
 

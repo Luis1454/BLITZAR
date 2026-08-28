@@ -432,7 +432,7 @@ jobs:
             -DBLITZAR_HIP_MODE=OFF \
             -DBLITZAR_MPI_MODE=ON \
             -DBLITZAR_BUILD_TESTS=ON \
-            -DBLITZAR_BUILD_CLI=OFF \
+            -DBLITZAR_BUILD_CLI=ON \
             -DBLITZAR_BUILD_EXAMPLES=OFF
 
       - name: Build MPI target
@@ -455,7 +455,7 @@ jobs:
         run: |
           timeout --foreground 240s ctest --test-dir "$BLITZAR_CI_BUILD_ROOT/mpi" \
             --output-on-failure \
-            -R '^(TST-P7-001|TST-P7-002|TST-P7-003|TST-P7-004|TST-P7-005|TST-P8-001|TST-P8-002)$'
+            -R '^(TST-P6-011|TST-P7-001|TST-P7-002|TST-P7-003|TST-P7-004|TST-P7-005|TST-P8-001|TST-P8-002)$'
 
   release-evidence:
     name: Reproducible scaling evidence
@@ -580,6 +580,10 @@ jobs:
         if: steps.probe.outputs.device == 'true'
         run: timeout --foreground 180s ctest --test-dir "$BLITZAR_CI_BUILD_ROOT/cuda" -R '^TST-P4-001$' --output-on-failure
 
+      - name: Run CUDA output boundary qualification
+        if: steps.probe.outputs.compile == 'true'
+        run: timeout --foreground 180s ctest --test-dir "$BLITZAR_CI_BUILD_ROOT/cuda" -R '^TST-P6-004$' --output-on-failure
+
   hip:
     name: HIP compile and optional device test
     runs-on: ubuntu-latest
@@ -649,6 +653,10 @@ jobs:
       - name: Run HIP device qualification
         if: steps.probe.outputs.device == 'true'
         run: timeout --foreground 180s ctest --test-dir "$BLITZAR_CI_BUILD_ROOT/hip" -R '^TST-P4-001$' --output-on-failure
+
+      - name: Run HIP output boundary qualification
+        if: steps.probe.outputs.compile == 'true'
+        run: timeout --foreground 180s ctest --test-dir "$BLITZAR_CI_BUILD_ROOT/hip" -R '^TST-P6-004$' --output-on-failure
 
   windows-accelerators:
     name: Windows ${{ matrix.backend }} qualification

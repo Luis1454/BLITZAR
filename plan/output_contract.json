@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "plan_version": "1.0.36",
+  "plan_version": "1.0.37",
   "configuration": {
     "path_base": "config_parent",
     "directives": {
@@ -212,5 +212,19 @@
     "relative_error_reference": "first_emitted_record",
     "disabled_metrics": "nan",
     "atomic_publication": true
+  },
+  "qualification": {
+    "capture_schedule": "configured_output_checkpoints_only",
+    "single_rank_mpi": "byte_equal_to_direct_cpu_cli",
+    "multi_rank": "unsupported_before_state_and_output_preparation",
+    "hidden_full_gather": "forbidden_for_cli_output",
+    "snapshot_backend_headers": "mpi_and_hip_independent",
+    "hip_device_path": "capability_gated",
+    "rdma_path": "unverified",
+    "timing": {
+      "physics": "steady_clock_step_only",
+      "output": "steady_clock_capture_and_publication",
+      "persisted": false
+    }
   }
 }

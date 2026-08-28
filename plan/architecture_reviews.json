@@ -184,6 +184,13 @@
       "decision": "The run boundary keeps preparation, ordered state publication, rollback, and path observability together; the accessors are a narrow filesystem boundary and the publication state machine is not duplicated across adapters."
     },
     {
+      "path": "apps/blitzar/BlitzarRun.cpp",
+      "signals": ["function_length"],
+      "issue": 649,
+      "status": "accepted",
+      "decision": "The CLI run entrypoint keeps configuration loading, topology preflight, simulation setup, checkpoint execution, and summary publication together as one orchestration boundary; output timing is an internal qualification result and does not widen the persistence or public API boundaries."
+    },
+    {
       "path": "apps/blitzar/BlitzarOutput.cpp",
       "signals": ["function_count"],
       "issue": 648,

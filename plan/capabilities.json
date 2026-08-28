@@ -61,7 +61,13 @@
       "state": "implemented-qualified",
       "root": "src/io",
       "contract": "frozen",
-      "runtime_evidence": ["TST-P6-001", "TST-P6-002", "TST-P6-003", "TST-P6-004"]
+      "runtime_evidence": [
+        "TST-P6-001",
+        "TST-P6-002",
+        "TST-P6-003",
+        "TST-P6-004",
+        "TST-P6-011"
+      ]
     },
     {
       "id": "hdf5",
@@ -105,8 +111,8 @@
       "compile_support": "optional",
       "state": "implemented-local",
       "requirements": ["MPI CXX", "MPI_THREAD_MULTIPLE"],
-      "runtime_evidence": ["TST-P7-001", "TST-P7-002"],
-      "qualification_scope": "single-host rank parity; multi-node and RDMA unverified"
+      "runtime_evidence": ["TST-P7-001", "TST-P7-002", "TST-P6-011"],
+      "qualification_scope": "single-host rank parity and explicit CLI output rejection; multi-node and RDMA unverified"
     }
   ],
   "public_report": {

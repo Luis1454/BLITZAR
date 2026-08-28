@@ -59,6 +59,19 @@ add_test(
 )
 
 if(BLITZAR_MPI_ENABLED)
+    if(BLITZAR_BUILD_CLI)
+        add_test(
+            NAME TST-P6-011
+            COMMAND cmake
+                -DBLITZAR_CLI=$<TARGET_FILE:blitzar_cli>
+                -DMPIEXEC_EXECUTABLE=${MPIEXEC_EXECUTABLE}
+                -DMPIEXEC_NUMPROC_FLAG=${MPIEXEC_NUMPROC_FLAG}
+                -DBLITZAR_TEST_ROOT=${CMAKE_CURRENT_BINARY_DIR}/blitzar-output-boundary-649
+                -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/io/IoMpiOutputTest.cmake
+        )
+        set_tests_properties(TST-P6-011 PROPERTIES TIMEOUT 120)
+    endif()
+
     add_test(
         NAME TST-P7-001
         COMMAND ${MPIEXEC_EXECUTABLE} ${MPIEXEC_NUMPROC_FLAG} 2

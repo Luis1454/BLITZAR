@@ -117,6 +117,15 @@
       "contract": "strict manifest/state enumeration, conservation recomputation, atomic post-processing CSV, rejection of invalid artifacts, and byte parity with online diagnostics"
     },
     {
+      "id": "TST-P6-011",
+      "entrypoint": "tests/io/IoMpiOutputTest.cmake",
+      "responsibility": "tests/io/IoMpiOutputTest.cmake",
+      "mode": "mpi-output-boundary",
+      "ranks": 2,
+      "phase": "P6",
+      "contract": "single-rank MPI and direct CPU byte parity, multi-rank output rejection before state capture, and no implicit full gather"
+    },
+    {
       "id": "TST-P0-004",
       "entrypoint": "tests/contracts/ContractBoundedTest.cpp",
       "responsibility": "tests/contracts/ContractBoundedTest.cpp",
