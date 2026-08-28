@@ -646,6 +646,21 @@
         "CHK-P0-009",
         "plan/decisions/052-snapshot-postprocessing.md"
       ]
+    },
+    {
+      "issue": 649,
+      "title": "Qualify output boundaries for MPI and HIP",
+      "commit": "b8a0346e81e78ee974f643ab4749709bae1c6964",
+      "pull_request": "https://github.com/Luis1454/BLITZAR/pull/669",
+      "evidence": [
+        "TST-P6-004",
+        "TST-P6-011",
+        "CHK-P0-001",
+        "CHK-P0-006",
+        "CHK-P0-007",
+        "CHK-P0-009",
+        "plan/decisions/053-mpi-hip-output-qualification.md"
+      ]
     }
   ],
   "non_claims": [
