@@ -450,6 +450,20 @@ EXPECTED_OUTPUT_CONTRACT = {
         "disabled_metrics": "nan",
         "atomic_publication": True,
     },
+    "qualification": {
+        "capture_schedule": "configured_output_checkpoints_only",
+        "single_rank_mpi": "byte_equal_to_direct_cpu_cli",
+        "multi_rank": "unsupported_before_state_and_output_preparation",
+        "hidden_full_gather": "forbidden_for_cli_output",
+        "snapshot_backend_headers": "mpi_and_hip_independent",
+        "hip_device_path": "capability_gated",
+        "rdma_path": "unverified",
+        "timing": {
+            "physics": "steady_clock_step_only",
+            "output": "steady_clock_capture_and_publication",
+            "persisted": False,
+        },
+    },
 }
 
 

@@ -3,11 +3,13 @@
 #include "BlitzarOutput.hpp"
 #include "BlitzarRestart.hpp"
 #include "BlitzarSummary.hpp"
+#include "mpi/runtime/MpiContext.hpp"
 #include "simulation/config/SimConfigFile.hpp"
 #include "simulation/config/SimConfigRun.hpp"
 #include "simulation/initialization/SimConfigState.hpp"
 
 #include <blitzar/blitzar.hpp>
+#include <chrono>
 #include <cstddef>
 #include <cstdint>
 #include <filesystem>
@@ -86,11 +88,30 @@ int PrintFailure(BlitzarStreams streams, std::string_view phase, blitzar_status 
     return static_cast<blitzar_status>(simulation.set_seed(config.seed));
 }
 
+[[nodiscard]] blitzar_status ValidateOutputTopology(
+    const blitzar_sim::SimConfigRun& config) noexcept
+{
+    if (!config.output.enabled) {
+        return BLITZAR_STATUS_OK;
+    }
+
+    blitzar_parallel::MpiContext context;
+
+    if (!context.IsUsable()) {
+        return context.Status();
+    }
+
+    return context.IsDistributed() ? BLITZAR_STATUS_UNSUPPORTED : BLITZAR_STATUS_OK;
+}
+
 struct RunResult final {
     blitzar_status status{BLITZAR_STATUS_OK};
     std::string_view phase{};
     BlitzarExitCode exit_code{BlitzarExitCode::Runtime};
     std::uint64_t completed_steps{};
+    std::uint64_t physics_elapsed_ns{};
+    std::uint64_t output_elapsed_ns{};
+    std::uint64_t output_checkpoint_count{};
 };
 
 [[nodiscard]] blitzar_status CaptureState(
@@ -101,50 +122,113 @@ struct RunResult final {
     return static_cast<blitzar_status>(simulation.get_state(output));
 }
 
+struct OutputContext final {
+    blitzar::Simulation& simulation;
+    blitzar_sim::SimConfigState& state;
+    BlitzarOutput& output;
+};
+
+struct OutputCheckpoint final {
+    std::uint64_t step{};
+    bool write_snapshot{};
+    bool write_diagnostics{};
+};
+
+struct CheckpointResult final {
+    blitzar_status status{BLITZAR_STATUS_OK};
+    std::string_view phase{};
+    std::uint64_t elapsed_ns{};
+};
+
+[[nodiscard]] std::uint64_t ElapsedNanoseconds(std::chrono::steady_clock::time_point started,
+    std::chrono::steady_clock::time_point finished) noexcept
+{
+    return static_cast<std::uint64_t>(
+        std::chrono::duration_cast<std::chrono::nanoseconds>(finished - started).count());
+}
+
+[[nodiscard]] CheckpointResult ProcessCheckpoint(
+    OutputContext& context, OutputCheckpoint checkpoint) noexcept
+{
+    const auto started = std::chrono::steady_clock::now();
+    CheckpointResult result;
+
+    blitzar_status status = CaptureState(context.simulation, context.state);
+
+    if (status != BLITZAR_STATUS_OK) {
+        result.status = status;
+        result.phase = "output-state";
+    }
+    else if (checkpoint.write_snapshot) {
+        status = context.output.Publish(checkpoint.step, context.state.Output());
+
+        if (status != BLITZAR_STATUS_OK) {
+            result.status = status;
+            result.phase = "output-publish";
+        }
+    }
+
+    if (result.status == BLITZAR_STATUS_OK && checkpoint.write_diagnostics) {
+        status = context.output.PublishDiagnostics(checkpoint.step, context.state.Output());
+
+        if (status != BLITZAR_STATUS_OK) {
+            result.status = status;
+            result.phase = "diagnostics-publish";
+        }
+    }
+
+    result.elapsed_ns = ElapsedNanoseconds(started, std::chrono::steady_clock::now());
+
+    return result;
+}
+
 [[nodiscard]] RunResult RunSteps(const blitzar_sim::SimConfigRun& config,
     blitzar::Simulation& simulation, blitzar_sim::SimConfigState& state,
     BlitzarOutput& output) noexcept
 {
     const std::uint64_t start_step = config.StartStep();
     const std::uint64_t final_step = config.FinalStep();
-    std::uint64_t completed_steps = start_step;
+    RunResult result;
+
+    result.completed_steps = start_step;
+
+    OutputContext output_context{simulation, state, output};
 
     const bool write_initial = output.ShouldWriteInitial();
     const bool write_initial_diagnostics = output.ShouldWriteDiagnostics(start_step);
 
     if (write_initial || write_initial_diagnostics) {
-        blitzar_status status = CaptureState(simulation, state);
+        const CheckpointResult checkpoint = ProcessCheckpoint(
+            output_context, {start_step, write_initial, write_initial_diagnostics});
 
-        if (status != BLITZAR_STATUS_OK) {
-            return {status, "output-state", BlitzarExitCode::Output, completed_steps};
-        }
+        result.output_elapsed_ns += checkpoint.elapsed_ns;
 
-        if (write_initial) {
-            status = output.Publish(start_step, state.Output());
+        ++result.output_checkpoint_count;
 
-            if (status != BLITZAR_STATUS_OK) {
-                return {status, "output-publish", BlitzarExitCode::Output, completed_steps};
-            }
-        }
+        if (checkpoint.status != BLITZAR_STATUS_OK) {
+            result.status = checkpoint.status;
+            result.phase = checkpoint.phase;
+            result.exit_code = BlitzarExitCode::Output;
 
-        if (write_initial_diagnostics) {
-            status = output.PublishDiagnostics(start_step, state.Output());
-
-            if (status != BLITZAR_STATUS_OK) {
-                return {status, "diagnostics-publish", BlitzarExitCode::Output, completed_steps};
-            }
+            return result;
         }
     }
 
     for (std::uint64_t step = start_step + 1U; step <= final_step; ++step) {
+        const auto physics_started = std::chrono::steady_clock::now();
         const blitzar::Status status = simulation.step();
 
+        result.physics_elapsed_ns +=
+            ElapsedNanoseconds(physics_started, std::chrono::steady_clock::now());
+
         if (status != blitzar::Status::Ok) {
-            return {static_cast<blitzar_status>(status), "step", BlitzarExitCode::Runtime,
-                completed_steps};
+            result.status = static_cast<blitzar_status>(status);
+            result.phase = "step";
+
+            return result;
         }
 
-        completed_steps = step;
+        result.completed_steps = step;
 
         const bool write_step = output.ShouldWriteStep(step);
         const bool write_diagnostics = output.ShouldWriteDiagnostics(step);
@@ -153,31 +237,23 @@ struct RunResult final {
             continue;
         }
 
-        blitzar_status output_status = CaptureState(simulation, state);
+        const CheckpointResult checkpoint =
+            ProcessCheckpoint(output_context, {step, write_step, write_diagnostics});
 
-        if (output_status != BLITZAR_STATUS_OK) {
-            return {output_status, "output-state", BlitzarExitCode::Output, completed_steps};
-        }
+        result.output_elapsed_ns += checkpoint.elapsed_ns;
 
-        if (write_step) {
-            output_status = output.Publish(step, state.Output());
+        ++result.output_checkpoint_count;
 
-            if (output_status != BLITZAR_STATUS_OK) {
-                return {output_status, "output-publish", BlitzarExitCode::Output, completed_steps};
-            }
-        }
+        if (checkpoint.status != BLITZAR_STATUS_OK) {
+            result.status = checkpoint.status;
+            result.phase = checkpoint.phase;
+            result.exit_code = BlitzarExitCode::Output;
 
-        if (write_diagnostics) {
-            output_status = output.PublishDiagnostics(step, state.Output());
-
-            if (output_status != BLITZAR_STATUS_OK) {
-                return {
-                    output_status, "diagnostics-publish", BlitzarExitCode::Output, completed_steps};
-            }
+            return result;
         }
     }
 
-    return {BLITZAR_STATUS_OK, {}, BlitzarExitCode::Runtime, completed_steps};
+    return result;
 }
 
 [[nodiscard]] int PrintSummary(BlitzarStreams streams, const blitzar_sim::SimConfigRun& config,
@@ -236,6 +312,15 @@ int RunConfig(const std::filesystem::path& path)
 
 int RunConfig(const std::filesystem::path& path, BlitzarStreams streams)
 {
+    BlitzarRunTiming timing;
+
+    return RunConfig(path, streams, timing);
+}
+
+int RunConfig(const std::filesystem::path& path, BlitzarStreams streams, BlitzarRunTiming& timing)
+{
+    timing = {};
+
     blitzar_sim::SimConfigFile source;
     blitzar_status status = blitzar_sim::LoadConfig(path, source);
 
@@ -251,6 +336,12 @@ int RunConfig(const std::filesystem::path& path, BlitzarStreams streams)
 
     if (status != BLITZAR_STATUS_OK) {
         return PrintFailure(streams, "semantic", status, BlitzarExitCode::Configuration);
+    }
+
+    status = ValidateOutputTopology(config);
+
+    if (status != BLITZAR_STATUS_OK) {
+        return PrintFailure(streams, "output-topology", status, BlitzarExitCode::Output);
     }
 
     blitzar_sim::SimConfigState state;
@@ -298,6 +389,10 @@ int RunConfig(const std::filesystem::path& path, BlitzarStreams streams)
     }
 
     const RunResult run_result = RunSteps(config, simulation, state, output_writer);
+
+    timing.physics_elapsed_ns = run_result.physics_elapsed_ns;
+    timing.output_elapsed_ns = run_result.output_elapsed_ns;
+    timing.output_checkpoint_count = run_result.output_checkpoint_count;
 
     if (run_result.status != BLITZAR_STATUS_OK) {
         return PrintFailure(streams, run_result.phase, run_result.status, run_result.exit_code);

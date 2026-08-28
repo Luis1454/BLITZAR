@@ -2,7 +2,7 @@
 
 Status: **FROZEN**  
 Product/API version: **1.0.0**
-Plan version: **1.0.36**
+Plan version: **1.0.37**
 
 This repository is a clean-room rewrite. The old repository, its source tree,
 its issues, and its documentation are not implementation inputs. Requirements
@@ -44,8 +44,8 @@ the single-rank binary codec are implemented and contract-qualified. The
 single-rank run manifest, atomic output lifecycle, configured CLI
 publication, production run summary, deterministic snapshot restart, online
 conservation diagnostics, and snapshot post-processing are implemented and
-locally qualified; MPI/HIP shards and HDF5 remain deferred to their dedicated
-issues.
+locally qualified. MPI/HIP shard persistence and HDF5 remain deferred to their
+dedicated issues.
 
 HIP is capability-gated: compiler support and device execution are separate
 conditions, and a CPU fallback is retained when no device is visible. MPI is
@@ -242,9 +242,29 @@ summary is covered by `TST-P6-006`. Deterministic snapshot restart is covered
 by `TST-P6-008`. Restart payload validation and production executable entrypoint
 coverage are covered by `TST-P6-009`. Online conservation diagnostics and
 snapshot post-processing, including byte parity with the online CSV, are
-covered by `TST-P6-010`. Optional MPI/HIP qualification and the optional HDF5
-adapter remain open. The complete run pipeline remains unfinished; HDF5 remains
-deferred until its executable evidence exists.
+covered by `TST-P6-010`. Output boundary qualification is covered by
+`TST-P6-011`: a single-rank MPI launch is byte-equivalent to the direct CPU CLI
+path, while multi-rank output is rejected before state capture or manifest
+preparation. MPI/HIP shard persistence and the optional HDF5 adapter remain open.
+The complete run pipeline remains unfinished; HDF5 remains deferred until its
+executable evidence exists.
+
+### P6 output boundary qualification
+
+The CLI creates an internal MPI context only when configured output is enabled.
+If that context observes more than one rank, the run returns
+`BLITZAR_STATUS_UNSUPPORTED` before initialization, state capture, or output
+preparation. This prevents the distributed `Sim::GetState` gather operation from
+being used implicitly by persistence; that operation remains available to the
+internal MPI qualification tests.
+
+`TST-P6-004` records separate steady-clock measurements for physics steps and
+output checkpoints. The physics interval contains only `Simulation::step`, and
+the output interval contains state capture plus snapshot/diagnostic publication.
+These values are qualification instrumentation only: they are not persisted in
+manifests, snapshots, or the public summary. HIP device execution remains
+capability-gated; MPI output qualification covers one host and explicitly does
+not claim multi-node or RDMA behavior.
 
 ### Sprint 6: Optional HIP Acceleration
 

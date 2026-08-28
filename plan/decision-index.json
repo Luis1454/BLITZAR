@@ -65,6 +65,7 @@
     {"path": "plan/decisions/049-cli-production-summary.md", "lifecycle": "active"},
     {"path": "plan/decisions/050-deterministic-snapshot-restart.md", "lifecycle": "active"},
     {"path": "plan/decisions/051-restart-boundary-hardening.md", "lifecycle": "active"},
-    {"path": "plan/decisions/052-snapshot-postprocessing.md", "lifecycle": "active"}
+    {"path": "plan/decisions/052-snapshot-postprocessing.md", "lifecycle": "active"},
+    {"path": "plan/decisions/053-mpi-hip-output-qualification.md", "lifecycle": "active"}
   ]
 }
