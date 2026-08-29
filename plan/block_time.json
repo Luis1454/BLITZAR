@@ -1,0 +1,109 @@
+{
+  "schema_version": 1,
+  "plan_version": "1.0.48",
+  "record_schema_version": 1,
+  "target": "blitzar_block_time_test",
+  "runner": "tools/evidence/block_time_evidence.py",
+  "precision": "float64",
+  "seed": 424242,
+  "horizon_ticks": 64,
+  "synchronization_interval": 8,
+  "migration_tick": 32,
+  "max_time_bin": 3,
+  "reference": {
+    "id": "fixed-kdk-v1",
+    "description": "Existing production fixed-step Leapfrog KDK schedule"
+  },
+  "candidate": {
+    "id": "block-kdk-schedule-v1",
+    "description": "Bounded scheduling model with immutable time bins and synchronized ownership"
+  },
+  "workloads": [
+    {
+      "id": "heterogeneous-v1",
+      "definition": "Four time bins repeated over a deterministic two-rank ownership pattern"
+    },
+    {
+      "id": "clustered-v1",
+      "definition": "Fast particles clustered in one half and slow particles in the other half"
+    },
+    {
+      "id": "migration-v1",
+      "definition": "Heterogeneous bins with all particles migrating at a synchronization boundary"
+    }
+  ],
+  "semantics": {
+    "time_bin": "bin b executes on base tick t when t modulo 2^b is zero",
+    "active_order": "ascending stable particle index",
+    "ownership": "one owner per particle; owner changes only at synchronization ticks",
+    "synchronization": "global schedule boundary every eight base ticks",
+    "migration": "ownership migration is applied at tick 32 before the next active work list",
+    "rollback": "restore tick, ownership, counters, and event hash before retry",
+    "restart": "resume from a captured schedule state without replaying earlier events"
+  },
+  "decision": {
+    "status": "not-selected",
+    "reason": "No production block-force path or end-to-end speedup is justified by this scheduling-only qualification",
+    "production_integrator": "fixed-kdk-v1",
+    "promotion_requires": [
+      "physical force-state implementation",
+      "MPI halo and migration qualification",
+      "snapshot state compatibility",
+      "measured end-to-end gain over fixed KDK"
+    ]
+  },
+  "proxy_policy": {
+    "modeled_speedup": "fixed event count divided by block event count",
+    "timing": "scheduler loop wall time only; not an end-to-end simulation benchmark",
+    "conservation": "particle ledger and ownership conservation only; physical energy remains covered by fixed KDK tests"
+  },
+  "required_record_fields": [
+    "schema",
+    "seed",
+    "workload",
+    "particles",
+    "horizon_ticks",
+    "sync_interval",
+    "migration_tick",
+    "fixed_events",
+    "block_events",
+    "fixed_elapsed_ns",
+    "block_elapsed_ns",
+    "modeled_speedup",
+    "fixed_event_hash",
+    "block_event_hash",
+    "restart_event_hash",
+    "rollback_event_hash",
+    "fixed_ownership_hash",
+    "block_ownership_hash",
+    "initial_input_hash",
+    "final_input_hash",
+    "reference",
+    "candidate",
+    "speedup_scope",
+    "decision",
+    "active_ordered",
+    "deterministic",
+    "ledger_conserved",
+    "migration",
+    "restart_compatible",
+    "rollback_transactional",
+    "state_unchanged",
+    "candidate_selected"
+  ],
+  "invariants": [
+    "fixed KDK remains the only production integrator",
+    "block active work is sorted by stable particle index",
+    "time-bin intervals are bounded to powers of two from zero through three",
+    "migration occurs only at a synchronization boundary",
+    "restart and rollback reproduce the uninterrupted block schedule exactly",
+    "the input workload is not mutated by qualification",
+    "the candidate is not promoted without a physical end-to-end result"
+  ],
+  "artifacts": {
+    "generated_outside_source": true,
+    "files": ["metadata.json", "results.json", "summary.md", "run.log"],
+    "hardware_counters": "not_claimed",
+    "end_to_end_speedup": "not_claimed"
+  }
+}

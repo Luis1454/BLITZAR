@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "plan_version": "1.0.47",
+  "plan_version": "1.0.48",
   "runner": "tools/audit/audit_final.py",
   "artifact_files": [
     "audit.json",
@@ -711,6 +711,23 @@
         "CHK-P0-041",
         "plan/decisions/063-snapshot-delta-policy.md"
       ]
+    },
+    {
+      "issue": 676,
+      "title": "Qualify block time stepping and interaction-list scheduling",
+      "commit": "eb54de974a6169b0965c7bd3741ec32de1778460",
+      "pull_request": "https://github.com/Luis1454/BLITZAR/pull/752",
+      "evidence": [
+        "TST-P1-008",
+        "CHK-P0-001",
+        "CHK-P0-006",
+        "CHK-P0-007",
+        "CHK-P0-009",
+        "CHK-P0-018",
+        "CHK-P0-042",
+        "CHK-P0-043",
+        "plan/decisions/064-block-time-stepping-policy.md"
+      ]
     }
   ],
   "non_claims": [
@@ -721,7 +738,9 @@
     "MPI/HIP shard persistence",
     "HDF5 CLI snapshot persistence",
     "GPU FMM",
-    "delta encoding as the default binary snapshot or MPI transport path"
+    "delta encoding as the default binary snapshot or MPI transport path",
+    "block time stepping as the production integrator",
+    "block-time scheduler timing as an end-to-end physics speedup"
   ],
   "findings_policy": {
     "unresolved_allowed": [],

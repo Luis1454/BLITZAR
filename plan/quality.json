@@ -152,6 +152,12 @@
       "phase": "P1"
     },
     {
+      "id": "TST-P1-008",
+      "name": "block-time-stepping-qualification",
+      "command": "blitzar_block_time_test",
+      "phase": "P1"
+    },
+    {
       "id": "TST-P2-001",
       "name": "c-example",
       "command": "blitzar_c_example",
@@ -784,6 +790,18 @@
       "id": "CHK-P0-041",
       "name": "delta-evidence-fixtures",
       "command": "python -m tools.evidence.delta_evidence_test",
+      "phase": "P0"
+    },
+    {
+      "id": "CHK-P0-042",
+      "name": "block-time-contract",
+      "command": "python -m tools.evidence.block_time_evidence --root . --check",
+      "phase": "P0"
+    },
+    {
+      "id": "CHK-P0-043",
+      "name": "block-time-evidence-fixtures",
+      "command": "python -m tools.evidence.block_time_evidence_test",
       "phase": "P0"
     }
   ]
