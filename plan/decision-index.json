@@ -79,6 +79,7 @@
     {"path": "plan/decisions/059-morton-layout-qualification.md", "lifecycle": "active"},
     {"path": "plan/decisions/060-compensated-accumulation-policy.md", "lifecycle": "active"},
     {"path": "plan/decisions/061-local-neighbor-index-policy.md", "lifecycle": "active"},
-    {"path": "plan/decisions/062-hdf5-adapter-policy.md", "lifecycle": "active"}
+    {"path": "plan/decisions/062-hdf5-adapter-policy.md", "lifecycle": "active"},
+    {"path": "plan/decisions/063-snapshot-delta-policy.md", "lifecycle": "active"}
   ]
 }

@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "plan_version": "1.0.46",
+  "plan_version": "1.0.47",
   "configuration": {
     "path_base": "config_parent",
     "directives": {

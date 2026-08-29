@@ -287,6 +287,20 @@
       "issue": 674,
       "status": "accepted",
       "decision": "The neighborhood evidence runner keeps executable discovery, external artifact publication, and strict matrix qualification in one evidence boundary; its branches distinguish contract, process, and record failures and are covered by neighborhood_evidence_test.py."
+    },
+    {
+      "path": "src/io/snapshot/SnapshotDelta.cpp",
+      "signals": ["branching"],
+      "issue": 675,
+      "status": "accepted",
+      "decision": "The delta facade keeps payload-shape, bounded-buffer, stream, checksum, and transactional commit checks at one snapshot boundary; payload serialization and run parsing remain isolated in SnapshotDeltaPayload and SnapshotDeltaStream."
+    },
+    {
+      "path": "tools/evidence/delta_evidence.py",
+      "signals": ["branching"],
+      "issue": 675,
+      "status": "accepted",
+      "decision": "The delta evidence runner keeps versioned contract validation, typed record checks, and external runtime publication together so compression and latency claims cannot bypass fallback, determinism, or transactional checks."
     }
   ]
 }

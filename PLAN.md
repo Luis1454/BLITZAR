@@ -2,7 +2,7 @@
 
 Status: **FROZEN**  
 Product/API version: **1.0.0**
-Plan version: **1.0.46**
+Plan version: **1.0.47**
 
 This repository is a clean-room rewrite. The old repository, its source tree,
 its issues, and its documentation are not implementation inputs. Requirements
@@ -11,7 +11,7 @@ are re-derived here as contracts, numerical references, and acceptance tests.
 The authoritative planning state is the combination of this file,
 `plan/manifest.json`, `plan/quality.json`, `plan/decision-index.json`, and
 `plan/scaling.json`, `plan/layout.json`, `plan/reduction.json`,
-`plan/neighborhood.json`, `plan/output_contract.json`, and
+`plan/neighborhood.json`, `plan/output_contract.json`, `plan/delta.json`, and
 `plan/final_audit.json`.
 Decision records under `plan/decisions/` preserve the rationale and migration
 history for that state.
@@ -41,8 +41,10 @@ GPU is visible or that MPI is running on more than one host.
 Direct, Barnes-Hut, and CPU FMM are implemented solver contracts. PM and
 TreePM remain explicit `BLITZAR_STATUS_UNSUPPORTED` selections and their
 production roots remain deferred. The output contract is frozen in
-`plan/output_contract.json`, `plan/hdf5.json`, and its logical versioned `SnapshotFrameView` plus
-the single-rank binary codec are implemented and contract-qualified. The
+`plan/output_contract.json`; the HDF5 and delta policies are frozen in
+`plan/hdf5.json` and `plan/delta.json`. The logical versioned
+`SnapshotFrameView` and the single-rank binary codec are implemented and
+contract-qualified. The
 single-rank run manifest, atomic output lifecycle, configured CLI
 publication, human-readable and machine-readable production run summaries,
 deterministic snapshot restart, online
@@ -331,6 +333,23 @@ codec or returns `BLITZAR_STATUS_UNSUPPORTED` for the optional adapter. The
 round-trip, corruption, truncation, restart, repeated-write, package, and
 unavailable-dependency evidence is registered by `TST-P6-012`, `CHK-P0-038`,
 `CHK-P0-039`, and the package consumer test.
+
+### P6 snapshot delta qualification
+
+`SnapshotDelta` is an internal, evaluated-not-default payload codec shared by
+snapshot and transport boundaries. It applies deterministic XOR followed by
+bounded zero/literal runs to the canonical little-endian SoA payload. Its
+24-byte stream header records the raw payload size and FNV-1a-64 checksum. All
+buffers are supplied by the caller, so steady-state encode and decode do not
+allocate and failed decode validation cannot mutate the destination.
+
+Delta frames use an explicit keyframe interval of eight. An index maps a step
+to its nearest keyframe and replays at most seven deltas; the existing binary
+snapshot remains the direct random-access restart fallback. `TST-P6-013`,
+`CHK-P0-040`, and `CHK-P0-041` measure the ratio, CPU cost, workspace size, and
+in-memory read/write latency while proving deterministic bytes, checksum and
+corruption rejection. Filesystem latency and numerical state representation
+are outside this candidate evaluation, and the public ABI is unchanged.
 
 ### P6 output boundary qualification
 

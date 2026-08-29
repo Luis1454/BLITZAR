@@ -69,6 +69,9 @@ set(BLITZAR_LIBRARY_SOURCES
     src/sdk/cpp/CppSimulationData.cpp
     src/io/snapshot/SnapshotWire.cpp
     src/io/snapshot/SnapshotChecksum.cpp
+    src/io/snapshot/SnapshotDelta.cpp
+    src/io/snapshot/SnapshotDeltaPayload.cpp
+    src/io/snapshot/SnapshotDeltaStream.cpp
     src/io/snapshot/SnapshotWriter.cpp
     src/io/snapshot/SnapshotReader.cpp
     src/io/hdf5/Hdf5Writer.cpp
