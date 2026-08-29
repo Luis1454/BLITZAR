@@ -232,6 +232,14 @@
       "contract": "bounded block-time schedule against fixed KDK, deterministic active order, migration boundary, restart, rollback, and non-mutation"
     },
     {
+      "id": "TST-P1-009",
+      "entrypoint": "tests/bvh/BvhRunner.cpp",
+      "responsibility": "tests/bvh/BvhBenchmark.cpp",
+      "mode": "qualification",
+      "ranks": 1,
+      "contract": "deterministic AABB BVH build, refit, rebuild, and traversal against exact neighbor reference, selected cell-linked index, and separate Octree baseline"
+    },
+    {
       "id": "TST-P2-001",
       "entrypoint": "examples/c/CExample.c",
       "responsibility": "examples/c/CExample.c",

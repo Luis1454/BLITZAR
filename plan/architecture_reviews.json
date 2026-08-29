@@ -322,6 +322,34 @@
       "issue": 676,
       "status": "accepted",
       "decision": "The validator keeps the versioned block-time schema, typed record parsing, and cross-workload invariants at one evidence boundary; allocations are limited to validation diagnostics and no runtime simulation state is owned here."
+    },
+    {
+      "path": "tests/bvh/BvhIndex.cpp",
+      "signals": ["allocation", "branching", "function_count"],
+      "issue": 677,
+      "status": "accepted",
+      "decision": "The test-only BVH index keeps deterministic AABB construction, bottom-up refit, iterative traversal, and topology hashing together because they form one bounded candidate implementation; allocations belong to qualification storage and no production gravity ownership is introduced."
+    },
+    {
+      "path": "tests/bvh/BvhBenchmark.cpp",
+      "signals": ["branching", "function_count"],
+      "issue": 677,
+      "status": "accepted",
+      "decision": "The BVH benchmark keeps refit/rebuild scheduling, exact-reference comparison, selected cell-linked comparison, and separate Octree metrics in one qualification boundary so the promotion decision is based on one coherent workload matrix."
+    },
+    {
+      "path": "tests/bvh/BvhRunner.cpp",
+      "signals": ["branching"],
+      "issue": 677,
+      "status": "accepted",
+      "decision": "The BVH runner owns the visible record schema and rejects any result that is non-deterministic, non-parity, or selected; it prints only bounded local-query evidence and does not expose a production solver path."
+    },
+    {
+      "path": "tools/evidence/bvh_contract.py",
+      "signals": ["allocation", "branching"],
+      "issue": 677,
+      "status": "accepted",
+      "decision": "The BVH contract validator keeps typed record parsing, rebuild/refit invariants, exact-neighbor hashes, and the non-promotion policy together at one evidence boundary; allocations only construct diagnostics and parsed records."
     }
   ]
 }

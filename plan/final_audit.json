@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "plan_version": "1.0.48",
+  "plan_version": "1.0.49",
   "runner": "tools/audit/audit_final.py",
   "artifact_files": [
     "audit.json",
@@ -728,6 +728,22 @@
         "CHK-P0-043",
         "plan/decisions/064-block-time-stepping-policy.md"
       ]
+    },
+    {
+      "issue": 677,
+      "title": "Qualify BVH for irregular spatial queries",
+      "commit": "pending",
+      "pull_request": "pending",
+      "evidence": [
+        "TST-P1-009",
+        "CHK-P0-001",
+        "CHK-P0-006",
+        "CHK-P0-007",
+        "CHK-P0-009",
+        "CHK-P0-044",
+        "CHK-P0-045",
+        "plan/decisions/065-bvh-irregular-query-policy.md"
+      ]
     }
   ],
   "non_claims": [
@@ -740,7 +756,9 @@
     "GPU FMM",
     "delta encoding as the default binary snapshot or MPI transport path",
     "block time stepping as the production integrator",
-    "block-time scheduler timing as an end-to-end physics speedup"
+    "block-time scheduler timing as an end-to-end physics speedup",
+    "BVH as a production long-range gravity replacement",
+    "BVH query timing as a physical-force or end-to-end simulation speedup"
   ],
   "findings_policy": {
     "unresolved_allowed": [],

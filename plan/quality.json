@@ -158,6 +158,12 @@
       "phase": "P1"
     },
     {
+      "id": "TST-P1-009",
+      "name": "bvh-irregular-query-qualification",
+      "command": "blitzar_bvh_test",
+      "phase": "P1"
+    },
+    {
       "id": "TST-P2-001",
       "name": "c-example",
       "command": "blitzar_c_example",
@@ -453,6 +459,7 @@
         {"path": "tests/layout", "prefix": "Layout"},
         {"path": "tests/reduction", "prefix": "Reduction"},
         {"path": "tests/neighborhood", "prefix": "Neighbor"},
+        {"path": "tests/bvh", "prefix": "Bvh"},
         {"path": "tests/simulation", "prefix": "Sim"},
         {"path": "examples/c", "prefix": "C"},
         {"path": "examples/cpp", "prefix": "Cpp"}
@@ -802,6 +809,18 @@
       "id": "CHK-P0-043",
       "name": "block-time-evidence-fixtures",
       "command": "python -m tools.evidence.block_time_evidence_test",
+      "phase": "P0"
+    },
+    {
+      "id": "CHK-P0-044",
+      "name": "bvh-evidence-contract",
+      "command": "python -m tools.evidence.bvh_evidence --root . --check",
+      "phase": "P0"
+    },
+    {
+      "id": "CHK-P0-045",
+      "name": "bvh-evidence-fixtures",
+      "command": "python -m tools.evidence.bvh_evidence_test",
       "phase": "P0"
     }
   ]
