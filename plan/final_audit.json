@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "plan_version": "1.0.47",
+  "plan_version": "1.0.48",
   "runner": "tools/audit/audit_final.py",
   "artifact_files": [
     "audit.json",
@@ -721,7 +721,9 @@
     "MPI/HIP shard persistence",
     "HDF5 CLI snapshot persistence",
     "GPU FMM",
-    "delta encoding as the default binary snapshot or MPI transport path"
+    "delta encoding as the default binary snapshot or MPI transport path",
+    "block time stepping as the production integrator",
+    "block-time scheduler timing as an end-to-end physics speedup"
   ],
   "findings_policy": {
     "unresolved_allowed": [],

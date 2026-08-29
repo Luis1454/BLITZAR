@@ -292,6 +292,16 @@ if(WIN32)
     target_link_libraries(blitzar_scaling_test PRIVATE psapi)
 endif()
 
+add_executable(blitzar_block_time_test
+    tests/scaling/ScaleBlock.cpp
+    tests/scaling/ScaleBlockSchedule.cpp
+    tests/scaling/ScaleBlockQualification.cpp
+)
+target_link_libraries(blitzar_block_time_test PRIVATE blitzar)
+target_compile_features(blitzar_block_time_test PRIVATE cxx_std_20)
+target_include_directories(blitzar_block_time_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
+blitzar_enable_warnings(blitzar_block_time_test)
+
 add_executable(blitzar_layout_test
     tests/layout/LayoutRunner.cpp
     tests/layout/LayoutState.cpp
@@ -386,6 +396,7 @@ set(BLITZAR_TEST_TARGETS
     blitzar_debug_status_probe
     blitzar_accelerator_test
     blitzar_scaling_test
+    blitzar_block_time_test
     blitzar_layout_test
     blitzar_reduction_test
     blitzar_neighborhood_test

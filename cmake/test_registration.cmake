@@ -65,6 +65,7 @@ add_test(
 add_test(NAME TST-P1-005 COMMAND blitzar_layout_test)
 add_test(NAME TST-P1-006 COMMAND blitzar_reduction_test)
 add_test(NAME TST-P1-007 COMMAND blitzar_neighborhood_test)
+add_test(NAME TST-P1-008 COMMAND blitzar_block_time_test)
 add_test(NAME TST-P3-001 COMMAND blitzar_hierarchy_test)
 add_test(NAME TST-P3-002 COMMAND blitzar_fmm_test)
 add_test(NAME TST-P3-003 COMMAND blitzar_solver_resource_contract_test)

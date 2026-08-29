@@ -301,6 +301,27 @@
       "issue": 675,
       "status": "accepted",
       "decision": "The delta evidence runner keeps versioned contract validation, typed record checks, and external runtime publication together so compression and latency claims cannot bypass fallback, determinism, or transactional checks."
+    },
+    {
+      "path": "tests/scaling/ScaleBlock.cpp",
+      "signals": ["branching"],
+      "issue": 676,
+      "status": "accepted",
+      "decision": "The block-time test entrypoint owns the three-workload matrix and rejects candidate promotion from one visible qualification boundary; schedule mechanics and record validation remain in separate units."
+    },
+    {
+      "path": "tests/scaling/ScaleBlockQualification.cpp",
+      "signals": ["branching"],
+      "issue": 676,
+      "status": "accepted",
+      "decision": "The qualification unit keeps fixed-versus-block event ledgers, migration-boundary checks, restart replay, rollback replay, and input non-mutation together because they form one bounded scheduler contract; it does not implement production forces."
+    },
+    {
+      "path": "tools/evidence/block_time_contract.py",
+      "signals": ["allocation", "branching"],
+      "issue": 676,
+      "status": "accepted",
+      "decision": "The validator keeps the versioned block-time schema, typed record parsing, and cross-workload invariants at one evidence boundary; allocations are limited to validation diagnostics and no runtime simulation state is owned here."
     }
   ]
 }

@@ -2,7 +2,7 @@
 
 Status: **FROZEN**  
 Product/API version: **1.0.0**
-Plan version: **1.0.47**
+Plan version: **1.0.48**
 
 This repository is a clean-room rewrite. The old repository, its source tree,
 its issues, and its documentation are not implementation inputs. Requirements
@@ -12,7 +12,7 @@ The authoritative planning state is the combination of this file,
 `plan/manifest.json`, `plan/quality.json`, `plan/decision-index.json`, and
 `plan/scaling.json`, `plan/layout.json`, `plan/reduction.json`,
 `plan/neighborhood.json`, `plan/output_contract.json`, `plan/delta.json`, and
-`plan/final_audit.json`.
+`plan/block_time.json`, `plan/final_audit.json`.
 Decision records under `plan/decisions/` preserve the rationale and migration
 history for that state.
 
@@ -51,6 +51,11 @@ deterministic snapshot restart, online
 conservation diagnostics, and snapshot post-processing are implemented and
 locally qualified. MPI/HIP shard persistence and HDF5 remain deferred to their
 dedicated issues.
+
+The block-time qualification contract is frozen in `plan/block_time.json`.
+Its bounded scheduler model is evidence only: fixed-step KDK remains the
+production integrator, and the reported work reduction is not a physical or
+end-to-end speedup claim.
 
 HIP is capability-gated: compiler support and device execution are separate
 conditions, and a CPU fallback is retained when no device is visible. MPI is
@@ -107,6 +112,16 @@ runner reports rebuild schedule, memory, and separate Octree baseline metrics.
 The cell-linked list is selected for future local interactions; no local index
 is promoted into production by this qualification, and the Octree remains a
 long-range structure rather than a local-neighbor oracle.
+
+The block-time qualification contract in `plan/block_time.json` compares the
+fixed KDK schedule with a deterministic power-of-two time-bin schedule over
+heterogeneous, clustered, and migration workloads. `TST-P1-008` checks stable
+active ordering, synchronization-boundary ownership changes, ledger
+conservation, restart, rollback, and input non-mutation. Its modeled speedup
+is fixed event count divided by block event count, and its timing covers only
+the scheduler loop. The candidate remains `not-selected`: no asynchronous
+force state, MPI transport change, snapshot ABI change, or public SDK change
+is introduced until a complete end-to-end implementation is qualified.
 
 ## Final Qualification
 
@@ -214,6 +229,10 @@ The phases are ordered dependencies, not a list of parallel experiments.
   implementation in P5.
 - P7 and P8 are implemented and locally qualified from the P3/P4 contracts;
   they do not depend on the deferred P5/P6 roots.
+- The block-time scheduling candidate is qualified as a P1 evidence boundary,
+  but it is not promoted into production. Any physical block integrator must
+  be a later plan change with force-state, MPI, restart, rollback, and
+  end-to-end performance evidence.
 
 ### P0: Contracts and Build Skeleton
 
@@ -240,6 +259,12 @@ without changing the Direct CPU trajectory.
 `TST-P1-007` qualifies local-neighbor candidates independently from long-range
 solver execution. It fixes the finite-box, radius, skin, ownership, ordering,
 rebuild, and memory contracts before any future SPH or grid implementation.
+
+`TST-P1-008` qualifies a bounded block-time schedule without changing the
+fixed-step KDK path. It compares deterministic event ledgers, verifies that
+ownership migration occurs only at a synchronization boundary, and checks
+exact restart and rollback replay. The result is a scheduling proxy and does
+not establish physical conservation or end-to-end simulation speedup.
 
 ### P2: Public SDK and CLI
 
