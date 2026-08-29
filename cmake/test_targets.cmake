@@ -286,6 +286,15 @@ target_compile_features(blitzar_layout_test PRIVATE cxx_std_20)
 target_include_directories(blitzar_layout_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
 blitzar_enable_warnings(blitzar_layout_test)
 
+add_executable(blitzar_reduction_test
+    tests/reduction/ReductionRunner.cpp
+    tests/reduction/ReductionBenchmark.cpp
+)
+target_link_libraries(blitzar_reduction_test PRIVATE blitzar)
+target_compile_features(blitzar_reduction_test PRIVATE cxx_std_20)
+target_include_directories(blitzar_reduction_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
+blitzar_enable_warnings(blitzar_reduction_test)
+
 if(BLITZAR_MPI_ENABLED)
     add_executable(blitzar_mpi_test
         tests/fixtures/FixtureAllocationMonitor.cpp
@@ -338,6 +347,7 @@ set(BLITZAR_TEST_TARGETS
     blitzar_accelerator_test
     blitzar_scaling_test
     blitzar_layout_test
+    blitzar_reduction_test
     blitzar_mpi_test
 )
 foreach(target IN LISTS BLITZAR_TEST_TARGETS)

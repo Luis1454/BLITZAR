@@ -190,6 +190,14 @@
       "contract": "Morton comparison/radix ordering, bounded SoA/AoSoA metrics, Octree parity, and byte repeatability"
     },
     {
+      "id": "TST-P1-006",
+      "entrypoint": "tests/reduction/ReductionRunner.cpp",
+      "responsibility": "tests/reduction/ReductionBenchmark.cpp",
+      "mode": "benchmark",
+      "ranks": 1,
+      "contract": "Plain/Kahan/Neumaier cancellation metrics, vectorization eligibility, Direct/KDK conservation, and default-policy parity"
+    },
+    {
       "id": "TST-P2-001",
       "entrypoint": "examples/c/CExample.c",
       "responsibility": "examples/c/CExample.c",

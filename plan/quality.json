@@ -128,6 +128,12 @@
       "phase": "P1"
     },
     {
+      "id": "TST-P1-006",
+      "name": "compensated-reduction-and-conservation-qualification",
+      "command": "blitzar_reduction_test",
+      "phase": "P1"
+    },
+    {
       "id": "TST-P2-001",
       "name": "c-example",
       "command": "blitzar_c_example",
@@ -375,6 +381,7 @@
         {"path": "src/particles/buffer", "prefix": "Particle"},
         {"path": "src/particles/source", "prefix": "Particle"},
         {"path": "src/physics/gravity", "prefix": "Gravity"},
+        {"path": "src/physics/reduction", "prefix": "ScalarReduction"},
         {"path": "src/integration/kdk", "prefix": "Kdk"},
         {"path": "src/trees/octree", "prefix": "Octree"},
         {"path": "src/solvers", "prefix": "Solver"},
@@ -418,6 +425,7 @@
         {"path": "tests/io", "prefix": "Io"},
         {"path": "tests/scaling", "prefix": "Scale"},
         {"path": "tests/layout", "prefix": "Layout"},
+        {"path": "tests/reduction", "prefix": "Reduction"},
         {"path": "tests/simulation", "prefix": "Sim"},
         {"path": "examples/c", "prefix": "C"},
         {"path": "examples/cpp", "prefix": "Cpp"}
@@ -476,6 +484,10 @@
         {
           "path": "tests/layout/LayoutRunner.cpp",
           "reason": "standalone deterministic layout evidence runner"
+        },
+        {
+          "path": "tests/reduction/ReductionRunner.cpp",
+          "reason": "standalone deterministic reduction evidence runner"
         }
       ],
       "forbidden_path_components": ["utils", "common", "misc", "private", "details"],
@@ -703,6 +715,18 @@
       "id": "CHK-P0-033",
       "name": "layout-evidence-fixtures",
       "command": "python -m tools.evidence.layout_evidence_test",
+      "phase": "P0"
+    },
+    {
+      "id": "CHK-P0-034",
+      "name": "reduction-evidence-contract",
+      "command": "python -m tools.evidence.reduction_evidence --root . --check",
+      "phase": "P0"
+    },
+    {
+      "id": "CHK-P0-035",
+      "name": "reduction-evidence-fixtures",
+      "command": "python -m tools.evidence.reduction_evidence_test",
       "phase": "P0"
     }
   ]

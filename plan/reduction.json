@@ -1,0 +1,118 @@
+{
+  "schema_version": 1,
+  "plan_version": "1.0.44",
+  "record_schema_version": 1,
+  "target": "blitzar_reduction_test",
+  "runner": "tools/evidence/reduction_evidence.py",
+  "precision": "float64",
+  "seed": 424242,
+  "term_counts": [65536],
+  "long_run_steps": 4096,
+  "policies": [
+    {
+      "id": "plain-v1",
+      "kind": "plain",
+      "algorithm": "ordered IEEE-754 addition",
+      "vectorization": "eligible"
+    },
+    {
+      "id": "kahan-v1",
+      "kind": "kahan",
+      "algorithm": "Kahan compensated ordered addition",
+      "vectorization": "serial"
+    },
+    {
+      "id": "neumaier-v1",
+      "kind": "neumaier",
+      "algorithm": "Neumaier compensated ordered addition",
+      "vectorization": "serial"
+    }
+  ],
+  "workloads": [
+    {
+      "id": "force",
+      "definition": "Cancellation terms representative of a direct force component"
+    },
+    {
+      "id": "kinetic-energy",
+      "definition": "Cancellation terms representative of kinetic-energy accumulation"
+    },
+    {
+      "id": "potential-energy",
+      "definition": "Signed cancellation terms representative of pair potential accumulation"
+    },
+    {
+      "id": "momentum",
+      "definition": "Signed terms representative of momentum accumulation"
+    }
+  ],
+  "selection": {
+    "force": "plain-v1",
+    "kinetic-energy": "neumaier-v1",
+    "potential-energy": "neumaier-v1",
+    "momentum": "neumaier-v1",
+    "long-run": "neumaier-v1"
+  },
+  "metrics": {
+    "reduction_time_ns": "elapsed_ns",
+    "reduction_throughput": "terms_per_second",
+    "exact_reference": "expected",
+    "absolute_error": "absolute_error",
+    "relative_error": "relative_error",
+    "input_order_hash": "input_hash",
+    "result_hash": "value_hash",
+    "byte_repeatability": "repeatable",
+    "finite_state": "finite",
+    "vectorization_eligibility": "vectorization_eligible",
+    "long_run_energy_error": "max_relative_energy_error"
+  },
+  "required_record_fields": [
+    "schema",
+    "seed",
+    "workload",
+    "terms",
+    "policy",
+    "elapsed_ns",
+    "terms_per_second",
+    "expected",
+    "value",
+    "absolute_error",
+    "relative_error",
+    "input_hash",
+    "value_hash",
+    "repeatable",
+    "finite",
+    "vectorization_eligible",
+    "selected"
+  ],
+  "required_long_run_fields": [
+    "schema",
+    "seed",
+    "steps",
+    "policy",
+    "max_relative_energy_error",
+    "final_energy",
+    "final_momentum_norm",
+    "state_hash",
+    "finite",
+    "default_policy_match",
+    "selected"
+  ],
+  "invariants": [
+    "Direct CPU force accumulation remains plain and is not replaced by a compensated oracle",
+    "Kahan and Neumaier comparisons use the same ordered input terms",
+    "Neumaier is selected for production conservation diagnostics",
+    "all reduction results remain finite and byte-repeatable",
+    "the long-run KDK trajectory uses the unchanged Direct CPU force path",
+    "singularity and invalid-state behavior remains covered by the conservation contract tests"
+  ],
+  "limits": {
+    "max_relative_energy_error": 1.0e-8,
+    "selected_cancellation_error": 1.0e-12
+  },
+  "artifacts": {
+    "generated_outside_source": true,
+    "files": ["metadata.json", "results.json", "summary.md", "run.log"],
+    "hardware_counters": "not_claimed"
+  }
+}

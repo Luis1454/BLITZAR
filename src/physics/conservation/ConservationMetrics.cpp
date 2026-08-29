@@ -49,6 +49,29 @@ struct PotentialContext final {
     blitzar_core::Scalar effective_softening{};
 };
 
+struct MetricAccumulator final {
+    ScalarReduction kinetic;
+    ScalarReduction potential;
+    ScalarReduction momentum_x;
+    ScalarReduction momentum_y;
+    ScalarReduction momentum_z;
+};
+
+[[nodiscard]] bool IsValidReduction(ReductionKind reduction) noexcept
+{
+    return reduction == ReductionKind::Plain || reduction == ReductionKind::Kahan ||
+           reduction == ReductionKind::Neumaier;
+}
+
+[[nodiscard]] bool IsFinite(const MetricAccumulator& accumulator) noexcept
+{
+    return std::isfinite(accumulator.kinetic.Value()) &&
+           std::isfinite(accumulator.potential.Value()) &&
+           std::isfinite(accumulator.momentum_x.Value()) &&
+           std::isfinite(accumulator.momentum_y.Value()) &&
+           std::isfinite(accumulator.momentum_z.Value());
+}
+
 [[nodiscard]] PairStatus ValidateSources(const PotentialContext& context,
     blitzar_core::Scalar first_mass, blitzar_core::Scalar second_mass,
     blitzar_core::Scalar squared_distance) noexcept
@@ -61,7 +84,7 @@ struct PotentialContext final {
 }
 
 [[nodiscard]] blitzar_status AccumulateKinetic(
-    blitzar_core::ParticleStateView state, ConservationMetrics& metrics) noexcept
+    blitzar_core::ParticleStateView state, MetricAccumulator& accumulator) noexcept
 {
     for (std::size_t index = 0; index < state.count; ++index) {
         const blitzar_core::Scalar mass = state.mass[index];
@@ -87,12 +110,12 @@ struct PotentialContext final {
             return BLITZAR_STATUS_INVALID_ARGUMENT;
         }
 
-        metrics.momentum.x += momentum_x;
-        metrics.momentum.y += momentum_y;
-        metrics.momentum.z += momentum_z;
-        metrics.kinetic_energy += kinetic;
+        accumulator.momentum_x.Add(momentum_x);
+        accumulator.momentum_y.Add(momentum_y);
+        accumulator.momentum_z.Add(momentum_z);
+        accumulator.kinetic.Add(kinetic);
 
-        if (!metrics.IsFinite()) {
+        if (!IsFinite(accumulator)) {
             return BLITZAR_STATUS_INVALID_ARGUMENT;
         }
     }
@@ -101,7 +124,7 @@ struct PotentialContext final {
 }
 
 [[nodiscard]] blitzar_status AccumulatePotential(blitzar_core::ParticleStateView state,
-    const PotentialContext& context, ConservationMetrics& metrics) noexcept
+    const PotentialContext& context, MetricAccumulator& accumulator) noexcept
 {
     for (std::size_t first = 0; first < state.count; ++first) {
         for (std::size_t second = first + 1; second < state.count; ++second) {
@@ -138,9 +161,9 @@ struct PotentialContext final {
                 return BLITZAR_STATUS_INVALID_ARGUMENT;
             }
 
-            metrics.potential_energy += potential;
+            accumulator.potential.Add(potential);
 
-            if (!metrics.IsFinite()) {
+            if (!IsFinite(accumulator)) {
                 return BLITZAR_STATUS_INVALID_ARGUMENT;
             }
         }
@@ -161,12 +184,22 @@ bool ConservationMetrics::IsFinite() const noexcept
 blitzar_status ComputeConservationMetrics(blitzar_core::ParticleStateView state,
     GravityParameters parameters, ConservationMetrics& metrics) noexcept
 {
-    if (!HasCompleteState(state) || !IsFiniteState(state) || !parameters.IsValid()) {
+    return ComputeConservationMetrics(state, parameters, ReductionKind::Neumaier, metrics);
+}
+
+blitzar_status ComputeConservationMetrics(blitzar_core::ParticleStateView state,
+    GravityParameters parameters, ReductionKind reduction, ConservationMetrics& metrics) noexcept
+{
+    if (!IsValidReduction(reduction) || !HasCompleteState(state) || !IsFiniteState(state) ||
+        !parameters.IsValid()) {
         return BLITZAR_STATUS_INVALID_ARGUMENT;
     }
 
     const GravityLaw gravity(parameters);
     ConservationMetrics candidate{};
+    MetricAccumulator accumulator{ScalarReduction(reduction), ScalarReduction(reduction),
+        ScalarReduction(reduction), ScalarReduction(reduction), ScalarReduction(reduction)};
+
     const PotentialContext context{
         gravity, parameters.EffectiveConstant(), parameters.EffectiveSoftening()};
 
@@ -175,19 +208,29 @@ blitzar_status ComputeConservationMetrics(blitzar_core::ParticleStateView state,
         return BLITZAR_STATUS_INVALID_ARGUMENT;
     }
 
-    const blitzar_status kinetic_status = AccumulateKinetic(state, candidate);
+    const blitzar_status kinetic_status = AccumulateKinetic(state, accumulator);
 
     if (kinetic_status != BLITZAR_STATUS_OK) {
         return kinetic_status;
     }
 
-    const blitzar_status potential_status = AccumulatePotential(state, context, candidate);
+    const blitzar_status potential_status = AccumulatePotential(state, context, accumulator);
 
     if (potential_status != BLITZAR_STATUS_OK) {
         return potential_status;
     }
 
-    candidate.total_energy = candidate.kinetic_energy + candidate.potential_energy;
+    candidate.kinetic_energy = accumulator.kinetic.Value();
+    candidate.potential_energy = accumulator.potential.Value();
+    candidate.momentum = {accumulator.momentum_x.Value(), accumulator.momentum_y.Value(),
+        accumulator.momentum_z.Value()};
+
+    ScalarReduction total_energy(reduction);
+
+    total_energy.Add(candidate.kinetic_energy);
+    total_energy.Add(candidate.potential_energy);
+
+    candidate.total_energy = total_energy.Value();
 
     if (!candidate.IsFinite()) {
         return BLITZAR_STATUS_INVALID_ARGUMENT;

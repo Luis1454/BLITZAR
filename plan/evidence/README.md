@@ -24,3 +24,13 @@ python -m tools.evidence.layout_evidence --root . --build-dir ../.blitzar-build/
 It validates the complete Morton ordering and bounded SoA/AoSoA matrix from
 `plan/layout.json`. Its cache-line and scan metrics are deterministic proxies;
 they do not claim hardware performance-counter measurements.
+
+The compensated-reduction qualification uses the same external-artifact rule:
+
+```text
+python -m tools.evidence.reduction_evidence --root . --build-dir ../.blitzar-build/evidence --output ../.blitzar-evidence/reduction --strict
+```
+
+It validates the Plain/Kahan/Neumaier matrix and the 4096-step KDK
+conservation run from `plan/reduction.json`. Vectorization fields identify
+ordered-loop eligibility; they do not claim hardware counter measurements.

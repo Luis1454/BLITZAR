@@ -1,6 +1,6 @@
 {
   "product_version": "1.0.0",
-  "plan_version": "1.0.43",
+  "plan_version": "1.0.44",
   "status": "frozen",
   "product": "deterministic particle simulation SDK",
   "source_of_truth": [
@@ -12,6 +12,7 @@
     "plan/workspace.json",
     "plan/scaling.json",
     "plan/layout.json",
+    "plan/reduction.json",
     "plan/output_contract.json",
     "plan/final_audit.json"
   ],
@@ -25,6 +26,7 @@
     "src/physics",
     "src/physics/gravity",
     "src/physics/conservation",
+    "src/physics/reduction",
     "src/integration",
     "src/integration/kdk",
     "src/trees",
@@ -78,6 +80,7 @@
     "tests/package",
     "tests/scaling",
     "tests/layout",
+    "tests/reduction",
     "tests/simulation",
     "examples",
     "examples/c",
