@@ -198,6 +198,14 @@
       "contract": "Plain/Kahan/Neumaier cancellation metrics, vectorization eligibility, Direct/KDK conservation, and default-policy parity"
     },
     {
+      "id": "TST-P1-007",
+      "entrypoint": "tests/neighborhood/NeighborRunner.cpp",
+      "responsibility": "tests/neighborhood/NeighborBenchmark.cpp",
+      "mode": "benchmark",
+      "ranks": 1,
+      "contract": "deterministic local-neighbor candidate matrix, exact reference parity, rebuild schedule, and separate Octree baseline"
+    },
+    {
       "id": "TST-P2-001",
       "entrypoint": "examples/c/CExample.c",
       "responsibility": "examples/c/CExample.c",

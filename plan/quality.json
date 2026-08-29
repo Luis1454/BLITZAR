@@ -134,6 +134,12 @@
       "phase": "P1"
     },
     {
+      "id": "TST-P1-007",
+      "name": "local-neighbor-index-qualification",
+      "command": "blitzar_neighborhood_test",
+      "phase": "P1"
+    },
+    {
       "id": "TST-P2-001",
       "name": "c-example",
       "command": "blitzar_c_example",
@@ -426,6 +432,7 @@
         {"path": "tests/scaling", "prefix": "Scale"},
         {"path": "tests/layout", "prefix": "Layout"},
         {"path": "tests/reduction", "prefix": "Reduction"},
+        {"path": "tests/neighborhood", "prefix": "Neighbor"},
         {"path": "tests/simulation", "prefix": "Sim"},
         {"path": "examples/c", "prefix": "C"},
         {"path": "examples/cpp", "prefix": "Cpp"}
@@ -727,6 +734,18 @@
       "id": "CHK-P0-035",
       "name": "reduction-evidence-fixtures",
       "command": "python -m tools.evidence.reduction_evidence_test",
+      "phase": "P0"
+    },
+    {
+      "id": "CHK-P0-036",
+      "name": "neighborhood-evidence-contract",
+      "command": "python -m tools.evidence.neighborhood_evidence --root . --check",
+      "phase": "P0"
+    },
+    {
+      "id": "CHK-P0-037",
+      "name": "neighborhood-evidence-fixtures",
+      "command": "python -m tools.evidence.neighborhood_evidence_test",
       "phase": "P0"
     }
   ]
