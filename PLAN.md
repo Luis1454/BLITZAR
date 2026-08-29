@@ -2,7 +2,7 @@
 
 Status: **FROZEN**  
 Product/API version: **1.0.0**
-Plan version: **1.0.43**
+Plan version: **1.0.44**
 
 This repository is a clean-room rewrite. The old repository, its source tree,
 its issues, and its documentation are not implementation inputs. Requirements
@@ -10,8 +10,8 @@ are re-derived here as contracts, numerical references, and acceptance tests.
 
 The authoritative planning state is the combination of this file,
 `plan/manifest.json`, `plan/quality.json`, `plan/decision-index.json`, and
-`plan/scaling.json`, `plan/layout.json`, `plan/output_contract.json`, and
-`plan/final_audit.json`.
+`plan/scaling.json`, `plan/layout.json`, `plan/reduction.json`,
+`plan/output_contract.json`, and `plan/final_audit.json`.
 Decision records under `plan/decisions/` preserve the rationale and migration
 history for that state.
 
@@ -88,6 +88,14 @@ state, Octree, and byte-repeatability hashes. Cache-line visits and contiguous
 scan throughput are deterministic proxies, not hardware-counter claims; the
 generated layout report is written outside the source tree.
 
+The reduction qualification contract in `plan/reduction.json` measures Plain,
+Kahan, and Neumaier over fixed cancellation workloads and a 4096-step KDK
+trajectory. `ScalarReduction` keeps the Direct CPU force oracle on ordered
+plain addition while `ConservationMetrics` selects Neumaier for diagnostic
+energy and momentum. The reduction evidence runner validates error, timing,
+ordering hashes, finite results, and exact default-policy equivalence; reports
+are written outside the source tree.
+
 ## Final Qualification
 
 `plan/final_audit.json` assigns an owner, category, and review gate to every
@@ -116,6 +124,7 @@ src/particles/buffer/             Mutable particle and acceleration buffers
 src/particles/source/              Remote source particle buffer
 src/physics/gravity/             Force laws, units, softening, validation
 src/integration/kdk/              Time integration and timestep policy
+src/physics/reduction/            Ordered plain and compensated scalar reductions
 src/trees/octree/                 Bounded Octree storage, views, and resources
 src/gpu/                          Optional GPU domain aggregator
 src/gpu/runtime/                  HIP/CUDA runtime and launch policy
@@ -144,6 +153,7 @@ src/simulation/{runtime,solver,state,step,transaction}/ Simulation responsibilit
 apps/blitzar/                    CLI executable; never library production code
 tests/{contracts,fixtures,fmm,gpu,integration,mpi,octree,package,scaling,simulation}/ Tests by responsibility
 tests/layout/                     Morton ordering and bounded layout qualification
+tests/reduction/                  Compensated reduction and conservation qualification
 examples/                        Minimal C and C++ SDK consumers
 plan/                            Frozen roadmap and machine-readable invariants
 tools/{architecture,gates,format,debug,evidence,audit}/ Repository policy checks
@@ -204,6 +214,13 @@ Plummer softening law, fixed-step Leapfrog KDK, and the CPU direct solver.
 The direct CPU solver is the numerical oracle for later implementations. Every
 small reference case must have deterministic positions, velocities, energy,
 momentum, and error tolerances.
+
+The force reference retains ordered plain accumulation. Compensated policies
+are isolated to the diagnostic reduction boundary: Neumaier is the selected
+default for conservation energy and momentum, while Kahan remains a measured
+alternative. `TST-P1-006` verifies cancellation error, throughput,
+repeatability, vectorization eligibility, and long-run diagnostic behavior
+without changing the Direct CPU trajectory.
 
 ### P2: Public SDK and CLI
 
@@ -268,7 +285,8 @@ The output contract is frozen before the `src/io` root is materialized. The
 logical frame descriptor, single-rank binary reader/writer, deterministic run
 manifest, and atomic snapshot publication lifecycle are implemented and
 qualified by their P6 tests. The reusable conservation metrics module and its
-KDK requalification are now covered by `TST-P6-005`. The production CLI
+KDK requalification are now covered by `TST-P6-005`; its ordered diagnostic
+reductions use the Neumaier policy selected by Decision 060. The production CLI
 summary formats are covered by `TST-P6-006`. The CLI defaults to a stable
 labeled human presentation; automation selects the byte-stable JSON format
 with `--format json`. Deterministic snapshot restart is covered by `TST-P6-008`.

@@ -17,6 +17,7 @@ set(BLITZAR_LIBRARY_SOURCES
     src/particles/source/ParticleSourceBuffer.cpp
     src/physics/gravity/GravityLaw.cpp
     src/physics/conservation/ConservationMetrics.cpp
+    src/physics/reduction/ScalarReduction.cpp
     src/mpi/collectives/MpiCollectives.cpp
     src/mpi/collectives/MpiBroadcast.cpp
     src/mpi/domain/MpiDomainBounds.cpp

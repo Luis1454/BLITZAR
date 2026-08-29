@@ -231,6 +231,27 @@
       "issue": 672,
       "status": "accepted",
       "decision": "The layout evidence runner keeps executable discovery, external artifact publication, and strict matrix qualification in one evidence boundary; its branches distinguish contract, process, and record failures and are covered by layout_evidence_test.py."
+    },
+    {
+      "path": "tests/reduction/ReductionBenchmark.cpp",
+      "signals": ["function_count", "function_length"],
+      "issue": 673,
+      "status": "accepted",
+      "decision": "The reduction benchmark keeps deterministic cancellation construction, policy timing, and the long-run KDK probe in one qualification boundary; the production reduction and conservation contracts remain separate, and the runner validates the complete result matrix."
+    },
+    {
+      "path": "tools/evidence/reduction_contract.py",
+      "signals": ["allocation", "branching"],
+      "issue": 673,
+      "status": "accepted",
+      "decision": "The reduction contract validator keeps candidate selection, typed record parsing, and cross-policy invariants together; its allocations and branches only build validation diagnostics and are covered by reduction_evidence_test.py."
+    },
+    {
+      "path": "tools/evidence/reduction_evidence.py",
+      "signals": ["branching"],
+      "issue": 673,
+      "status": "accepted",
+      "decision": "The reduction evidence runner keeps executable discovery, external artifact publication, and strict matrix qualification in one evidence boundary; its branches distinguish contract, process, and record failures and are covered by reduction_evidence_test.py."
     }
   ]
 }

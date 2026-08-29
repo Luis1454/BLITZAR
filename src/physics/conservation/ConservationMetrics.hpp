@@ -3,6 +3,7 @@
 
 #include "core/CoreTypes.hpp"
 #include "physics/gravity/GravityLaw.hpp"
+#include "physics/reduction/ScalarReduction.hpp"
 
 #include <blitzar/blitzar.h>
 
@@ -20,6 +21,9 @@ struct ConservationMetrics final {
 // Metrics operate on a complete local state; extended source views are rejected.
 [[nodiscard]] blitzar_status ComputeConservationMetrics(blitzar_core::ParticleStateView state,
     GravityParameters parameters, ConservationMetrics& metrics) noexcept;
+
+[[nodiscard]] blitzar_status ComputeConservationMetrics(blitzar_core::ParticleStateView state,
+    GravityParameters parameters, ReductionKind reduction, ConservationMetrics& metrics) noexcept;
 
 } // namespace blitzar_physics
 
