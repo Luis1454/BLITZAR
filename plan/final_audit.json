@@ -732,8 +732,8 @@
     {
       "issue": 677,
       "title": "Qualify BVH for irregular spatial queries",
-      "commit": "pending",
-      "pull_request": "pending",
+      "commit": "05c5743e6a11c56442a8eb87edc37b1ab99af83f",
+      "pull_request": "https://github.com/Luis1454/BLITZAR/pull/753",
       "evidence": [
         "TST-P1-009",
         "CHK-P0-001",
