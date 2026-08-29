@@ -28,6 +28,9 @@ extern "C" blitzar_status blitzar_get_capabilities_v2(blitzar_capabilities_v2* c
     const std::uint32_t struct_size = capabilities->struct_size;
     const std::uint32_t abi_version = capabilities->abi_version;
     blitzar_compiled_backend_mask compiled_backends = BLITZAR_BACKEND_MASK_CPU;
+    blitzar_feature_mask deferred_features =
+        BLITZAR_FEATURE_GRID | BLITZAR_FEATURE_SNAPSHOT_PERSISTENCE | BLITZAR_FEATURE_HDF5 |
+        BLITZAR_FEATURE_GPU_FMM | BLITZAR_FEATURE_MULTI_NODE_QUALIFICATION;
 
 #if defined(BLITZAR_COMPILED_HIP)
 
@@ -36,13 +39,14 @@ extern "C" blitzar_status blitzar_get_capabilities_v2(blitzar_capabilities_v2* c
 #if defined(BLITZAR_COMPILED_MPI)
     compiled_backends |= BLITZAR_BACKEND_MASK_MPI;
 #endif
+#if defined(BLITZAR_COMPILED_HDF5)
+    deferred_features = static_cast<blitzar_feature_mask>(
+        deferred_features & ~static_cast<blitzar_feature_mask>(BLITZAR_FEATURE_HDF5));
+#endif
 
     *capabilities = {struct_size, abi_version,
         BLITZAR_SOLVER_MASK_DIRECT | BLITZAR_SOLVER_MASK_BARNES_HUT | BLITZAR_SOLVER_MASK_FMM,
-        BLITZAR_SOLVER_MASK_PM | BLITZAR_SOLVER_MASK_TREEPM,
-        BLITZAR_FEATURE_GRID | BLITZAR_FEATURE_SNAPSHOT_PERSISTENCE | BLITZAR_FEATURE_HDF5 |
-            BLITZAR_FEATURE_GPU_FMM | BLITZAR_FEATURE_MULTI_NODE_QUALIFICATION,
-        compiled_backends};
+        BLITZAR_SOLVER_MASK_PM | BLITZAR_SOLVER_MASK_TREEPM, deferred_features, compiled_backends};
 
     return BLITZAR_STATUS_OK;
 }
