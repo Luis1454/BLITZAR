@@ -1,7 +1,7 @@
 # Decision 061: Local Neighbor Index Policy
 
-Status: **active**  
-Plan version: **1.0.45**  
+Status: **active**
+Plan version: **1.0.45**
 Issue: **#674**
 
 ## Decision
