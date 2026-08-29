@@ -92,6 +92,12 @@
       "phase": "P6"
     },
     {
+      "id": "TST-P6-013",
+      "name": "deterministic-snapshot-delta-qualification",
+      "command": "blitzar_snapshot_delta_test",
+      "phase": "P6"
+    },
+    {
       "id": "TST-P0-004",
       "name": "bounded-views-and-request-contracts",
       "command": "blitzar_bounded_contract_test",
@@ -766,6 +772,18 @@
       "id": "CHK-P0-039",
       "name": "hdf5-evidence-fixtures",
       "command": "python -m tools.evidence.hdf5_evidence_test",
+      "phase": "P0"
+    },
+    {
+      "id": "CHK-P0-040",
+      "name": "delta-evidence-contract",
+      "command": "python -m tools.evidence.delta_evidence --root . --check",
+      "phase": "P0"
+    },
+    {
+      "id": "CHK-P0-041",
+      "name": "delta-evidence-fixtures",
+      "command": "python -m tools.evidence.delta_evidence_test",
       "phase": "P0"
     }
   ]

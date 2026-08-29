@@ -1,0 +1,51 @@
+{
+  "schema_version": 1,
+  "plan_version": "1.0.47",
+  "state": "evaluated-not-default",
+  "codec": "xor-rle-v1",
+  "format_version": 1,
+  "scope": ["snapshot-payload", "transport-payload"],
+  "payload_order": [
+    "ids",
+    "position_x",
+    "position_y",
+    "position_z",
+    "velocity_x",
+    "velocity_y",
+    "velocity_z",
+    "mass"
+  ],
+  "canonical_payload": "existing little-endian SoA payload",
+  "stream_header": {
+    "bytes": 24,
+    "magic": "BLD1",
+    "version": 1,
+    "fields": ["magic", "version", "reserved", "raw_payload_bytes", "payload_checksum"]
+  },
+  "runs": {
+    "control_byte": "bit7=zero-run; bits0-6=run_length_minus_one",
+    "max_run_length": 128,
+    "literal": "xor bytes follow the control byte",
+    "zero": "equal bytes are omitted"
+  },
+  "max_particle_count": 100000,
+  "max_encoded_bytes": "24 + 2 * raw_payload_bytes",
+  "checksum": "FNV-1a-64 over current canonical payload",
+  "transactional_decode": true,
+  "random_access": {
+    "keyframe_interval": 8,
+    "policy": "index step to nearest keyframe and replay forward",
+    "maximum_replay_deltas": 7,
+    "default_restart": "binary-snapshot-codec"
+  },
+  "fallback": "binary-snapshot-codec",
+  "latency_scope": "in-memory payload staging; filesystem latency excluded",
+  "public_abi": "unchanged",
+  "numerical_state": "unchanged",
+  "evidence": {
+    "test_id": "TST-P6-013",
+    "contract_check_id": "CHK-P0-040",
+    "fixture_check_id": "CHK-P0-041",
+    "allocation_policy": "caller-preallocated buffers; no codec allocation"
+  }
+}

@@ -135,6 +135,15 @@
       "contract": "optional HDF5 SoA snapshot round-trip, atomic publication, transactional restart, corruption rejection, unavailable fallback, and repeated-write determinism"
     },
     {
+      "id": "TST-P6-013",
+      "entrypoint": "tests/io/IoSnapshotDeltaTest.cpp",
+      "responsibility": "tests/io/IoSnapshotDeltaTest.cpp",
+      "mode": "delta-qualification",
+      "ranks": 1,
+      "phase": "P6",
+      "contract": "deterministic XOR-RLE payload qualification for snapshot and transport views, indexed keyframe replay, checksum and transactional corruption rejection, bounded in-memory latency and binary fallback"
+    },
+    {
       "id": "TST-P0-004",
       "entrypoint": "tests/contracts/ContractBoundedTest.cpp",
       "responsibility": "tests/contracts/ContractBoundedTest.cpp",

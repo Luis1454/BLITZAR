@@ -1,6 +1,6 @@
 {
   "product_version": "1.0.0",
-  "plan_version": "1.0.46",
+  "plan_version": "1.0.47",
   "status": "frozen",
   "product": "deterministic particle simulation SDK",
   "source_of_truth": [
@@ -16,6 +16,7 @@
     "plan/neighborhood.json",
     "plan/output_contract.json",
     "plan/hdf5.json",
+    "plan/delta.json",
     "plan/final_audit.json"
   ],
   "roots": [

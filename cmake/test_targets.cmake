@@ -62,6 +62,14 @@ target_compile_features(blitzar_snapshot_io_test PRIVATE cxx_std_20)
 target_include_directories(blitzar_snapshot_io_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
 blitzar_enable_warnings(blitzar_snapshot_io_test)
 
+add_executable(blitzar_snapshot_delta_test
+    tests/io/IoSnapshotDeltaTest.cpp
+)
+target_link_libraries(blitzar_snapshot_delta_test PRIVATE blitzar)
+target_compile_features(blitzar_snapshot_delta_test PRIVATE cxx_std_20)
+target_include_directories(blitzar_snapshot_delta_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
+blitzar_enable_warnings(blitzar_snapshot_delta_test)
+
 add_executable(blitzar_hdf5_test
     tests/fixtures/FixtureRestart.cpp
     tests/io/IoHdf5Test.cpp
@@ -356,6 +364,7 @@ set(BLITZAR_TEST_TARGETS
     blitzar_contract_test
     blitzar_snapshot_contract_test
     blitzar_snapshot_io_test
+    blitzar_snapshot_delta_test
     blitzar_hdf5_test
     blitzar_metadata_io_test
     blitzar_cli_output_test
