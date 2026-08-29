@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "plan_version": "1.0.45",
+  "plan_version": "1.0.46",
   "runner": "tools/audit/audit_final.py",
   "artifact_files": [
     "audit.json",
@@ -677,6 +677,23 @@
         "CHK-P0-009",
         "plan/decisions/054-cli-human-summary.md"
       ]
+    },
+    {
+      "issue": 650,
+      "title": "Add optional HDF5 snapshot adapter",
+      "commit": "ad8287b6b51ddeb0b150452b14d66f08ba5c6470",
+      "pull_request": "https://github.com/Luis1454/BLITZAR/pull/750",
+      "evidence": [
+        "TST-P6-012",
+        "TST-P2-004",
+        "CHK-P0-001",
+        "CHK-P0-006",
+        "CHK-P0-007",
+        "CHK-P0-009",
+        "CHK-P0-038",
+        "CHK-P0-039",
+        "plan/decisions/062-hdf5-adapter-policy.md"
+      ]
     }
   ],
   "non_claims": [
@@ -685,7 +702,7 @@
     "physical AMD HIP execution when no AMD device is exposed",
     "PM and TreePM production implementations",
     "MPI/HIP shard persistence",
-    "HDF5 snapshot persistence",
+    "HDF5 CLI snapshot persistence",
     "GPU FMM"
   ],
   "findings_policy": {

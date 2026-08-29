@@ -2,7 +2,7 @@
 
 Status: **FROZEN**  
 Product/API version: **1.0.0**
-Plan version: **1.0.45**
+Plan version: **1.0.46**
 
 This repository is a clean-room rewrite. The old repository, its source tree,
 its issues, and its documentation are not implementation inputs. Requirements
@@ -41,7 +41,7 @@ GPU is visible or that MPI is running on more than one host.
 Direct, Barnes-Hut, and CPU FMM are implemented solver contracts. PM and
 TreePM remain explicit `BLITZAR_STATUS_UNSUPPORTED` selections and their
 production roots remain deferred. The output contract is frozen in
-`plan/output_contract.json`, and its logical versioned `SnapshotFrameView` plus
+`plan/output_contract.json`, `plan/hdf5.json`, and its logical versioned `SnapshotFrameView` plus
 the single-rank binary codec are implemented and contract-qualified. The
 single-rank run manifest, atomic output lifecycle, configured CLI
 publication, human-readable and machine-readable production run summaries,
@@ -173,7 +173,8 @@ tools/{architecture,gates,format,debug,evidence,audit}/ Repository policy checks
 `src/grid`, `src/solvers/pm`, and `src/solvers/treepm` are planned but not
 materialized roots. They remain in the deferred-root set until their production
 ownership and tests exist. Binary snapshot and single-rank metadata ownership
-are materialized under `src/io`; the optional HDF5 adapter remains deferred. The CPU FMM root is materialized in P3
+are materialized under `src/io`; the optional HDF5 adapter is capability-gated in
+`src/io/hdf5`, while CLI HDF5 output remains deferred. The CPU FMM root is materialized in P3
 with deterministic order-2 multipole qualification; GPU FMM remains outside
 the current backend scope. The GPU runtime and native CUDA compatibility are
 owned by `src/gpu`; HIP kernels are co-located below `gpu/{direct,barnes_hut}`,
@@ -205,7 +206,8 @@ The phases are ordered dependencies, not a list of parallel experiments.
   binary codec, deterministic manifest, atomic output lifecycle, and configured
   CLI publication, the production run summary, deterministic snapshot restart,
   online conservation diagnostics, and snapshot post-processing are qualified,
-  while optional adapters remain open.
+  while the internal HDF5 adapter is capability-gated and CLI HDF5 output remains
+  deferred.
   P6 does not wait for the unrelated PM/TreePM
   implementation in P5.
 - P7 and P8 are implemented and locally qualified from the P3/P4 contracts;
@@ -311,9 +313,24 @@ snapshot post-processing, including byte parity with the online CSV, are
 covered by `TST-P6-010`. Output boundary qualification is covered by
 `TST-P6-011`: a single-rank MPI launch is byte-equivalent to the direct CPU CLI
 path, while multi-rank output is rejected before state capture or manifest
-preparation. MPI/HIP shard persistence and the optional HDF5 adapter remain open.
-The complete run pipeline remains unfinished; HDF5 remains deferred until its
-executable evidence exists.
+preparation. MPI/HIP shard persistence remains open. The internal HDF5 adapter is
+capability-gated under `src/io/hdf5` and is covered by `TST-P6-012` when HDF5 is
+available; it does not change the public ABI or CLI output contract. The complete
+run pipeline remains unfinished; HDF5 remains deferred for CLI output until its
+public output contract is versioned.
+
+### P6 optional HDF5 adapter qualification
+
+The adapter maps the frozen `SnapshotFrameView` to one versioned `/particles`
+group with eight SoA datasets and canonical little-endian FNV-1a-64 payload
+validation. It is selected by `BLITZAR_HDF5_MODE=AUTO|ON|OFF`, publishes through
+an atomic temporary file, and reads through bounded staging before mutating the
+caller state. HDF5 headers remain below `src/io/hdf5`; the public C and C++ SDK
+headers remain binary-only. An unavailable dependency falls back to the binary
+codec or returns `BLITZAR_STATUS_UNSUPPORTED` for the optional adapter. The
+round-trip, corruption, truncation, restart, repeated-write, package, and
+unavailable-dependency evidence is registered by `TST-P6-012`, `CHK-P0-038`,
+`CHK-P0-039`, and the package consumer test.
 
 ### P6 output boundary qualification
 

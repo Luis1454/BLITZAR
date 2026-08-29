@@ -89,6 +89,12 @@
       "reason": "CUDA compatibility functions mirror the external runtime pointer ABI."
     },
     {
+      "path": "src/io/hdf5/Hdf5Schema.hpp",
+      "category": "hdf5_runtime_abi",
+      "ownership": "borrowed_error_callback",
+      "reason": "HDF5 error-handler callback data is an opaque non-owning runtime value restored by the RAII scope."
+    },
+    {
       "path": "src/gpu/memory/GpuMemory.inl",
       "category": "gpu_runtime_abi",
       "ownership": "temporary_runtime_buffer",

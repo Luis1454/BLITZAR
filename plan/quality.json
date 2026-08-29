@@ -86,6 +86,12 @@
       "phase": "P6"
     },
     {
+      "id": "TST-P6-012",
+      "name": "optional-hdf5-snapshot-adapter",
+      "command": "blitzar_hdf5_test",
+      "phase": "P6"
+    },
+    {
       "id": "TST-P0-004",
       "name": "bounded-views-and-request-contracts",
       "command": "blitzar_bounded_contract_test",
@@ -339,6 +345,7 @@
       "cmake_files": [
         "CMakeLists.txt",
         "cmake/blitzar_config.cmake.in",
+        "cmake/hdf5.cmake",
         "cmake/hip.cmake",
         "cmake/library.cmake",
         "cmake/mpi.cmake",
@@ -417,6 +424,7 @@
         {"path": "src/simulation/step", "prefix": "Sim"},
         {"path": "src/simulation/transaction", "prefix": "Sim"},
         {"path": "src/io/snapshot", "prefix": "Snapshot"},
+        {"path": "src/io/hdf5", "prefix": "Hdf5"},
         {"path": "src/io/metadata", "prefix": "Metadata"},
         {"path": "src/sdk/c", "prefix": "CApi"},
         {"path": "src/sdk/cpp", "prefix": "Cpp"},
@@ -746,6 +754,18 @@
       "id": "CHK-P0-037",
       "name": "neighborhood-evidence-fixtures",
       "command": "python -m tools.evidence.neighborhood_evidence_test",
+      "phase": "P0"
+    },
+    {
+      "id": "CHK-P0-038",
+      "name": "hdf5-evidence-contract",
+      "command": "python -m tools.evidence.hdf5_evidence --root . --check",
+      "phase": "P0"
+    },
+    {
+      "id": "CHK-P0-039",
+      "name": "hdf5-evidence-fixtures",
+      "command": "python -m tools.evidence.hdf5_evidence_test",
       "phase": "P0"
     }
   ]

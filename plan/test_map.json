@@ -126,6 +126,15 @@
       "contract": "single-rank MPI and direct CPU byte parity, multi-rank output rejection before state capture, and no implicit full gather"
     },
     {
+      "id": "TST-P6-012",
+      "entrypoint": "tests/io/IoHdf5Test.cpp",
+      "responsibility": "tests/io/IoHdf5Test.cpp",
+      "mode": "optional-hdf5",
+      "ranks": 1,
+      "phase": "P6",
+      "contract": "optional HDF5 SoA snapshot round-trip, atomic publication, transactional restart, corruption rejection, unavailable fallback, and repeated-write determinism"
+    },
+    {
       "id": "TST-P0-004",
       "entrypoint": "tests/contracts/ContractBoundedTest.cpp",
       "responsibility": "tests/contracts/ContractBoundedTest.cpp",

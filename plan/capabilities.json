@@ -115,9 +115,10 @@
     },
     {
       "id": "hdf5",
-      "state": "deferred",
-      "root": "src/io",
-      "runtime_evidence": []
+      "state": "capability-gated",
+      "root": "src/io/hdf5",
+      "contract": "optional HDF5 adapter behind SnapshotFrameView; CLI output remains unsupported",
+      "runtime_evidence": ["TST-P6-012", "CHK-P0-038", "package consumer"]
     },
     {
       "id": "gpu-fmm",
