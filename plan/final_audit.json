@@ -694,6 +694,23 @@
         "CHK-P0-039",
         "plan/decisions/062-hdf5-adapter-policy.md"
       ]
+    },
+    {
+      "issue": 675,
+      "title": "Evaluate deterministic snapshot delta encoding",
+      "commit": "5e03056cfefc505c52aa110142ea15993db1ce6d",
+      "pull_request": "https://github.com/Luis1454/BLITZAR/pull/751",
+      "evidence": [
+        "TST-P6-013",
+        "TST-P6-002",
+        "CHK-P0-001",
+        "CHK-P0-006",
+        "CHK-P0-007",
+        "CHK-P0-009",
+        "CHK-P0-040",
+        "CHK-P0-041",
+        "plan/decisions/063-snapshot-delta-policy.md"
+      ]
     }
   ],
   "non_claims": [
@@ -703,7 +720,8 @@
     "PM and TreePM production implementations",
     "MPI/HIP shard persistence",
     "HDF5 CLI snapshot persistence",
-    "GPU FMM"
+    "GPU FMM",
+    "delta encoding as the default binary snapshot or MPI transport path"
   ],
   "findings_policy": {
     "unresolved_allowed": [],
