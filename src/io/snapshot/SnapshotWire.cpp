@@ -6,17 +6,7 @@
 
 namespace blitzar_io {
 
-namespace {
-
-inline constexpr std::uint64_t FnvOffsetBasis = 14695981039346656037ULL;
-inline constexpr std::uint64_t FnvPrime = 1099511628211ULL;
-
-} // namespace
-
-SnapshotWireWriter::SnapshotWireWriter(std::ostream& output) noexcept
-    : output_(output), checksum_(FnvOffsetBasis)
-{
-}
+SnapshotWireWriter::SnapshotWireWriter(std::ostream& output) noexcept : output_(output) {}
 
 bool SnapshotWireWriter::Put(blitzar_core::Scalar value) noexcept
 {
@@ -30,7 +20,7 @@ bool SnapshotWireWriter::PutUnhashed(blitzar_core::Scalar value) noexcept
 
 std::uint64_t SnapshotWireWriter::Checksum() const noexcept
 {
-    return checksum_;
+    return checksum_.Value();
 }
 
 bool SnapshotWireWriter::PutBytes(std::span<const std::byte> bytes, bool hash) noexcept
@@ -43,16 +33,14 @@ bool SnapshotWireWriter::PutBytes(std::span<const std::byte> bytes, bool hash) n
     }
 
     if (hash) {
-        for (const std::byte byte : bytes) {
-            checksum_ = (checksum_ ^ std::to_integer<unsigned char>(byte)) * FnvPrime;
-        }
+        checksum_.Add(bytes);
     }
 
     return true;
 }
 
 SnapshotWireReader::SnapshotWireReader(std::span<const std::byte> bytes) noexcept
-    : bytes_(bytes), position_(0), checksum_(FnvOffsetBasis)
+    : bytes_(bytes), position_(0)
 {
 }
 
@@ -89,7 +77,7 @@ bool SnapshotWireReader::AtEnd() const noexcept
 
 std::uint64_t SnapshotWireReader::Checksum() const noexcept
 {
-    return checksum_;
+    return checksum_.Value();
 }
 
 bool SnapshotWireReader::ReadBytes(std::span<std::byte> destination, bool hash) noexcept
@@ -105,9 +93,7 @@ bool SnapshotWireReader::ReadBytes(std::span<std::byte> destination, bool hash) 
     position_ += destination.size();
 
     if (hash) {
-        for (const std::byte byte : source) {
-            checksum_ = (checksum_ ^ std::to_integer<unsigned char>(byte)) * FnvPrime;
-        }
+        checksum_.Add(source);
     }
 
     return true;

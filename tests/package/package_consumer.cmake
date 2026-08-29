@@ -31,6 +31,15 @@ if(package_config STREQUAL "")
     set(package_config "Release")
 endif()
 
+set(expected_hdf5_enabled "OFF")
+set(hdf5_entry "")
+file(STRINGS "${cache_file}" hdf5_entry
+    REGEX "^BLITZAR_HDF5_ENABLED:INTERNAL=" LIMIT_COUNT 1)
+if(hdf5_entry)
+    string(REGEX REPLACE "^BLITZAR_HDF5_ENABLED:INTERNAL=" ""
+        expected_hdf5_enabled "${hdf5_entry}")
+endif()
+
 set(consumer_generator "")
 set(generator_entry "")
 file(STRINGS "${cache_file}" generator_entry
@@ -109,6 +118,10 @@ if(NOT DEFINED BLITZAR_PLAN_VERSION OR
    NOT BLITZAR_PLAN_VERSION STREQUAL "@EXPECTED_PLAN_VERSION@")
     message(FATAL_ERROR "installed BLITZAR plan version is incorrect")
 endif()
+if(NOT DEFINED BLITZAR_HDF5_ENABLED OR
+   NOT BLITZAR_HDF5_ENABLED STREQUAL "@EXPECTED_HDF5_ENABLED@")
+    message(FATAL_ERROR "installed BLITZAR HDF5 capability is incorrect")
+endif()
 
 add_executable(package_c_consumer "@EXAMPLE_C@")
 set_property(TARGET package_c_consumer PROPERTY LINKER_LANGUAGE CXX)
@@ -123,6 +136,7 @@ target_link_libraries(package_cpp_consumer PRIVATE BLITZAR::blitzar)
 ]=])
 set(EXPECTED_PRODUCT_VERSION "${expected_product_version}")
 set(EXPECTED_PLAN_VERSION "${expected_plan_version}")
+set(EXPECTED_HDF5_ENABLED "${expected_hdf5_enabled}")
 set(EXAMPLE_C "${example_c}")
 set(EXAMPLE_V2 "${example_v2}")
 set(EXAMPLE_CPP "${example_cpp}")

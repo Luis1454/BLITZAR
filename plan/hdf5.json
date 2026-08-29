@@ -1,0 +1,63 @@
+{
+  "schema_version": 1,
+  "plan_version": "1.0.46",
+  "state": "capability-gated",
+  "mode_values": ["AUTO", "ON", "OFF"],
+  "fallback": "binary-snapshot-codec",
+  "file_extension": ".h5",
+  "root_group": "particles",
+  "header_attributes": [
+    "schema_version",
+    "magic",
+    "version",
+    "scalar_bytes",
+    "particle_count",
+    "step",
+    "time",
+    "rank_count",
+    "rank_index",
+    "endianness",
+    "distribution",
+    "id_policy",
+    "payload_checksum"
+  ],
+  "payload_datasets": [
+    "ids",
+    "position_x",
+    "position_y",
+    "position_z",
+    "velocity_x",
+    "velocity_y",
+    "velocity_z",
+    "mass"
+  ],
+  "payload_order": [
+    "ids",
+    "position_x",
+    "position_y",
+    "position_z",
+    "velocity_x",
+    "velocity_y",
+    "velocity_z",
+    "mass"
+  ],
+  "scalar": "IEEE-754 binary64",
+  "endianness": "little",
+  "checksum": "FNV-1a-64 over canonical little-endian payload",
+  "max_particle_count": 100000,
+  "staging_bytes_per_particle": 64,
+  "transactional_read": true,
+  "atomic_publication": true,
+  "determinism": {
+    "same_frame_same_file": true,
+    "wall_clock_metadata": false,
+    "qualification_repeat_writes": 32
+  },
+  "evidence": {
+    "test_id": "TST-P6-012",
+    "contract_check_id": "CHK-P0-038",
+    "fixture_check_id": "CHK-P0-039",
+    "package_check": "tests/package/package_consumer.cmake",
+    "memory_measurement": "bounded logical SoA staging bytes; process RSS is not claimed"
+  }
+}

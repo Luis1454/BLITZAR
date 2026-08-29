@@ -2,6 +2,7 @@
 #define BLITZAR_IO_SNAPSHOT_SNAPSHOT_WIRE_HPP
 
 #include "core/CoreSnapshot.hpp"
+#include "io/snapshot/SnapshotChecksum.hpp"
 
 #include <array>
 #include <concepts>
@@ -71,7 +72,7 @@ private:
     [[nodiscard]] bool PutBytes(std::span<const std::byte> bytes, bool hash) noexcept;
 
     std::ostream& output_;
-    std::uint64_t checksum_;
+    SnapshotChecksum checksum_;
 };
 
 class SnapshotWireReader final {
@@ -117,7 +118,7 @@ private:
 
     std::span<const std::byte> bytes_;
     std::size_t position_;
-    std::uint64_t checksum_;
+    SnapshotChecksum checksum_;
 };
 
 } // namespace blitzar_io

@@ -11,6 +11,7 @@ registered ABI or execution boundary.
 | --- | --- | --- |
 | `include/blitzar/blitzar.h` and its adapters | C pointers plus explicit counts | Borrowed for the duration of the call; adapters immediately create bounded `std::span` views. |
 | CUDA/HIP runtime bridge | `void*`, `void**`, and address records | Runtime addresses are owned by `Buffers` and are never destroyed by request records. |
+| HDF5 error callback bridge | opaque callback data pointer | Borrowed by HDF5 while the internal error scope is active; it is restored and never owned by the adapter. |
 | GPU kernel records | device pointers | Borrowed views; counts and capacities live in the launch request and are validated before dispatch. |
 | MPI native calls | `.data()` from validated spans | MPI owns only its request handles; wire storage remains in the owning transport until completion. |
 | test allocator and process entry points | platform-mandated pointers | Instrumentation or process lifetime only; no production ownership is inferred. |

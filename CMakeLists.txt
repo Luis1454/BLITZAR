@@ -21,6 +21,7 @@ include(GNUInstallDirs)
 include(CMakePackageConfigHelpers)
 include(cmake/hip.cmake)
 include(cmake/mpi.cmake)
+include(cmake/hdf5.cmake)
 
 option(BLITZAR_BUILD_TESTS "Build BLITZAR tests" ON)
 option(BLITZAR_BUILD_CLI "Build the BLITZAR command-line application" ON)

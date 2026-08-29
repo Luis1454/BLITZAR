@@ -68,8 +68,11 @@ set(BLITZAR_LIBRARY_SOURCES
     src/sdk/cpp/CppSimulationConfig.cpp
     src/sdk/cpp/CppSimulationData.cpp
     src/io/snapshot/SnapshotWire.cpp
+    src/io/snapshot/SnapshotChecksum.cpp
     src/io/snapshot/SnapshotWriter.cpp
     src/io/snapshot/SnapshotReader.cpp
+    src/io/hdf5/Hdf5Writer.cpp
+    src/io/hdf5/Hdf5Reader.cpp
     src/io/metadata/MetadataManifest.cpp
     src/io/metadata/MetadataManifestJson.cpp
     src/io/metadata/MetadataCursor.cpp
@@ -160,6 +163,7 @@ target_include_directories(blitzar
 blitzar_enable_warnings(blitzar)
 blitzar_enable_hip(blitzar)
 blitzar_enable_mpi(blitzar)
+blitzar_enable_hdf5(blitzar)
 
 if(BLITZAR_ENABLE_OPENMP)
     target_link_libraries(blitzar PUBLIC OpenMP::OpenMP_CXX)

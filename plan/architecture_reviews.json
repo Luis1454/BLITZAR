@@ -142,6 +142,13 @@
       "decision": "The evidence runner keeps command execution, rank validation, capability metadata, and external artifact publication in one benchmark boundary; its branching is the explicit state policy for passed, failed, skipped, and unknown evidence."
     },
     {
+      "path": "tools/evidence/hdf5_evidence.py",
+      "signals": ["branching"],
+      "issue": 650,
+      "status": "accepted",
+      "decision": "The HDF5 evidence runner keeps contract validation, backend record parsing, and enabled/unavailable qualification in one deterministic evidence boundary; its branching is policy validation covered by dedicated fixtures."
+    },
+    {
       "path": "src/mpi/exchange/MpiMigration.cpp",
       "signals": ["branching", "function_length"],
       "issue": 612,
@@ -168,6 +175,13 @@
       "issue": 642,
       "status": "accepted",
       "decision": "The reader keeps bounded file loading, header and payload preflight, checksum and EOF verification, and transactional decode in one persistence boundary; fixed wire parsing is delegated to SnapshotWire and the read path is bounded by the frozen snapshot contract."
+    },
+    {
+      "path": "src/io/hdf5/Hdf5Reader.cpp",
+      "signals": ["branching"],
+      "issue": 650,
+      "status": "accepted",
+      "decision": "The HDF5 reader keeps schema validation, bounded staging, checksum verification, and transactional commit in one adapter boundary; the public snapshot contract remains independent of the optional backend."
     },
     {
       "path": "src/io/metadata/MetadataManifest.cpp",
