@@ -34,3 +34,15 @@ python -m tools.evidence.reduction_evidence --root . --build-dir ../.blitzar-bui
 It validates the Plain/Kahan/Neumaier matrix and the 4096-step KDK
 conservation run from `plan/reduction.json`. Vectorization fields identify
 ordered-loop eligibility; they do not claim hardware counter measurements.
+
+The local-neighbor qualification uses the same external-artifact rule:
+
+```text
+python -m tools.evidence.neighborhood_evidence --root . --build-dir ../.blitzar-build/evidence --output ../.blitzar-evidence/neighborhood --strict
+```
+
+It validates the four local-index candidates, four deterministic distributions,
+exact O(N^2) neighbor parity, rebuild schedules, memory bounds, and the
+separate Octree baseline from `plan/neighborhood.json`. The Hilbert candidate
+is an ordering baseline; no hardware counter or long-range solver claim is
+made by this evidence.

@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "plan_version": "1.0.44",
+  "plan_version": "1.0.45",
   "record_schema_version": 2,
   "target": "blitzar_scaling_test",
   "runner": "tools/evidence/release_evidence.py",

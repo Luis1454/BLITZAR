@@ -1,0 +1,120 @@
+{
+  "schema_version": 1,
+  "plan_version": "1.0.45",
+  "record_schema_version": 1,
+  "target": "blitzar_neighborhood_test",
+  "runner": "tools/evidence/neighborhood_evidence.py",
+  "precision": "float64",
+  "seed": 424242,
+  "particle_count": 96,
+  "steps": 6,
+  "interaction": {
+    "radius": 0.75,
+    "skin": 0.4,
+    "verlet_rebuild_threshold": "maximum particle displacement greater than skin / 2",
+    "boundary": "finite non-periodic box [-8,8]^3; coordinates are clamped to the last cell",
+    "ownership": "original particle index is the stable owner and target/source order",
+    "neighbor_order": "target index ascending, source index ascending",
+    "radius_policy": "inclusive squared-distance comparison",
+    "future_use": "local interactions, SPH, and grid paths only; not a long-range gravity oracle"
+  },
+  "scenarios": [
+    {"id": "dense", "motion": "static", "description": "uniform points in [-2,2]^3"},
+    {"id": "sparse", "motion": "static", "description": "uniform points in [-8,8]^3"},
+    {"id": "clustered", "motion": "static", "description": "two deterministic clusters"},
+    {"id": "moving", "motion": "moving", "description": "bounded points with deterministic velocity"}
+  ],
+  "candidates": [
+    {
+      "id": "cell-linked-v1",
+      "kind": "uniform finite-cell linked list",
+      "role": "local neighbor index",
+      "selected": true,
+      "rebuild_policy": "build once for static frames and once per moving frame"
+    },
+    {
+      "id": "spatial-hash-v1",
+      "kind": "deterministic hashed cell buckets",
+      "role": "local neighbor index candidate",
+      "selected": false,
+      "rebuild_policy": "build once for static frames and once per moving frame"
+    },
+    {
+      "id": "hilbert-order-v1",
+      "kind": "3D Hilbert ordered scan",
+      "role": "ordering baseline, not a spatial-pruning index",
+      "selected": false,
+      "rebuild_policy": "build once for static frames and once per moving frame"
+    },
+    {
+      "id": "verlet-list-v1",
+      "kind": "radius plus skin candidate list",
+      "role": "optional repeated-query optimization",
+      "selected": false,
+      "rebuild_policy": "rebuild when any particle displacement exceeds skin / 2"
+    }
+  ],
+  "selection": {
+    "dense": "cell-linked-v1",
+    "sparse": "cell-linked-v1",
+    "clustered": "cell-linked-v1",
+    "moving": "cell-linked-v1"
+  },
+  "rebuild_schedule": {
+    "static_steps": 1,
+    "moving_steps": 6,
+    "moving_velocity_exceeds_threshold": true
+  },
+  "memory_bound_bytes": 2000000,
+  "tree_baseline": {
+    "kind": "existing Octree",
+    "role": "long-range spatial-resource baseline only",
+    "local_neighbor_oracle": false,
+    "measured_fields": ["build_ns", "cells", "memory_bytes", "hash"]
+  },
+  "required_record_fields": [
+    "schema",
+    "seed",
+    "scenario",
+    "candidate",
+    "particles",
+    "steps",
+    "radius",
+    "skin",
+    "build_ns",
+    "query_ns",
+    "total_ns",
+    "rebuild_count",
+    "neighbor_count",
+    "reference_count",
+    "memory_bytes",
+    "candidate_hash",
+    "reference_hash",
+    "ordering_hash",
+    "octree_build_ns",
+    "octree_cells",
+    "octree_memory_bytes",
+    "octree_hash",
+    "finite",
+    "correct",
+    "repeatable",
+    "selected"
+  ],
+  "invariants": [
+    "all four candidates produce the exact directed O(N^2) neighbor set",
+    "neighbor output is ordered by original target and source indices",
+    "all records are finite, repeatable, and use the declared seed and parameters",
+    "static workloads rebuild once and the moving workload rebuilds on every frame",
+    "each scenario selects exactly the cell-linked candidate",
+    "candidate memory remains below the declared bound",
+    "an explicit finite-box boundary probe covers minimum and maximum coordinates and exact-radius neighbors",
+    "Octree measurements are reported separately and never replace the local-neighbor reference",
+    "Hilbert is evaluated as an ordering baseline, not as a claim of spatial pruning"
+  ],
+  "artifacts": {
+    "generated_outside_source": true,
+    "files": ["metadata.json", "results.json", "summary.md", "run.log"],
+    "hardware_counters": "not_claimed",
+    "timing": "wall-clock qualification only; build and query timing are reported separately"
+  }
+}

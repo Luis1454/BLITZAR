@@ -252,6 +252,27 @@
       "issue": 673,
       "status": "accepted",
       "decision": "The reduction evidence runner keeps executable discovery, external artifact publication, and strict matrix qualification in one evidence boundary; its branches distinguish contract, process, and record failures and are covered by reduction_evidence_test.py."
+    },
+    {
+      "path": "tests/neighborhood/NeighborGridQuery.cpp",
+      "signals": ["branching"],
+      "issue": 674,
+      "status": "accepted",
+      "decision": "The grid query boundary keeps the bounded 27-cell traversal, hash-collision lookup, radius filtering, and deterministic per-target ordering together while grid construction remains in NeighborGrid.cpp."
+    },
+    {
+      "path": "tools/evidence/neighborhood_contract.py",
+      "signals": ["allocation", "branching"],
+      "issue": 674,
+      "status": "accepted",
+      "decision": "The neighborhood contract validator keeps candidate selection, typed record parsing, rebuild policy, and cross-scenario invariants together; its allocations and branches only construct validation diagnostics and are covered by neighborhood_evidence_test.py."
+    },
+    {
+      "path": "tools/evidence/neighborhood_evidence.py",
+      "signals": ["branching"],
+      "issue": 674,
+      "status": "accepted",
+      "decision": "The neighborhood evidence runner keeps executable discovery, external artifact publication, and strict matrix qualification in one evidence boundary; its branches distinguish contract, process, and record failures and are covered by neighborhood_evidence_test.py."
     }
   ]
 }

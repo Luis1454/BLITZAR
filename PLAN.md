@@ -2,7 +2,7 @@
 
 Status: **FROZEN**  
 Product/API version: **1.0.0**
-Plan version: **1.0.44**
+Plan version: **1.0.45**
 
 This repository is a clean-room rewrite. The old repository, its source tree,
 its issues, and its documentation are not implementation inputs. Requirements
@@ -11,7 +11,8 @@ are re-derived here as contracts, numerical references, and acceptance tests.
 The authoritative planning state is the combination of this file,
 `plan/manifest.json`, `plan/quality.json`, `plan/decision-index.json`, and
 `plan/scaling.json`, `plan/layout.json`, `plan/reduction.json`,
-`plan/output_contract.json`, and `plan/final_audit.json`.
+`plan/neighborhood.json`, `plan/output_contract.json`, and
+`plan/final_audit.json`.
 Decision records under `plan/decisions/` preserve the rationale and migration
 history for that state.
 
@@ -96,6 +97,15 @@ energy and momentum. The reduction evidence runner validates error, timing,
 ordering hashes, finite results, and exact default-policy equivalence; reports
 are written outside the source tree.
 
+The local-neighbor qualification contract in `plan/neighborhood.json` compares
+cell-linked buckets, deterministic spatial hashing, 3D Hilbert ordering, and
+Verlet lists over dense, sparse, clustered, and moving workloads. Its exact
+O(N^2) reference preserves original target/source ordering and its strict
+runner reports rebuild schedule, memory, and separate Octree baseline metrics.
+The cell-linked list is selected for future local interactions; no local index
+is promoted into production by this qualification, and the Octree remains a
+long-range structure rather than a local-neighbor oracle.
+
 ## Final Qualification
 
 `plan/final_audit.json` assigns an owner, category, and review gate to every
@@ -154,6 +164,7 @@ apps/blitzar/                    CLI executable; never library production code
 tests/{contracts,fixtures,fmm,gpu,integration,mpi,octree,package,scaling,simulation}/ Tests by responsibility
 tests/layout/                     Morton ordering and bounded layout qualification
 tests/reduction/                  Compensated reduction and conservation qualification
+tests/neighborhood/                Local-neighbor candidate and exact-reference qualification
 examples/                        Minimal C and C++ SDK consumers
 plan/                            Frozen roadmap and machine-readable invariants
 tools/{architecture,gates,format,debug,evidence,audit}/ Repository policy checks
@@ -221,6 +232,10 @@ default for conservation energy and momentum, while Kahan remains a measured
 alternative. `TST-P1-006` verifies cancellation error, throughput,
 repeatability, vectorization eligibility, and long-run diagnostic behavior
 without changing the Direct CPU trajectory.
+
+`TST-P1-007` qualifies local-neighbor candidates independently from long-range
+solver execution. It fixes the finite-box, radius, skin, ownership, ordering,
+rebuild, and memory contracts before any future SPH or grid implementation.
 
 ### P2: Public SDK and CLI
 
