@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "plan_version": "1.0.51",
+  "plan_version": "1.0.52",
   "configuration": {
     "path_base": "config_parent",
     "directives": {
@@ -39,6 +39,10 @@
       "binary": "state-%08d.bin",
       "hdf5": "state-%08d.h5"
     },
+    "state_shard_patterns": {
+      "binary": "state-%08d.rank-%08d.bin",
+      "hdf5": "state-%08d.rank-%08d.h5"
+    },
     "default_state_format": "binary",
     "diagnostics_directory": "diagnostics",
     "diagnostics_file": "conservation.csv",
@@ -72,10 +76,14 @@
       "compiled_backend_mask"
     ],
     "distribution_order": ["rank_count", "rank_index"],
-    "completed_output_order": ["step", "path"],
+    "completed_output_order": ["step", "path|shards"],
     "state_path_patterns": {
       "binary": "states/state-%08d.bin",
       "hdf5": "states/state-%08d.h5"
+    },
+    "state_shard_path_patterns": {
+      "binary": "states/state-%08d.rank-%08d.bin",
+      "hdf5": "states/state-%08d.rank-%08d.h5"
     },
     "temporary_suffix": ".tmp",
     "atomic_publication": true,
@@ -121,7 +129,15 @@
   },
   "semantics": {
     "single_rank": "implemented_first",
-    "multi_rank": "unsupported_until_shards",
+    "multi_rank": "explicit_rank_shards",
+    "shards": {
+      "manifest_owner": "rank_zero",
+      "rank_file_count_per_step": "rank_count",
+      "local_particle_count": true,
+      "id_order": "strictly_increasing_global_stable_ids",
+      "rank_width": 8,
+      "online_diagnostics": "unsupported_until_global_reduction"
+    },
     "initial_step": 0,
     "periodic_only": true,
     "final_write_no_duplicate": true,
@@ -152,7 +168,8 @@
         "distribution"
       ],
       "transactional": true,
-      "distributed": "unsupported",
+      "distributed": "same_rank_count_shards",
+      "postprocess_distributed": "explicit_shard_reconstruction",
       "hdf5": "supported-when-capability-available"
     },
     "timestamp": "excluded"
@@ -254,8 +271,8 @@
   "qualification": {
     "capture_schedule": "configured_output_checkpoints_only",
     "single_rank_mpi": "byte_equal_to_direct_cpu_cli",
-    "multi_rank": "unsupported_before_state_and_output_preparation",
-    "hidden_full_gather": "forbidden_for_cli_output",
+    "multi_rank": "explicit_shards_before_manifest_publication",
+    "hidden_full_gather": "forbidden_for_cli_output_and_postprocess",
     "snapshot_backend_headers": "mpi_and_hip_independent",
     "hip_device_path": "capability_gated",
     "rdma_path": "unverified",

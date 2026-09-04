@@ -184,6 +184,8 @@ public:
     [[nodiscard]] Status step() noexcept;
 
 private:
+    friend struct CppSimulationAccess;
+
     struct Impl;
 
     [[nodiscard]] static bool FitsCount(std::size_t count) noexcept

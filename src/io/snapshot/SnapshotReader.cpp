@@ -69,14 +69,21 @@ namespace {
     return true;
 }
 
-[[nodiscard]] bool ValidateIds(SnapshotWireReader& wire, std::size_t count) noexcept
+[[nodiscard]] bool ValidateIds(SnapshotWireReader& wire, std::size_t count,
+    blitzar_core::SnapshotDistribution distribution) noexcept
 {
+    std::uint64_t previous{};
+
     for (std::size_t index = 0; index < count; ++index) {
         std::uint64_t id{};
 
-        if (!wire.Read(id) || id != index) {
+        if (!wire.Read(id) || (distribution == blitzar_core::SnapshotDistribution::SingleRank
+                                      ? id != index
+                                      : (index != 0U && id <= previous))) {
             return false;
         }
+
+        previous = id;
     }
 
     return true;
@@ -96,9 +103,10 @@ namespace {
     return true;
 }
 
-[[nodiscard]] bool ValidatePayload(SnapshotWireReader& wire, std::size_t count) noexcept
+[[nodiscard]] bool ValidatePayload(SnapshotWireReader& wire, std::size_t count,
+    blitzar_core::SnapshotDistribution distribution) noexcept
 {
-    return ValidateIds(wire, count) && ValidateScalars(wire, count, false) &&
+    return ValidateIds(wire, count, distribution) && ValidateScalars(wire, count, false) &&
            ValidateScalars(wire, count, false) && ValidateScalars(wire, count, false) &&
            ValidateScalars(wire, count, false) && ValidateScalars(wire, count, false) &&
            ValidateScalars(wire, count, false) && ValidateScalars(wire, count, true);
@@ -208,7 +216,7 @@ blitzar_status SnapshotReader::Read(const std::filesystem::path& path,
 
         const std::size_t count = static_cast<std::size_t>(candidate.particle_count);
 
-        if (!ValidatePayload(wire, count)) {
+        if (!ValidatePayload(wire, count, candidate.distribution)) {
             return BLITZAR_STATUS_INVALID_ARGUMENT;
         }
 

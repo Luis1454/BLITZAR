@@ -17,7 +17,10 @@ public:
     explicit MetadataRun(std::filesystem::path root, MetadataRunInfo info);
 
     [[nodiscard]] blitzar_status Prepare() noexcept;
+    [[nodiscard]] blitzar_status Prepare(bool manifest_owner) noexcept;
     [[nodiscard]] blitzar_status PublishSnapshot(blitzar_core::SnapshotFrameView frame) noexcept;
+    [[nodiscard]] blitzar_status CommitDistributedSnapshot(std::uint64_t step) noexcept;
+    [[nodiscard]] blitzar_status DiscardDistributedSnapshot(std::uint64_t step) noexcept;
     [[nodiscard]] std::filesystem::path StatePath(std::uint64_t step) const;
     [[nodiscard]] const std::filesystem::path& Root() const noexcept;
     [[nodiscard]] const std::filesystem::path& ManifestPath() const noexcept;

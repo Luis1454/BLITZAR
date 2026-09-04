@@ -4,11 +4,14 @@
 #include "io/snapshot/SnapshotReader.hpp"
 #include "simulation/initialization/SimConfigState.hpp"
 
+#include <algorithm>
 #include <cstddef>
 #include <cstdint>
 #include <new>
+#include <span>
 #include <stdexcept>
 #include <string>
+#include <vector>
 
 namespace blitzar_io {
 
@@ -53,73 +56,233 @@ namespace {
         {units.length_scale, units.mass_scale, units.time_scale}};
 }
 
-} // namespace
+struct SnapshotReadContext final {
+    MetadataOutputFormat format{};
+    SnapshotReader& binary_reader;
+    Hdf5Reader& hdf5_reader;
+};
 
-blitzar_status ProcessSnapshots(const PostProcessInput& input, ConservationCsv& output) noexcept
+struct SnapshotReadTarget final {
+    blitzar_sim::SimConfigState& state;
+    blitzar_core::SnapshotHeader& header;
+};
+
+struct ShardAssembly final {
+    blitzar_sim::SimConfigState& state;
+    std::span<std::uint8_t> seen;
+    std::size_t total_count{};
+};
+
+struct DistributedSnapshotTarget final {
+    blitzar_sim::SimConfigState& shard;
+    ShardAssembly& assembly;
+};
+
+[[nodiscard]] blitzar_status ReadSnapshot(const std::filesystem::path& path,
+    const SnapshotReadContext& context, SnapshotReadTarget& target) noexcept
 {
-    const std::size_t count =
-        static_cast<std::size_t>(input.info.configuration.simulation.particle_count);
+    return context.format == MetadataOutputFormat::Hdf5
+               ? context.hdf5_reader.Read(path, target.header, MutablePayload(target.state))
+               : context.binary_reader.Read(path, target.header, MutablePayload(target.state));
+}
 
-    blitzar_sim::SimConfigState state;
-    const blitzar_status resize_status = ResizeState(count, state);
+[[nodiscard]] blitzar_status CopyShard(const blitzar_sim::SimConfigState& shard,
+    std::size_t shard_count, ShardAssembly& assembly) noexcept
+{
+    const std::size_t global_count = assembly.state.ids.size();
 
-    if (resize_status != BLITZAR_STATUS_OK) {
-        return resize_status;
+    if (shard_count > global_count || shard_count > global_count - assembly.total_count ||
+        assembly.seen.size() != global_count || shard.ids.size() < shard_count ||
+        shard.position_x.size() < shard_count || shard.position_y.size() < shard_count ||
+        shard.position_z.size() < shard_count || shard.velocity_x.size() < shard_count ||
+        shard.velocity_y.size() < shard_count || shard.velocity_z.size() < shard_count ||
+        shard.mass.size() < shard_count) {
+        return BLITZAR_STATUS_INVALID_ARGUMENT;
     }
 
-    SnapshotReader binary_reader(count);
-    Hdf5Reader hdf5_reader(count);
-    const blitzar_physics::GravityParameters gravity = MakeGravity(input.info);
+    for (std::size_t index = 0; index < shard_count; ++index) {
+        const std::uint64_t id = shard.ids[index];
 
-    const MetadataDiagnostics& diagnostics = input.info.configuration.diagnostics;
+        if (id >= static_cast<std::uint64_t>(global_count) ||
+            assembly.seen[static_cast<std::size_t>(id)] != 0U) {
+            return BLITZAR_STATUS_INVALID_ARGUMENT;
+        }
 
-    for (const std::uint64_t step : input.completed_steps) {
-        const MetadataOutputFormat format = input.info.configuration.output.format;
-        const std::string file_name = StateFileName(step, format);
+        const std::size_t destination = static_cast<std::size_t>(id);
+
+        assembly.seen[destination] = 1U;
+        assembly.state.ids[destination] = id;
+        assembly.state.position_x[destination] = shard.position_x[index];
+        assembly.state.position_y[destination] = shard.position_y[index];
+        assembly.state.position_z[destination] = shard.position_z[index];
+        assembly.state.velocity_x[destination] = shard.velocity_x[index];
+        assembly.state.velocity_y[destination] = shard.velocity_y[index];
+        assembly.state.velocity_z[destination] = shard.velocity_z[index];
+        assembly.state.mass[destination] = shard.mass[index];
+    }
+
+    assembly.total_count += shard_count;
+
+    return BLITZAR_STATUS_OK;
+}
+
+[[nodiscard]] bool HasCompleteIds(std::span<const std::uint8_t> seen) noexcept
+{
+    return std::all_of(seen.begin(), seen.end(), [](std::uint8_t value) { return value != 0U; });
+}
+
+[[nodiscard]] blitzar_status ProcessSingleSnapshot(const PostProcessInput& input,
+    std::uint64_t step, const SnapshotReadContext& context, SnapshotReadTarget& target) noexcept
+{
+    const std::string file_name = StateFileName(step, context.format);
+
+    if (file_name.empty()) {
+        return BLITZAR_STATUS_INVALID_ARGUMENT;
+    }
+
+    const blitzar_status read_status = ReadSnapshot(input.states_path / file_name, context, target);
+
+    if (read_status != BLITZAR_STATUS_OK) {
+        return read_status;
+    }
+
+    return ValidateSnapshotFrame(target.header, input.info, step);
+}
+
+[[nodiscard]] blitzar_status ProcessDistributedSnapshot(const PostProcessInput& input,
+    std::uint64_t step, const SnapshotReadContext& context,
+    DistributedSnapshotTarget& target) noexcept
+{
+    target.assembly.total_count = 0U;
+
+    for (std::uint32_t rank = 0; rank < input.info.rank_count; ++rank) {
+        const std::string file_name = StateShardFileName(step, rank, context.format);
 
         if (file_name.empty()) {
             return BLITZAR_STATUS_INVALID_ARGUMENT;
         }
 
         blitzar_core::SnapshotHeader header{};
+        SnapshotReadTarget read_target{target.shard, header};
         const blitzar_status read_status =
-            format == MetadataOutputFormat::Hdf5
-                ? hdf5_reader.Read(input.states_path / file_name, header, MutablePayload(state))
-                : binary_reader.Read(input.states_path / file_name, header, MutablePayload(state));
+            ReadSnapshot(input.states_path / file_name, context, read_target);
 
         if (read_status != BLITZAR_STATUS_OK) {
             return read_status;
         }
 
-        const blitzar_status frame_status = ValidateSnapshotFrame(header, input.info, step);
+        const blitzar_status frame_status = ValidateSnapshotFrame(header, input.info, step, rank);
 
         if (frame_status != BLITZAR_STATUS_OK) {
             return frame_status;
         }
 
-        blitzar_physics::ConservationMetrics metrics{};
-        const blitzar_status metrics_status =
-            blitzar_physics::ComputeConservationMetrics(state.Input(), gravity, metrics);
+        const blitzar_status copy_status = CopyShard(
+            target.shard, static_cast<std::size_t>(header.particle_count), target.assembly);
 
-        if (metrics_status != BLITZAR_STATUS_OK) {
-            return metrics_status;
-        }
-
-        if (ShouldWriteDiagnostic(input.info, step)) {
-            const ConservationSample sample{step, header.time, header.particle_count, metrics,
-                !diagnostics.enabled || diagnostics.energy,
-                !diagnostics.enabled || diagnostics.momentum,
-                !diagnostics.enabled || diagnostics.relative_error};
-
-            const blitzar_status write_status = output.Append(sample);
-
-            if (write_status != BLITZAR_STATUS_OK) {
-                return write_status;
-            }
+        if (copy_status != BLITZAR_STATUS_OK) {
+            return copy_status;
         }
     }
 
-    return BLITZAR_STATUS_OK;
+    return target.assembly.total_count == target.assembly.state.ids.size() &&
+                   HasCompleteIds(target.assembly.seen)
+               ? BLITZAR_STATUS_OK
+               : BLITZAR_STATUS_INVALID_ARGUMENT;
+}
+
+} // namespace
+
+blitzar_status ProcessSnapshots(const PostProcessInput& input, ConservationCsv& output) noexcept
+{
+    try {
+        const std::size_t count =
+            static_cast<std::size_t>(input.info.configuration.simulation.particle_count);
+
+        blitzar_sim::SimConfigState state;
+        const blitzar_status resize_status = ResizeState(count, state);
+
+        if (resize_status != BLITZAR_STATUS_OK) {
+            return resize_status;
+        }
+
+        blitzar_sim::SimConfigState shard;
+        std::vector<std::uint8_t> seen;
+
+        if (input.info.rank_count > 1U) {
+            const blitzar_status shard_resize_status = ResizeState(count, shard);
+
+            if (shard_resize_status != BLITZAR_STATUS_OK) {
+                return shard_resize_status;
+            }
+
+            seen.resize(count);
+        }
+
+        SnapshotReader binary_reader(count);
+        Hdf5Reader hdf5_reader(count);
+        const SnapshotReadContext read_context{
+            input.info.configuration.output.format, binary_reader, hdf5_reader};
+
+        const blitzar_physics::GravityParameters gravity = MakeGravity(input.info);
+
+        const MetadataDiagnostics& diagnostics = input.info.configuration.diagnostics;
+
+        const bool distributed = input.info.rank_count > 1U;
+        ShardAssembly assembly{state, seen, 0U};
+        DistributedSnapshotTarget distributed_target{shard, assembly};
+
+        for (const std::uint64_t step : input.completed_steps) {
+            std::fill(seen.begin(), seen.end(), 0U);
+
+            blitzar_core::SnapshotHeader header{};
+            SnapshotReadTarget single_target{state, header};
+            const blitzar_status frame_status =
+                distributed
+                    ? ProcessDistributedSnapshot(input, step, read_context, distributed_target)
+                    : ProcessSingleSnapshot(input, step, read_context, single_target);
+
+            if (frame_status != BLITZAR_STATUS_OK) {
+                return frame_status;
+            }
+
+            if (distributed) {
+                header.step = step;
+                header.time =
+                    static_cast<double>(step) * input.info.configuration.simulation.timestep;
+            }
+
+            blitzar_physics::ConservationMetrics metrics{};
+            const blitzar_status metrics_status =
+                blitzar_physics::ComputeConservationMetrics(state.Input(), gravity, metrics);
+
+            if (metrics_status != BLITZAR_STATUS_OK) {
+                return metrics_status;
+            }
+
+            if (ShouldWriteDiagnostic(input.info, step)) {
+                const ConservationSample sample{step, header.time,
+                    static_cast<std::uint64_t>(state.ids.size()), metrics,
+                    !diagnostics.enabled || diagnostics.energy,
+                    !diagnostics.enabled || diagnostics.momentum,
+                    !diagnostics.enabled || diagnostics.relative_error};
+
+                const blitzar_status write_status = output.Append(sample);
+
+                if (write_status != BLITZAR_STATUS_OK) {
+                    return write_status;
+                }
+            }
+        }
+
+        return BLITZAR_STATUS_OK;
+    }
+    catch (const std::length_error&) {
+        return BLITZAR_STATUS_INVALID_ARGUMENT;
+    }
+    catch (const std::bad_alloc&) {
+        return BLITZAR_STATUS_ALLOCATION_FAILURE;
+    }
 }
 
 } // namespace blitzar_io

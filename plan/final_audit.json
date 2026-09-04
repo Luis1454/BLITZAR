@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "plan_version": "1.0.51",
+  "plan_version": "1.0.52",
   "runner": "tools/audit/audit_final.py",
   "artifact_files": [
     "audit.json",
@@ -802,13 +802,33 @@
         "CHK-P0-026",
         "plan/decisions/067-hdf5-cli-output-policy.md"
       ]
+    },
+    {
+      "issue": 685,
+      "title": "Implement explicit MPI and HIP shard persistence",
+      "commit": "4f99a289f60d9d28074ed8c0984ccfd7c0318665",
+      "pull_request": "https://github.com/Luis1454/BLITZAR/pull/756",
+      "evidence": [
+        "TST-P6-001",
+        "TST-P6-002",
+        "TST-P6-003",
+        "TST-P6-010",
+        "TST-P7-006",
+        "CHK-P0-001",
+        "CHK-P0-006",
+        "CHK-P0-007",
+        "CHK-P0-009",
+        "CHK-P0-014",
+        "CHK-P0-018",
+        "CHK-P0-026",
+        "plan/decisions/068-mpi-shard-persistence-policy.md"
+      ]
     }
   ],
   "non_claims": [
     "real multi-node MPI and RDMA qualification",
     "physical NVIDIA CUDA execution when no CUDA device is exposed",
     "physical AMD HIP execution when no AMD device is exposed",
-    "MPI/HIP shard persistence",
     "GPU FMM",
     "delta encoding as the default binary snapshot or MPI transport path",
     "block time stepping as the production integrator",

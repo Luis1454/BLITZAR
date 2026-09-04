@@ -33,9 +33,11 @@ namespace {
     if (!ReadMetadataConfiguration(cursor, info.configuration) ||
         !ReadMetadataCapabilities(cursor, info.capabilities) ||
         !ReadMetadataDistribution(cursor, info) ||
-        !cursor.ReadUnsigned("  \"completed_output_count\": ", ",", completed_count) ||
-        !ReadMetadataOutputs(
-            cursor, completed_count, info.configuration.output.format, completed_steps)) {
+        !cursor.ReadUnsigned("  \"completed_output_count\": ", ",", completed_count)) {
+        return false;
+    }
+
+    if (!ReadMetadataOutputs(cursor, info, completed_count, completed_steps)) {
         return false;
     }
 

@@ -104,11 +104,11 @@ struct SnapshotHeader final {
 
         case SnapshotDistribution::Sharded:
 
-            if (id_policy != SnapshotIdPolicy::GlobalStable) {
+            if (rank_count <= 1 || id_policy != SnapshotIdPolicy::GlobalStable) {
                 return BLITZAR_STATUS_INVALID_ARGUMENT;
             }
 
-            return BLITZAR_STATUS_UNSUPPORTED;
+            return BLITZAR_STATUS_OK;
 
         default:
 
@@ -178,6 +178,17 @@ struct SnapshotPayloadView final {
         return true;
     }
 
+    [[nodiscard]] bool HasStrictlyIncreasingIds() const noexcept
+    {
+        for (std::size_t index = 1; index < ids.size(); ++index) {
+            if (ids[index] <= ids[index - 1U]) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     [[nodiscard]] bool IsFinite() const noexcept
     {
         return IsFiniteSnapshotSpan(position_x) && IsFiniteSnapshotSpan(position_y) &&
@@ -223,7 +234,11 @@ struct SnapshotFrameView final {
             return header_status;
         }
 
-        if (!payload.HasMatchingCounts(header.particle_count) || !payload.HasContiguousIds() ||
+        const bool valid_ids = header.distribution == SnapshotDistribution::SingleRank
+                                   ? payload.HasContiguousIds()
+                                   : payload.HasStrictlyIncreasingIds();
+
+        if (!payload.HasMatchingCounts(header.particle_count) || !valid_ids ||
             !payload.IsFinite()) {
             return BLITZAR_STATUS_INVALID_ARGUMENT;
         }

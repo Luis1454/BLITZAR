@@ -8,12 +8,14 @@
 #include <span>
 #include <stdexcept>
 #include <string>
+#include <string_view>
 
 namespace blitzar_cli {
 
 namespace {
 
-[[nodiscard]] blitzar_io::MetadataRunInfo MakeMetadataInfo(const blitzar_sim::SimConfigRun& config)
+[[nodiscard]] blitzar_io::MetadataRunInfo MakeMetadataInfo(
+    const blitzar_sim::SimConfigRun& config, std::uint32_t rank_count, std::uint32_t rank_index)
 {
     const blitzar::CapabilityReport capabilities = blitzar::capabilities();
     blitzar_io::MetadataRunInfo info;
@@ -50,6 +52,9 @@ namespace {
     info.capabilities = {capabilities.implemented_solver_mask, capabilities.unsupported_solver_mask,
         capabilities.deferred_feature_mask, capabilities.compiled_backend_mask};
 
+    info.rank_count = rank_count;
+    info.rank_index = rank_index;
+
     return info;
 }
 
@@ -61,13 +66,20 @@ namespace {
 
 [[nodiscard]] blitzar_core::SnapshotFrameView MakeFrame(std::uint64_t step,
     blitzar_core::Scalar time, blitzar_core::ParticleOutputView state,
-    std::span<const std::uint64_t> ids) noexcept
+    std::span<const std::uint64_t> ids, std::uint32_t rank_count, std::uint32_t rank_index) noexcept
 {
     blitzar_core::SnapshotHeader header{};
 
     header.particle_count = state.count;
     header.step = step;
     header.time = time;
+    header.rank_count = rank_count;
+    header.rank_index = rank_index;
+    header.distribution = rank_count == 1U ? blitzar_core::SnapshotDistribution::SingleRank
+                                           : blitzar_core::SnapshotDistribution::Sharded;
+
+    header.id_policy = rank_count == 1U ? blitzar_core::SnapshotIdPolicy::GlobalContiguous
+                                        : blitzar_core::SnapshotIdPolicy::GlobalStable;
 
     const blitzar_core::SnapshotPayloadView payload{ids,
         std::span<const blitzar_core::Scalar>(state.x),
@@ -81,6 +93,34 @@ namespace {
     return {header, payload};
 }
 
+[[nodiscard]] blitzar_status Synchronize(const blitzar_parallel::MpiContext& context,
+    blitzar_status local_status, std::string_view phase) noexcept
+{
+    if (!context.IsDistributed()) {
+        return local_status;
+    }
+
+    blitzar_status global_status = BLITZAR_STATUS_INTERNAL_ERROR;
+    const blitzar_status synchronization_status =
+        context.SynchronizeStatus(local_status, "BlitzarOutput", phase, global_status);
+
+    return synchronization_status == BLITZAR_STATUS_OK ? global_status : synchronization_status;
+}
+
+[[nodiscard]] blitzar_status ValidateMpiTopology(
+    const blitzar_parallel::MpiContext& context) noexcept
+{
+    if (!context.IsUsable()) {
+        return context.Status();
+    }
+
+    return context.Rank() >= 0 && context.Size() > 0 && context.Rank() < context.Size() &&
+                   static_cast<std::uint64_t>(context.Size()) <=
+                       static_cast<std::uint64_t>(blitzar_io::MetadataMaxRankIndex) + 1U
+               ? BLITZAR_STATUS_OK
+               : BLITZAR_STATUS_INVALID_ARGUMENT;
+}
+
 [[nodiscard]] blitzar_physics::GravityParameters MakeGravity(
     const blitzar_sim::SimConfigRun& config) noexcept
 {
@@ -91,12 +131,21 @@ namespace {
 
 } // namespace
 
-BlitzarOutput::BlitzarOutput(const blitzar_sim::SimConfigRun& config) noexcept : config_(config) {}
+BlitzarOutput::BlitzarOutput(const blitzar_sim::SimConfigRun& config) noexcept
+    : config_(config), mpi_()
+{
+}
 
-blitzar_status BlitzarOutput::Prepare(std::span<const std::uint64_t> ids) noexcept
+blitzar_status BlitzarOutput::Prepare() noexcept
 {
     if (prepared_) {
         return BLITZAR_STATUS_INVALID_ARGUMENT;
+    }
+
+    const blitzar_status topology_status = ValidateMpiTopology(mpi_);
+
+    if (topology_status != BLITZAR_STATUS_OK) {
+        return topology_status;
     }
 
     if (!config_.output.enabled) {
@@ -109,69 +158,66 @@ blitzar_status BlitzarOutput::Prepare(std::span<const std::uint64_t> ids) noexce
         return BLITZAR_STATUS_OK;
     }
 
-    if (!HasValidParticleCount(config_) ||
-        ids.size() != static_cast<std::size_t>(config_.particle_count)) {
+    if (!HasValidParticleCount(config_)) {
         return BLITZAR_STATUS_INVALID_ARGUMENT;
     }
 
+    if (mpi_.IsDistributed() && config_.diagnostics.enabled) {
+        return BLITZAR_STATUS_UNSUPPORTED;
+    }
+
+    blitzar_status local_status = BLITZAR_STATUS_OK;
+
     try {
-        ids_ = ids;
+        const auto rank_count = static_cast<std::uint32_t>(mpi_.Size());
+        const auto rank_index = static_cast<std::uint32_t>(mpi_.Rank());
 
-        run_.emplace(config_.output.directory, MakeMetadataInfo(config_));
+        run_.emplace(config_.output.directory, MakeMetadataInfo(config_, rank_count, rank_index));
 
-        const blitzar_status status = run_->Prepare();
+        local_status = run_->Prepare(!mpi_.IsDistributed() || mpi_.Rank() == 0);
 
-        if (status != BLITZAR_STATUS_OK) {
-            run_.reset();
-
-            ids_ = {};
-
-            return status;
-        }
-
-        if (config_.diagnostics.enabled) {
+        if (local_status == BLITZAR_STATUS_OK && config_.diagnostics.enabled) {
             diagnostics_.emplace(run_->DiagnosticsPath() / blitzar_io::ConservationFileName);
 
-            const blitzar_status diagnostics_status = diagnostics_->Prepare();
-
-            if (diagnostics_status != BLITZAR_STATUS_OK) {
-                diagnostics_.reset();
-                run_.reset();
-
-                ids_ = {};
-
-                return diagnostics_status;
-            }
+            local_status = diagnostics_->Prepare();
         }
 
-        prepared_ = true;
-
-        return BLITZAR_STATUS_OK;
+        if (local_status != BLITZAR_STATUS_OK) {
+            diagnostics_.reset();
+            run_.reset();
+        }
     }
     catch (const std::bad_alloc&) {
         diagnostics_.reset();
         run_.reset();
 
-        ids_ = {};
-
-        return BLITZAR_STATUS_ALLOCATION_FAILURE;
+        local_status = BLITZAR_STATUS_ALLOCATION_FAILURE;
     }
     catch (const std::length_error&) {
         diagnostics_.reset();
         run_.reset();
 
-        ids_ = {};
-
-        return BLITZAR_STATUS_INVALID_ARGUMENT;
+        local_status = BLITZAR_STATUS_INVALID_ARGUMENT;
     }
     catch (const std::filesystem::filesystem_error&) {
         diagnostics_.reset();
         run_.reset();
 
-        ids_ = {};
-
-        return BLITZAR_STATUS_INTERNAL_ERROR;
+        local_status = BLITZAR_STATUS_INTERNAL_ERROR;
     }
+
+    const blitzar_status status = Synchronize(mpi_, local_status, "prepare");
+
+    if (status != BLITZAR_STATUS_OK) {
+        diagnostics_.reset();
+        run_.reset();
+
+        return status;
+    }
+
+    prepared_ = true;
+
+    return BLITZAR_STATUS_OK;
 }
 
 bool BlitzarOutput::ShouldWriteInitial() const noexcept
@@ -214,14 +260,22 @@ bool BlitzarOutput::ShouldWriteDiagnostics(std::uint64_t step) const noexcept
     return step % interval == 0U;
 }
 
-blitzar_status BlitzarOutput::Publish(
-    std::uint64_t step, blitzar_core::ParticleOutputView state) noexcept
+blitzar_status BlitzarOutput::Publish(std::uint64_t step, blitzar_core::ParticleOutputView state,
+    std::span<const std::uint64_t> ids) noexcept
 {
-    if (!prepared_ || !run_.has_value() || !HasValidParticleCount(config_) ||
-        state.count != static_cast<std::size_t>(config_.particle_count) ||
-        ids_.size() != state.count || !blitzar_core::IsValid(state) || step < config_.StartStep() ||
-        step > config_.FinalStep()) {
-        return BLITZAR_STATUS_INVALID_ARGUMENT;
+    const bool distributed = mpi_.IsDistributed();
+    const bool valid =
+        prepared_ && run_.has_value() && HasValidParticleCount(config_) &&
+        (distributed ? state.count <= static_cast<std::size_t>(config_.particle_count)
+                     : state.count == static_cast<std::size_t>(config_.particle_count)) &&
+        ids.size() == state.count && blitzar_core::IsValid(state) && step >= config_.StartStep() &&
+        step <= config_.FinalStep();
+
+    blitzar_status status = Synchronize(
+        mpi_, valid ? BLITZAR_STATUS_OK : BLITZAR_STATUS_INVALID_ARGUMENT, "publish-preflight");
+
+    if (status != BLITZAR_STATUS_OK) {
+        return status;
     }
 
     const std::uint64_t start_step = config_.StartStep();
@@ -229,9 +283,37 @@ blitzar_status BlitzarOutput::Publish(
         step == start_step ? config_.StartTime()
                            : static_cast<blitzar_core::Scalar>(step) * config_.timestep;
 
-    const blitzar_core::SnapshotFrameView frame = MakeFrame(step, time, state, ids_);
+    const blitzar_core::SnapshotFrameView frame = MakeFrame(step, time, state, ids,
+        static_cast<std::uint32_t>(mpi_.Size()), static_cast<std::uint32_t>(mpi_.Rank()));
 
-    return run_->PublishSnapshot(frame);
+    status = run_->PublishSnapshot(frame);
+
+    if (!distributed) {
+        return status;
+    }
+
+    status = Synchronize(mpi_, status, "publish-shard");
+
+    if (status != BLITZAR_STATUS_OK) {
+        const blitzar_status cleanup_status = run_->DiscardDistributedSnapshot(step);
+
+        (void)Synchronize(mpi_, cleanup_status, "publish-cleanup");
+
+        return status;
+    }
+
+    const blitzar_status commit_status =
+        mpi_.Rank() == 0 ? run_->CommitDistributedSnapshot(step) : BLITZAR_STATUS_OK;
+
+    status = Synchronize(mpi_, commit_status, "publish-manifest");
+
+    if (status != BLITZAR_STATUS_OK) {
+        const blitzar_status cleanup_status = run_->DiscardDistributedSnapshot(step);
+
+        (void)Synchronize(mpi_, cleanup_status, "publish-cleanup");
+    }
+
+    return status;
 }
 
 blitzar_status BlitzarOutput::PublishDiagnostics(
@@ -273,6 +355,12 @@ blitzar_status BlitzarOutput::PublishDiagnostics(
         diagnostics.momentum, diagnostics.relative_error});
 }
 
+blitzar_status BlitzarOutput::SynchronizeStatus(
+    blitzar_status local_status, std::string_view phase) const noexcept
+{
+    return Synchronize(mpi_, local_status, phase);
+}
+
 std::size_t BlitzarOutput::SnapshotCount() const noexcept
 {
     return run_.has_value() ? run_->CompletedOutputCount() : 0U;
@@ -286,6 +374,11 @@ std::size_t BlitzarOutput::DiagnosticsCount() const noexcept
 const std::filesystem::path& BlitzarOutput::OutputPath() const noexcept
 {
     return config_.output.directory;
+}
+
+bool BlitzarOutput::IsSummaryOwner() const noexcept
+{
+    return !mpi_.IsDistributed() || mpi_.Rank() == 0;
 }
 
 } // namespace blitzar_cli

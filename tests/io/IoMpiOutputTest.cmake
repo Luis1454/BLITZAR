@@ -49,11 +49,9 @@ file(MAKE_DIRECTORY "${BLITZAR_TEST_ROOT}")
 
 set(BLITZAR_DIRECT_ROOT "${BLITZAR_TEST_ROOT}/direct")
 set(BLITZAR_SINGLE_ROOT "${BLITZAR_TEST_ROOT}/single")
-set(BLITZAR_DISTRIBUTED_ROOT "${BLITZAR_TEST_ROOT}/distributed")
 file(MAKE_DIRECTORY
     "${BLITZAR_DIRECT_ROOT}"
     "${BLITZAR_SINGLE_ROOT}"
-    "${BLITZAR_DISTRIBUTED_ROOT}"
 )
 
 set(RUN_CONFIG [=[simulation(particle_count=4, dt=0.01, solver=direct, integrator=leapfrog_kdk)
@@ -66,10 +64,8 @@ output(directory="output", every_steps=1, write_initial=true, write_final=true)
 
 set(DIRECT_CONFIG "${BLITZAR_DIRECT_ROOT}/run.ini")
 set(SINGLE_CONFIG "${BLITZAR_SINGLE_ROOT}/run.ini")
-set(DISTRIBUTED_CONFIG "${BLITZAR_DISTRIBUTED_ROOT}/run.ini")
 file(WRITE "${DIRECT_CONFIG}" "${RUN_CONFIG}")
 file(WRITE "${SINGLE_CONFIG}" "${RUN_CONFIG}")
-file(WRITE "${DISTRIBUTED_CONFIG}" "${RUN_CONFIG}")
 
 RunCommand(direct_result direct_output direct_error
     "${BLITZAR_CLI}" --format json --config "${DIRECT_CONFIG}"
@@ -112,32 +108,5 @@ set(OUTPUT_FILES
 foreach(relative_file IN LISTS OUTPUT_FILES)
     CompareFile("${relative_file}")
 endforeach()
-
-set(MPI_COMMAND
-    "${CMAKE_COMMAND}" -E env
-    "OMPI_ALLOW_RUN_AS_ROOT=1"
-    "OMPI_ALLOW_RUN_AS_ROOT_CONFIRM=1"
-    "OMPI_MCA_rmaps_base_oversubscribe=1"
-    "${MPIEXEC_EXECUTABLE}" "${MPIEXEC_NUMPROC_FLAG}" "2"
-)
-list(APPEND MPI_COMMAND ${MPIEXEC_PREFLAGS} "${BLITZAR_CLI}" --format json --config "${DISTRIBUTED_CONFIG}")
-list(APPEND MPI_COMMAND ${MPIEXEC_POSTFLAGS})
-
-RunCommand(distributed_result distributed_output distributed_error ${MPI_COMMAND})
-
-if(distributed_result EQUAL 0)
-    message(FATAL_ERROR "multi-rank output unexpectedly succeeded")
-endif()
-
-string(FIND "${distributed_error}" "\"status\":5" status_position)
-string(FIND "${distributed_error}" "\"phase\":\"output-topology\"" phase_position)
-
-if(status_position EQUAL -1 OR phase_position EQUAL -1)
-    message(FATAL_ERROR "multi-rank output did not report output-topology unsupported: ${distributed_error}")
-endif()
-
-if(EXISTS "${BLITZAR_DISTRIBUTED_ROOT}/output")
-    message(FATAL_ERROR "multi-rank output created an output directory before rejection")
-endif()
 
 file(REMOVE_RECURSE "${BLITZAR_TEST_ROOT}")

@@ -4,6 +4,7 @@
 #include "BlitzarRestart.hpp"
 #include "BlitzarSummary.hpp"
 #include "mpi/runtime/MpiContext.hpp"
+#include "sdk/cpp/CppSimulationAccess.hpp"
 #include "simulation/config/SimConfigFile.hpp"
 #include "simulation/config/SimConfigRun.hpp"
 #include "simulation/initialization/SimConfigState.hpp"
@@ -15,6 +16,7 @@
 #include <filesystem>
 #include <iostream>
 #include <new>
+#include <span>
 #include <stdexcept>
 #include <string_view>
 
@@ -26,12 +28,6 @@ namespace {
 {
     return {input.x, input.y, input.z, input.velocity_x, input.velocity_y, input.velocity_z,
         input.mass};
-}
-
-[[nodiscard]] blitzar::ParticleOutput ToOutput(blitzar_core::ParticleOutputView output) noexcept
-{
-    return {output.x, output.y, output.z, output.velocity_x, output.velocity_y, output.velocity_z,
-        output.mass};
 }
 
 int PrintFailure(BlitzarStreams streams, std::string_view phase, blitzar_status status,
@@ -88,20 +84,61 @@ int PrintFailure(BlitzarStreams streams, std::string_view phase, blitzar_status 
     return static_cast<blitzar_status>(simulation.set_seed(config.seed));
 }
 
-[[nodiscard]] blitzar_status ValidateOutputTopology(
-    const blitzar_sim::SimConfigRun& config) noexcept
+[[nodiscard]] blitzar_status ValidateOutputTopology(const blitzar_sim::SimConfigRun&) noexcept
 {
-    if (!config.output.enabled) {
-        return BLITZAR_STATUS_OK;
-    }
-
     blitzar_parallel::MpiContext context;
 
     if (!context.IsUsable()) {
         return context.Status();
     }
 
-    return context.IsDistributed() ? BLITZAR_STATUS_UNSUPPORTED : BLITZAR_STATUS_OK;
+    return BLITZAR_STATUS_OK;
+}
+
+[[nodiscard]] blitzar_status BuildInitialState(
+    const blitzar_sim::SimConfigRun& config, blitzar_sim::SimConfigState& state) noexcept
+{
+    blitzar_parallel::MpiContext context;
+
+    if (!context.IsUsable()) {
+        return context.Status();
+    }
+
+    const blitzar_status local_status =
+        context.Rank() == 0 ? blitzar_sim::BuildState(config, state) : BLITZAR_STATUS_OK;
+
+    if (!context.IsDistributed()) {
+        return local_status;
+    }
+
+    blitzar_status global_status = BLITZAR_STATUS_INTERNAL_ERROR;
+    const blitzar_status synchronization_status =
+        context.SynchronizeStatus(local_status, "BlitzarRun", "initial-state", global_status);
+
+    return synchronization_status == BLITZAR_STATUS_OK ? global_status : synchronization_status;
+}
+
+[[nodiscard]] blitzar_status ResizeOutputState(
+    std::size_t count, blitzar_sim::SimConfigState& state) noexcept
+{
+    try {
+        state.ids.resize(count);
+        state.position_x.resize(count);
+        state.position_y.resize(count);
+        state.position_z.resize(count);
+        state.velocity_x.resize(count);
+        state.velocity_y.resize(count);
+        state.velocity_z.resize(count);
+        state.mass.resize(count);
+    }
+    catch (const std::length_error&) {
+        return BLITZAR_STATUS_INVALID_ARGUMENT;
+    }
+    catch (const std::bad_alloc&) {
+        return BLITZAR_STATUS_ALLOCATION_FAILURE;
+    }
+
+    return BLITZAR_STATUS_OK;
 }
 
 struct RunResult final {
@@ -114,18 +151,31 @@ struct RunResult final {
     std::uint64_t output_checkpoint_count{};
 };
 
-[[nodiscard]] blitzar_status CaptureState(
-    blitzar::Simulation& simulation, blitzar_sim::SimConfigState& state) noexcept
+[[nodiscard]] blitzar_status CaptureState(blitzar::Simulation& simulation,
+    blitzar_sim::SimConfigState& state, std::size_t& local_count) noexcept
 {
-    blitzar::ParticleOutput output = ToOutput(state.Output());
+    local_count = 0U;
 
-    return static_cast<blitzar_status>(simulation.get_state(output));
+    return blitzar::CppSimulationAccess::GetLocalState(
+        simulation, state.Output(), std::span<std::uint64_t>(state.ids), local_count);
+}
+
+[[nodiscard]] blitzar_core::ParticleOutputView BoundedOutput(
+    blitzar_sim::SimConfigState& state, std::size_t count) noexcept
+{
+    const blitzar_core::ParticleOutputView output = state.Output();
+
+    return {count, output.x.first(count), output.y.first(count), output.z.first(count),
+        output.velocity_x.first(count), output.velocity_y.first(count),
+        output.velocity_z.first(count), output.mass.first(count)};
 }
 
 struct OutputContext final {
     blitzar::Simulation& simulation;
     blitzar_sim::SimConfigState& state;
     BlitzarOutput& output;
+
+    std::size_t local_count{};
 };
 
 struct OutputCheckpoint final {
@@ -153,14 +203,18 @@ struct CheckpointResult final {
     const auto started = std::chrono::steady_clock::now();
     CheckpointResult result;
 
-    blitzar_status status = CaptureState(context.simulation, context.state);
+    blitzar_status status = CaptureState(context.simulation, context.state, context.local_count);
+
+    status = context.output.SynchronizeStatus(status, "output-state");
 
     if (status != BLITZAR_STATUS_OK) {
         result.status = status;
         result.phase = "output-state";
     }
     else if (checkpoint.write_snapshot) {
-        status = context.output.Publish(checkpoint.step, context.state.Output());
+        status = context.output.Publish(checkpoint.step,
+            BoundedOutput(context.state, context.local_count),
+            std::span<const std::uint64_t>(context.state.ids).first(context.local_count));
 
         if (status != BLITZAR_STATUS_OK) {
             result.status = status;
@@ -169,7 +223,8 @@ struct CheckpointResult final {
     }
 
     if (result.status == BLITZAR_STATUS_OK && checkpoint.write_diagnostics) {
-        status = context.output.PublishDiagnostics(checkpoint.step, context.state.Output());
+        status = context.output.PublishDiagnostics(
+            checkpoint.step, BoundedOutput(context.state, context.local_count));
 
         if (status != BLITZAR_STATUS_OK) {
             result.status = status;
@@ -346,8 +401,8 @@ int RunConfig(const std::filesystem::path& path, BlitzarStreams streams, Blitzar
 
     blitzar_sim::SimConfigState state;
 
-    status = config.restart.enabled ? LoadRestartState(config, state)
-                                    : blitzar_sim::BuildState(config, state);
+    status =
+        config.restart.enabled ? LoadRestartState(config, state) : BuildInitialState(config, state);
 
     if (status != BLITZAR_STATUS_OK) {
         return PrintFailure(streams, config.restart.enabled ? "restart" : "state", status,
@@ -382,7 +437,14 @@ int RunConfig(const std::filesystem::path& path, BlitzarStreams streams, Blitzar
 
     BlitzarOutput output_writer(config);
 
-    status = output_writer.Prepare(state.Ids());
+    status = ResizeOutputState(static_cast<std::size_t>(config.particle_count), state);
+    status = output_writer.SynchronizeStatus(status, "output-state");
+
+    if (status != BLITZAR_STATUS_OK) {
+        return PrintFailure(streams, "output-state", status, BlitzarExitCode::Output);
+    }
+
+    status = output_writer.Prepare();
 
     if (status != BLITZAR_STATUS_OK) {
         return PrintFailure(streams, "output-prepare", status, BlitzarExitCode::Output);
@@ -396,6 +458,10 @@ int RunConfig(const std::filesystem::path& path, BlitzarStreams streams, Blitzar
 
     if (run_result.status != BLITZAR_STATUS_OK) {
         return PrintFailure(streams, run_result.phase, run_result.status, run_result.exit_code);
+    }
+
+    if (!output_writer.IsSummaryOwner()) {
+        return static_cast<int>(BlitzarExitCode::Success);
     }
 
     return PrintSummary(streams, config, output_writer, run_result.completed_steps);

@@ -1,5 +1,6 @@
 #include "core/CoreSnapshot.hpp"
 #include "fixtures/FixtureCheck.hpp"
+#include "io/metadata/MetadataReader.hpp"
 #include "io/metadata/MetadataRun.hpp"
 
 #include <array>
@@ -10,6 +11,7 @@
 #include <span>
 #include <string>
 #include <utility>
+#include <vector>
 
 namespace {
 
@@ -205,10 +207,73 @@ int CheckRejectedRoots(const std::filesystem::path& root)
 
     blitzar_io::MetadataRun distributed(root, std::move(distributed_info));
 
-    BLITZAR_CHECK(distributed.Prepare() == BLITZAR_STATUS_UNSUPPORTED);
+    BLITZAR_CHECK(distributed.Prepare() == BLITZAR_STATUS_OK);
+    BLITZAR_CHECK(std::filesystem::is_directory(distributed.StatesPath()));
+    BLITZAR_CHECK(distributed.StatePath(0).filename() == "state-00000000.rank-00000000.bin");
 
     BLITZAR_CHECK(blitzar_io::StateFileName(99999999) == "state-99999999.bin");
     BLITZAR_CHECK(blitzar_io::StateFileName(100000000).empty());
+    BLITZAR_CHECK(blitzar_io::StateShardFileName(0, 1, blitzar_io::MetadataOutputFormat::Binary) ==
+                  "state-00000000.rank-00000001.bin");
+
+    return 0;
+}
+
+int CheckDistributedPublication(const std::filesystem::path& root)
+{
+    RemoveTree(root);
+
+    blitzar_io::MetadataRunInfo root_info = MakeInfo();
+
+    root_info.rank_count = 2;
+
+    blitzar_io::MetadataRunInfo rank_info = root_info;
+
+    rank_info.rank_index = 1;
+
+    blitzar_io::MetadataRun root_run(root, std::move(root_info));
+    blitzar_io::MetadataRun rank_run(root, std::move(rank_info));
+    SnapshotStorage storage{};
+
+    auto root_frame = MakeFrame(storage, 0, 0.0);
+
+    root_frame.header.rank_count = 2;
+    root_frame.header.distribution = blitzar_core::SnapshotDistribution::Sharded;
+    root_frame.header.id_policy = blitzar_core::SnapshotIdPolicy::GlobalStable;
+
+    auto rank_frame = root_frame;
+
+    rank_frame.header.rank_index = 1;
+
+    BLITZAR_CHECK(root_run.Prepare(true) == BLITZAR_STATUS_OK);
+    BLITZAR_CHECK(rank_run.Prepare(false) == BLITZAR_STATUS_OK);
+    BLITZAR_CHECK(root_run.PublishSnapshot(root_frame) == BLITZAR_STATUS_OK);
+    BLITZAR_CHECK(rank_run.PublishSnapshot(rank_frame) == BLITZAR_STATUS_OK);
+    BLITZAR_CHECK(root_run.CompletedOutputCount() == 0U);
+    BLITZAR_CHECK(root_run.CommitDistributedSnapshot(0) == BLITZAR_STATUS_OK);
+    BLITZAR_CHECK(root_run.CompletedOutputCount() == 1U);
+
+    const std::string manifest = ReadText(root_run.ManifestPath());
+    const std::size_t first_shard = manifest.find("state-00000000.rank-00000000.bin");
+    const std::size_t second_shard = manifest.find("state-00000000.rank-00000001.bin");
+
+    BLITZAR_CHECK(manifest.find("\"shards\": [") != std::string::npos);
+    BLITZAR_CHECK(first_shard != std::string::npos);
+    BLITZAR_CHECK(second_shard != std::string::npos);
+    BLITZAR_CHECK(first_shard < second_shard);
+    BLITZAR_CHECK(std::filesystem::is_regular_file(root_run.StatePath(0)));
+    BLITZAR_CHECK(std::filesystem::is_regular_file(rank_run.StatePath(0)));
+
+    blitzar_io::MetadataReader reader;
+    blitzar_io::MetadataRunInfo parsed_info;
+    std::vector<std::uint64_t> completed_steps;
+
+    BLITZAR_CHECK(
+        reader.Read(root_run.ManifestPath(), parsed_info, completed_steps) == BLITZAR_STATUS_OK);
+
+    BLITZAR_CHECK(parsed_info.rank_count == 2U);
+    BLITZAR_CHECK(parsed_info.rank_index == 0U);
+    BLITZAR_CHECK(completed_steps.size() == 1U && completed_steps[0] == 0U);
 
     return 0;
 }
@@ -248,6 +313,7 @@ int main()
     BLITZAR_CHECK(CheckPublication(base / "publication") == 0);
     BLITZAR_CHECK(CheckRejectedRoots(base / "rejected") == 0);
     BLITZAR_CHECK(CheckFailedPublication(base / "failed-publication") == 0);
+    BLITZAR_CHECK(CheckDistributedPublication(base / "distributed") == 0);
 
     RemoveTree(base);
 

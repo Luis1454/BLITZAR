@@ -19,7 +19,8 @@ struct PostProcessInput final {
 [[nodiscard]] blitzar_status ReadPostProcessInput(
     const std::filesystem::path& run_directory, PostProcessInput& input) noexcept;
 [[nodiscard]] blitzar_status ValidateSnapshotFrame(const blitzar_core::SnapshotHeader& header,
-    const MetadataRunInfo& info, std::uint64_t expected_step) noexcept;
+    const MetadataRunInfo& info, std::uint64_t expected_step,
+    std::uint32_t expected_rank = 0U) noexcept;
 [[nodiscard]] bool ShouldWriteDiagnostic(const MetadataRunInfo& info, std::uint64_t step) noexcept;
 
 } // namespace blitzar_io

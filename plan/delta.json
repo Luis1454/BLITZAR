@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "plan_version": "1.0.51",
+  "plan_version": "1.0.52",
   "state": "evaluated-not-default",
   "codec": "xor-rle-v1",
   "format_version": 1,

@@ -199,24 +199,24 @@
     },
     {
       "path": "src/io/metadata/MetadataRun.cpp",
-      "signals": ["function_count"],
-      "issue": 643,
+      "signals": ["branching", "function_count"],
+      "issue": 685,
       "status": "accepted",
-      "decision": "The run boundary keeps preparation, ordered state publication, rollback, and path observability together; the accessors are a narrow filesystem boundary and the publication state machine is not duplicated across adapters."
+      "decision": "The run boundary keeps preparation, ordered local shard publication, root manifest commit, rollback, and path observability together; the publication state machine is shared by binary and HDF5 adapters without duplicating distributed coordination."
     },
     {
       "path": "apps/blitzar/BlitzarRun.cpp",
-      "signals": ["function_length"],
-      "issue": 649,
+      "signals": ["branching", "function_count", "function_length"],
+      "issue": 685,
       "status": "accepted",
-      "decision": "The CLI run entrypoint keeps configuration loading, topology preflight, simulation setup, checkpoint execution, and summary publication together as one orchestration boundary; output timing is an internal qualification result and does not widen the persistence or public API boundaries."
+      "decision": "The CLI run entrypoint keeps topology preflight, simulation setup, non-collective local capture, collective status handling, checkpoint execution, and summary publication together as one orchestration boundary; shard persistence is delegated to the output and metadata boundaries."
     },
     {
       "path": "apps/blitzar/BlitzarOutput.cpp",
-      "signals": ["function_count"],
-      "issue": 648,
+      "signals": ["branching", "function_count", "function_length", "parameter_count"],
+      "issue": 685,
       "status": "accepted",
-      "decision": "The CLI output boundary keeps snapshot scheduling and online conservation publication together so both paths use the same persisted checkpoints and CSV serializer; post-processing consumes that contract without duplicating the simulation loop."
+      "decision": "The CLI output boundary keeps topology validation, collective status synchronization, local atomic shard publication, root manifest commit, and online conservation publication together so all ranks follow one checkpoint state machine; post-processing consumes the explicit shard contract without duplicating the simulation loop."
     },
     {
       "path": "src/io/postprocess/PostProcessInput.cpp",
@@ -406,6 +406,34 @@
       "issue": 683,
       "status": "accepted",
       "decision": "The PM evidence runner receives output, source root, contract, records, and errors explicitly at the artifact boundary so generated qualification remains external and deterministic."
+    },
+    {
+      "path": "apps/blitzar/BlitzarRestart.cpp",
+      "signals": ["branching", "function_count", "function_length", "parameter_count"],
+      "issue": 685,
+      "status": "accepted",
+      "decision": "The restart boundary keeps root-only manifest validation, explicit shard reconstruction, rank-count compatibility, broadcast of restart time, and transactional destination commit together because they form one distributed persistence operation; snapshot codec validation and MPI transport remain delegated."
+    },
+    {
+      "path": "src/io/metadata/MetadataFields.cpp",
+      "signals": ["branching"],
+      "issue": 685,
+      "status": "accepted",
+      "decision": "The metadata parser keeps the single-path and ordered-rank-shard output grammars at the manifest boundary so malformed or reordered shard references cannot enter post-process or restart; filesystem and payload validation remain outside the parser."
+    },
+    {
+      "path": "src/io/postprocess/PostProcessState.cpp",
+      "signals": ["allocation", "branching", "function_length"],
+      "issue": 685,
+      "status": "accepted",
+      "decision": "The post-process state boundary owns explicit shard reads, stable-ID reconstruction, coverage validation, and metric evaluation as one bounded persistence consumer; allocations are pre-sized for reconstruction and no simulation gather is introduced."
+    },
+    {
+      "path": "src/simulation/state/SimParticleGet.cpp",
+      "signals": ["branching"],
+      "issue": 685,
+      "status": "accepted",
+      "decision": "The state-access unit keeps global gather and non-collective local capture beside their shared packet/state validation while preserving separate call contracts; local output is sorted by stable ID and never invokes the distributed gather."
     }
   ]
 }
