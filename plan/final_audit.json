@@ -762,6 +762,28 @@
         "CHK-P0-045",
         "plan/decisions/065-bvh-irregular-query-policy.md"
       ]
+    },
+    {
+      "issue": 683,
+      "title": "Implement CPU Grid, PM, and TreePM solvers",
+      "commit": "de3fa607e3b5d68537cae0c83e9d4dd9874fd96b",
+      "pull_request": "https://github.com/Luis1454/BLITZAR/pull/754",
+      "evidence": [
+        "TST-P5-001",
+        "TST-P5-002",
+        "TST-P5-003",
+        "CHK-P0-001",
+        "CHK-P0-006",
+        "CHK-P0-007",
+        "CHK-P0-009",
+        "CHK-P0-014",
+        "CHK-P0-016",
+        "CHK-P0-018",
+        "CHK-P0-026",
+        "CHK-P0-046",
+        "CHK-P0-047",
+        "plan/decisions/066-grid-pm-treepm-policy.md"
+      ]
     }
   ],
   "non_claims": [
