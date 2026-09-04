@@ -153,11 +153,10 @@ bool ReadMetadataDistribution(MetadataCursor& cursor, MetadataRunInfo& info)
     return true;
 }
 
-bool ReadMetadataOutputs(MetadataCursor& cursor, std::uint64_t expected_count,
-    MetadataOutputFormat format, std::uint32_t rank_count,
-    std::vector<std::uint64_t>& completed_steps)
+bool ReadMetadataOutputs(MetadataCursor& cursor, MetadataRunInfo& info,
+    std::uint64_t expected_count, std::vector<std::uint64_t>& completed_steps)
 {
-    if (rank_count == 0U || rank_count > MetadataMaxRankIndex + 1U ||
+    if (info.rank_count == 0U || info.rank_count > MetadataMaxRankIndex + 1U ||
         expected_count > MetadataMaxStepCount + 1U ||
         !cursor.Expect("  \"completed_outputs\": [")) {
         return false;
@@ -173,9 +172,10 @@ bool ReadMetadataOutputs(MetadataCursor& cursor, std::uint64_t expected_count,
             return false;
         }
 
-        if (rank_count == 1U) {
+        if (info.rank_count == 1U) {
             std::string path;
-            const std::string expected_path = "states/" + StateFileName(step, format);
+            const std::string expected_path =
+                "states/" + StateFileName(step, info.configuration.output.format);
 
             if (expected_path == "states/" || !cursor.ReadString("      \"path\": ", "", path) ||
                 path != expected_path) {
@@ -187,12 +187,12 @@ bool ReadMetadataOutputs(MetadataCursor& cursor, std::uint64_t expected_count,
                 return false;
             }
 
-            for (std::uint32_t rank = 0; rank < rank_count; ++rank) {
+            for (std::uint32_t rank = 0; rank < info.rank_count; ++rank) {
                 std::string path;
                 const std::string expected_path =
-                    "states/" + StateShardFileName(step, rank, format);
+                    "states/" + StateShardFileName(step, rank, info.configuration.output.format);
 
-                const std::string separator = rank + 1U == rank_count ? "" : ",";
+                const std::string separator = rank + 1U == info.rank_count ? "" : ",";
 
                 if (expected_path == "states/" || !cursor.ReadString("        ", separator, path) ||
                     path != expected_path) {

@@ -14,9 +14,9 @@ namespace blitzar_io {
 [[nodiscard]] bool ReadMetadataCapabilities(
     MetadataCursor& cursor, MetadataCapabilities& capabilities);
 [[nodiscard]] bool ReadMetadataDistribution(MetadataCursor& cursor, MetadataRunInfo& info);
-[[nodiscard]] bool ReadMetadataOutputs(MetadataCursor& cursor, std::uint64_t expected_count,
-    MetadataOutputFormat format, std::uint32_t rank_count,
-    std::vector<std::uint64_t>& completed_steps);
+
+[[nodiscard]] bool ReadMetadataOutputs(MetadataCursor& cursor, MetadataRunInfo& info,
+    std::uint64_t expected_count, std::vector<std::uint64_t>& completed_steps);
 [[nodiscard]] bool HasValidMetadataSteps(
     const std::vector<std::uint64_t>& completed_steps, std::uint64_t requested_steps) noexcept;
 

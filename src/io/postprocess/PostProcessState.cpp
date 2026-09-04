@@ -56,23 +56,43 @@ namespace {
         {units.length_scale, units.mass_scale, units.time_scale}};
 }
 
+struct SnapshotReadContext final {
+    MetadataOutputFormat format{};
+    SnapshotReader& binary_reader;
+    Hdf5Reader& hdf5_reader;
+};
+
+struct SnapshotReadTarget final {
+    blitzar_sim::SimConfigState& state;
+    blitzar_core::SnapshotHeader& header;
+};
+
+struct ShardAssembly final {
+    blitzar_sim::SimConfigState& state;
+    std::span<std::uint8_t> seen;
+    std::size_t total_count{};
+};
+
+struct DistributedSnapshotTarget final {
+    blitzar_sim::SimConfigState& shard;
+    ShardAssembly& assembly;
+};
+
 [[nodiscard]] blitzar_status ReadSnapshot(const std::filesystem::path& path,
-    MetadataOutputFormat format, SnapshotReader& binary_reader, Hdf5Reader& hdf5_reader,
-    blitzar_sim::SimConfigState& state, blitzar_core::SnapshotHeader& header) noexcept
+    const SnapshotReadContext& context, SnapshotReadTarget& target) noexcept
 {
-    return format == MetadataOutputFormat::Hdf5
-               ? hdf5_reader.Read(path, header, MutablePayload(state))
-               : binary_reader.Read(path, header, MutablePayload(state));
+    return context.format == MetadataOutputFormat::Hdf5
+               ? context.hdf5_reader.Read(path, target.header, MutablePayload(target.state))
+               : context.binary_reader.Read(path, target.header, MutablePayload(target.state));
 }
 
 [[nodiscard]] blitzar_status CopyShard(const blitzar_sim::SimConfigState& shard,
-    std::size_t shard_count, blitzar_sim::SimConfigState& state, std::span<std::uint8_t> seen,
-    std::size_t& total_count) noexcept
+    std::size_t shard_count, ShardAssembly& assembly) noexcept
 {
-    const std::size_t global_count = state.ids.size();
+    const std::size_t global_count = assembly.state.ids.size();
 
-    if (shard_count > global_count || shard_count > global_count - total_count ||
-        seen.size() != global_count || shard.ids.size() < shard_count ||
+    if (shard_count > global_count || shard_count > global_count - assembly.total_count ||
+        assembly.seen.size() != global_count || shard.ids.size() < shard_count ||
         shard.position_x.size() < shard_count || shard.position_y.size() < shard_count ||
         shard.position_z.size() < shard_count || shard.velocity_x.size() < shard_count ||
         shard.velocity_y.size() < shard_count || shard.velocity_z.size() < shard_count ||
@@ -84,24 +104,24 @@ namespace {
         const std::uint64_t id = shard.ids[index];
 
         if (id >= static_cast<std::uint64_t>(global_count) ||
-            seen[static_cast<std::size_t>(id)] != 0U) {
+            assembly.seen[static_cast<std::size_t>(id)] != 0U) {
             return BLITZAR_STATUS_INVALID_ARGUMENT;
         }
 
         const std::size_t destination = static_cast<std::size_t>(id);
 
-        seen[destination] = 1U;
-        state.ids[destination] = id;
-        state.position_x[destination] = shard.position_x[index];
-        state.position_y[destination] = shard.position_y[index];
-        state.position_z[destination] = shard.position_z[index];
-        state.velocity_x[destination] = shard.velocity_x[index];
-        state.velocity_y[destination] = shard.velocity_y[index];
-        state.velocity_z[destination] = shard.velocity_z[index];
-        state.mass[destination] = shard.mass[index];
+        assembly.seen[destination] = 1U;
+        assembly.state.ids[destination] = id;
+        assembly.state.position_x[destination] = shard.position_x[index];
+        assembly.state.position_y[destination] = shard.position_y[index];
+        assembly.state.position_z[destination] = shard.position_z[index];
+        assembly.state.velocity_x[destination] = shard.velocity_x[index];
+        assembly.state.velocity_y[destination] = shard.velocity_y[index];
+        assembly.state.velocity_z[destination] = shard.velocity_z[index];
+        assembly.state.mass[destination] = shard.mass[index];
     }
 
-    total_count += shard_count;
+    assembly.total_count += shard_count;
 
     return BLITZAR_STATUS_OK;
 }
@@ -112,43 +132,40 @@ namespace {
 }
 
 [[nodiscard]] blitzar_status ProcessSingleSnapshot(const PostProcessInput& input,
-    std::uint64_t step, SnapshotReader& binary_reader, Hdf5Reader& hdf5_reader,
-    blitzar_sim::SimConfigState& state, blitzar_core::SnapshotHeader& header) noexcept
+    std::uint64_t step, const SnapshotReadContext& context, SnapshotReadTarget& target) noexcept
 {
-    const std::string file_name = StateFileName(step, input.info.configuration.output.format);
+    const std::string file_name = StateFileName(step, context.format);
 
     if (file_name.empty()) {
         return BLITZAR_STATUS_INVALID_ARGUMENT;
     }
 
-    const blitzar_status read_status = ReadSnapshot(input.states_path / file_name,
-        input.info.configuration.output.format, binary_reader, hdf5_reader, state, header);
+    const blitzar_status read_status = ReadSnapshot(input.states_path / file_name, context, target);
 
     if (read_status != BLITZAR_STATUS_OK) {
         return read_status;
     }
 
-    return ValidateSnapshotFrame(header, input.info, step);
+    return ValidateSnapshotFrame(target.header, input.info, step);
 }
 
 [[nodiscard]] blitzar_status ProcessDistributedSnapshot(const PostProcessInput& input,
-    std::uint64_t step, SnapshotReader& binary_reader, Hdf5Reader& hdf5_reader,
-    blitzar_sim::SimConfigState& shard, blitzar_sim::SimConfigState& state,
-    std::span<std::uint8_t> seen) noexcept
+    std::uint64_t step, const SnapshotReadContext& context,
+    DistributedSnapshotTarget& target) noexcept
 {
-    std::size_t total_count = 0U;
-    const MetadataOutputFormat format = input.info.configuration.output.format;
+    target.assembly.total_count = 0U;
 
     for (std::uint32_t rank = 0; rank < input.info.rank_count; ++rank) {
-        const std::string file_name = StateShardFileName(step, rank, format);
+        const std::string file_name = StateShardFileName(step, rank, context.format);
 
         if (file_name.empty()) {
             return BLITZAR_STATUS_INVALID_ARGUMENT;
         }
 
         blitzar_core::SnapshotHeader header{};
-        const blitzar_status read_status = ReadSnapshot(
-            input.states_path / file_name, format, binary_reader, hdf5_reader, shard, header);
+        SnapshotReadTarget read_target{target.shard, header};
+        const blitzar_status read_status =
+            ReadSnapshot(input.states_path / file_name, context, read_target);
 
         if (read_status != BLITZAR_STATUS_OK) {
             return read_status;
@@ -161,14 +178,15 @@ namespace {
         }
 
         const blitzar_status copy_status = CopyShard(
-            shard, static_cast<std::size_t>(header.particle_count), state, seen, total_count);
+            target.shard, static_cast<std::size_t>(header.particle_count), target.assembly);
 
         if (copy_status != BLITZAR_STATUS_OK) {
             return copy_status;
         }
     }
 
-    return total_count == state.ids.size() && HasCompleteIds(seen)
+    return target.assembly.total_count == target.assembly.state.ids.size() &&
+                   HasCompleteIds(target.assembly.seen)
                ? BLITZAR_STATUS_OK
                : BLITZAR_STATUS_INVALID_ARGUMENT;
 }
@@ -203,21 +221,26 @@ blitzar_status ProcessSnapshots(const PostProcessInput& input, ConservationCsv& 
 
         SnapshotReader binary_reader(count);
         Hdf5Reader hdf5_reader(count);
+        const SnapshotReadContext read_context{
+            input.info.configuration.output.format, binary_reader, hdf5_reader};
+
         const blitzar_physics::GravityParameters gravity = MakeGravity(input.info);
 
         const MetadataDiagnostics& diagnostics = input.info.configuration.diagnostics;
 
         const bool distributed = input.info.rank_count > 1U;
+        ShardAssembly assembly{state, seen, 0U};
+        DistributedSnapshotTarget distributed_target{shard, assembly};
 
         for (const std::uint64_t step : input.completed_steps) {
             std::fill(seen.begin(), seen.end(), 0U);
 
             blitzar_core::SnapshotHeader header{};
+            SnapshotReadTarget single_target{state, header};
             const blitzar_status frame_status =
                 distributed
-                    ? ProcessDistributedSnapshot(
-                          input, step, binary_reader, hdf5_reader, shard, state, seen)
-                    : ProcessSingleSnapshot(input, step, binary_reader, hdf5_reader, state, header);
+                    ? ProcessDistributedSnapshot(input, step, read_context, distributed_target)
+                    : ProcessSingleSnapshot(input, step, read_context, single_target);
 
             if (frame_status != BLITZAR_STATUS_OK) {
                 return frame_status;

@@ -416,14 +416,14 @@
     },
     {
       "path": "src/io/metadata/MetadataFields.cpp",
-      "signals": ["branching", "parameter_count"],
+      "signals": ["branching"],
       "issue": 685,
       "status": "accepted",
       "decision": "The metadata parser keeps the single-path and ordered-rank-shard output grammars at the manifest boundary so malformed or reordered shard references cannot enter post-process or restart; filesystem and payload validation remain outside the parser."
     },
     {
       "path": "src/io/postprocess/PostProcessState.cpp",
-      "signals": ["allocation", "branching", "function_length", "parameter_count"],
+      "signals": ["allocation", "branching", "function_length"],
       "issue": 685,
       "status": "accepted",
       "decision": "The post-process state boundary owns explicit shard reads, stable-ID reconstruction, coverage validation, and metric evaluation as one bounded persistence consumer; allocations are pre-sized for reconstruction and no simulation gather is introduced."
