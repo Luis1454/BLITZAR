@@ -248,6 +248,12 @@
       "phase": "P3"
     },
     {
+      "id": "TST-P3-007",
+      "name": "kifmm-cpu-qualification-and-rollback",
+      "command": "blitzar_kifmm_qualification_test",
+      "phase": "P3"
+    },
+    {
       "id": "TST-P4-001",
       "name": "hip-acceleration-and-fallback",
       "command": "blitzar_accelerator_test",

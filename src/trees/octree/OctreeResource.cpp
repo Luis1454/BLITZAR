@@ -1,5 +1,28 @@
 #include "trees/octree/OctreeResource.hpp"
 
+#include <cmath>
+
+namespace {
+
+[[nodiscard]] bool IsValidParticleState(blitzar_core::ParticleStateView particles) noexcept
+{
+    if (!blitzar_core::IsValid(particles)) {
+        return false;
+    }
+
+    for (std::size_t index = 0; index < particles.SourceCount(); ++index) {
+        if (!std::isfinite(particles.x[index]) || !std::isfinite(particles.y[index]) ||
+            !std::isfinite(particles.z[index]) || !std::isfinite(particles.mass[index]) ||
+            particles.mass[index] < 0.0) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
+} // namespace
+
 namespace blitzar_trees {
 
 bool OctreeResourceConfig::IsValid() const noexcept
@@ -15,7 +38,8 @@ OctreeResource::OctreeResource(OctreeResourceConfig config)
 
 blitzar_status OctreeResource::Prepare(blitzar_core::ParticleStateView particles) noexcept
 {
-    if (!config_.IsValid() || particles.SourceCount() > config_.max_particles) {
+    if (!config_.IsValid() || particles.SourceCount() > config_.max_particles ||
+        !IsValidParticleState(particles)) {
         return BLITZAR_STATUS_INVALID_ARGUMENT;
     }
 

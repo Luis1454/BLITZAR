@@ -394,6 +394,14 @@
       "contract": "internal KIFMM surfaces, bounded workspace, Direct parity, rollback, and repeatability"
     },
     {
+      "id": "TST-P3-007",
+      "entrypoint": "tests/fmm/FmmKifmmQualificationTest.cpp",
+      "responsibility": "tests/fmm/FmmKifmmQualificationTest.cpp",
+      "mode": "",
+      "ranks": 1,
+      "contract": "CPU KIFMM qualification against Direct and FMM, conservation, deterministic ordering, capacity, and failed-evaluation rollback"
+    },
+    {
       "id": "TST-P4-001",
       "entrypoint": "tests/gpu/GpuHipTest.cpp",
       "responsibility": "tests/gpu/GpuHipTest.cpp",
