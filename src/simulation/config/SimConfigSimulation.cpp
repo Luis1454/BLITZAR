@@ -30,7 +30,19 @@ namespace {
         return BLITZAR_STATUS_OK;
     }
 
-    if (text == "pm" || text == "treepm") {
+    if (text == "pm") {
+        solver = BLITZAR_SOLVER_PM;
+
+        return BLITZAR_STATUS_OK;
+    }
+
+    if (text == "treepm") {
+        solver = BLITZAR_SOLVER_TREEPM;
+
+        return BLITZAR_STATUS_OK;
+    }
+
+    if (text == "kifmm") {
         return BLITZAR_STATUS_UNSUPPORTED;
     }
 

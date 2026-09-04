@@ -24,8 +24,16 @@ blitzar_status Sim::Step() noexcept
                             integrator_kind_ == BLITZAR_INTEGRATOR_LEAPFROG_KDK &&
                             std::isfinite(timestep_) && timestep_ > 0.0;
 
-    const blitzar_status preflight_status = blitzar_parallel::SynchronizeStatus(runtime_.Mpi(),
-        step_ready ? BLITZAR_STATUS_OK : BLITZAR_STATUS_INVALID_ARGUMENT, "step-preflight");
+    const bool distributed_mesh =
+        runtime_.Mpi().IsDistributed() &&
+        (solver_kind_ == BLITZAR_SOLVER_PM || solver_kind_ == BLITZAR_SOLVER_TREEPM);
+
+    const blitzar_status local_preflight = !step_ready        ? BLITZAR_STATUS_INVALID_ARGUMENT
+                                           : distributed_mesh ? BLITZAR_STATUS_UNSUPPORTED
+                                                              : BLITZAR_STATUS_OK;
+
+    const blitzar_status preflight_status =
+        blitzar_parallel::SynchronizeStatus(runtime_.Mpi(), local_preflight, "step-preflight");
 
     if (preflight_status != BLITZAR_STATUS_OK) {
         return Remember(preflight_status);

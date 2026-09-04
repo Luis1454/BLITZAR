@@ -128,6 +128,12 @@ set(BLITZAR_LIBRARY_SOURCES
     src/trees/octree/OctreeResource.cpp
     src/trees/octree/OctreeView.cpp
     src/solvers/SolverTreeResources.cpp
+    src/grid/GridLayout.cpp
+    src/grid/GridResource.cpp
+    src/solvers/pm/PmSolver.cpp
+    src/solvers/pm/PmSolverForce.cpp
+    src/solvers/treepm/TreePmSolver.cpp
+    src/solvers/treepm/TreePmSolverForce.cpp
 )
 target_sources(blitzar PRIVATE ${BLITZAR_LIBRARY_SOURCES})
 

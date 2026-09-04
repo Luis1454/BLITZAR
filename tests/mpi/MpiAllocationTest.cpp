@@ -63,4 +63,36 @@ bool RunMigrationAllocationCase() noexcept
     return CheckSteadyState(simulation);
 }
 
+bool RunDistributedMeshRejectionCase() noexcept
+{
+    blitzar_parallel::MpiContext context;
+
+    if (!context.IsUsable() || context.Size() <= 1) {
+        return true;
+    }
+
+    const StateArrays initial = InitialState();
+    const std::array<blitzar_solver_kind, 2> solvers{BLITZAR_SOLVER_PM, BLITZAR_SOLVER_TREEPM};
+
+    for (const blitzar_solver_kind solver_kind : solvers) {
+        blitzar_sim::Sim simulation(ParticleCount);
+
+        if (!Configure(simulation, initial, 0.01, solver_kind)) {
+            return false;
+        }
+
+        StateArrays before{};
+        StateArrays after{};
+
+        if (simulation.GetState(blitzar_tests::MakeOutputView(before)) != BLITZAR_STATUS_OK ||
+            simulation.Step() != BLITZAR_STATUS_UNSUPPORTED ||
+            simulation.GetState(blitzar_tests::MakeOutputView(after)) != BLITZAR_STATUS_OK ||
+            !StatesMatch(before, after)) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
 } // namespace blitzar_mpi_tests

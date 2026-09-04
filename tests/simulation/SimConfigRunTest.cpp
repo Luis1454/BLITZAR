@@ -86,8 +86,15 @@ int CheckValidConfiguration()
 
 int CheckRejectedConfiguration()
 {
-    constexpr std::string_view unsupported =
+    constexpr std::string_view particle_mesh =
         R"(simulation(particle_count=2, dt=0.1, solver=pm, integrator=leapfrog_kdk)
+gravity(gravitational_constant=1.0, softening=0.0)
+units(length_scale=1.0, mass_scale=1.0, time_scale=1.0)
+generation(seed=1, deterministic=true)
+)";
+
+    constexpr std::string_view tree_particle_mesh =
+        R"(simulation(particle_count=2, dt=0.1, solver=treepm, integrator=leapfrog_kdk)
 gravity(gravitational_constant=1.0, softening=0.0)
 units(length_scale=1.0, mass_scale=1.0, time_scale=1.0)
 generation(seed=1, deterministic=true)
@@ -122,9 +129,16 @@ generation(seed=1, deterministic=true)
 
     blitzar_sim::SimConfigFile source;
 
-    BLITZAR_CHECK(blitzar_sim::ParseConfig(unsupported, source) == BLITZAR_STATUS_OK);
-    BLITZAR_CHECK(blitzar_sim::BuildRunConfig(source, config) == BLITZAR_STATUS_UNSUPPORTED);
-    BLITZAR_CHECK(config.steps == 73);
+    BLITZAR_CHECK(blitzar_sim::ParseConfig(particle_mesh, source) == BLITZAR_STATUS_OK);
+    BLITZAR_CHECK(blitzar_sim::BuildRunConfig(source, config) == BLITZAR_STATUS_OK);
+    BLITZAR_CHECK(config.solver == BLITZAR_SOLVER_PM);
+    BLITZAR_CHECK(blitzar_sim::ParseConfig(tree_particle_mesh, source) == BLITZAR_STATUS_OK);
+    BLITZAR_CHECK(blitzar_sim::BuildRunConfig(source, config) == BLITZAR_STATUS_OK);
+    BLITZAR_CHECK(config.solver == BLITZAR_SOLVER_TREEPM);
+    BLITZAR_CHECK(config.steps == 1);
+
+    config.steps = 73;
+
     BLITZAR_CHECK(blitzar_sim::ParseConfig(unknown_directive, source) == BLITZAR_STATUS_OK);
     BLITZAR_CHECK(blitzar_sim::BuildRunConfig(source, config) == BLITZAR_STATUS_UNSUPPORTED);
     BLITZAR_CHECK(blitzar_sim::ParseConfig(duplicate, source) == BLITZAR_STATUS_OK);

@@ -246,6 +246,32 @@ target_compile_features(blitzar_fmm_test PRIVATE cxx_std_20)
 target_include_directories(blitzar_fmm_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
 blitzar_enable_warnings(blitzar_fmm_test)
 
+add_executable(blitzar_pm_grid_test
+    tests/pm/PmGridTest.cpp
+)
+target_link_libraries(blitzar_pm_grid_test PRIVATE blitzar)
+target_compile_features(blitzar_pm_grid_test PRIVATE cxx_std_20)
+target_include_directories(blitzar_pm_grid_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
+blitzar_enable_warnings(blitzar_pm_grid_test)
+
+add_executable(blitzar_pm_test
+    tests/fixtures/FixtureAllocationMonitor.cpp
+    tests/pm/PmSolverTest.cpp
+)
+target_link_libraries(blitzar_pm_test PRIVATE blitzar)
+target_compile_features(blitzar_pm_test PRIVATE cxx_std_20)
+target_include_directories(blitzar_pm_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
+blitzar_enable_warnings(blitzar_pm_test)
+
+add_executable(blitzar_treepm_test
+    tests/fixtures/FixtureAllocationMonitor.cpp
+    tests/treepm/TreePmTest.cpp
+)
+target_link_libraries(blitzar_treepm_test PRIVATE blitzar)
+target_compile_features(blitzar_treepm_test PRIVATE cxx_std_20)
+target_include_directories(blitzar_treepm_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
+blitzar_enable_warnings(blitzar_treepm_test)
+
 add_executable(blitzar_numerical_test
     tests/integration/KdkNumericalTest.cpp
 )
@@ -407,6 +433,9 @@ set(BLITZAR_TEST_TARGETS
     blitzar_allocation_test
     blitzar_hierarchy_test
     blitzar_fmm_test
+    blitzar_pm_grid_test
+    blitzar_pm_test
+    blitzar_treepm_test
     blitzar_numerical_test
     blitzar_conservation_test
     blitzar_debug_status_probe
