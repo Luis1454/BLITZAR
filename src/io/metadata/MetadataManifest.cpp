@@ -125,6 +125,7 @@ blitzar_status MetadataRunInfo::Validate() const noexcept
     case BLITZAR_SOLVER_DIRECT:
     case BLITZAR_SOLVER_BARNES_HUT:
     case BLITZAR_SOLVER_FMM:
+    case BLITZAR_SOLVER_KIFMM:
 
         break;
 

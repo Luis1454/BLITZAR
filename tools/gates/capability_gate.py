@@ -16,7 +16,7 @@ STATES = {
     "unsupported",
     "deferred",
 }
-SOLVERS = {"direct": 0, "barnes-hut": 1, "fmm": 2, "pm": 3, "treepm": 4}
+SOLVERS = {"direct": 0, "barnes-hut": 1, "fmm": 2, "pm": 3, "treepm": 4, "kifmm": 5}
 BACKENDS = {"cpu", "hip", "mpi"}
 DEFERRED_ROOTS: set[str] = set()
 

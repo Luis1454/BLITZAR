@@ -350,9 +350,12 @@ The CPU KIFMM extension reuses the read-only Octree view and owns a bounded
 equivalent/check-surface workspace. Its deterministic interaction list uses the
 same acceptance criterion as FMM: near leaves are evaluated by the Direct CPU
 kernel, while accepted cells use a kernel-independent equivalent representation
-and a depth-indexed translation operator. KIFMM remains an internal solver until
-its independent accuracy, rollback, and capacity qualification is complete;
-the public ABI, CLI, and GPU/MPI paths are unchanged by this extension.
+and a depth-indexed translation operator. Decision 070 qualifies KIFMM against
+the Direct CPU oracle and the existing FMM contract for force accuracy,
+conservation, ordering, capacity, and transactional failure behavior. The
+public CPU capability, C/C++ solver selection, and `kifmm` CLI/configuration
+spelling are enabled; MPI, HIP, GPU FMM, and multi-node qualification remain
+unclaimed.
 
 ### P4: HIP Runtime and GPU Solvers
 

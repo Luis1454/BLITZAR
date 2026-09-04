@@ -47,6 +47,7 @@ typedef int32_t blitzar_solver_kind;
 #define BLITZAR_SOLVER_FMM ((blitzar_solver_kind)2)
 #define BLITZAR_SOLVER_PM ((blitzar_solver_kind)3)
 #define BLITZAR_SOLVER_TREEPM ((blitzar_solver_kind)4)
+#define BLITZAR_SOLVER_KIFMM ((blitzar_solver_kind)5)
 
 typedef int32_t blitzar_backend_kind;
 
@@ -60,6 +61,7 @@ typedef uint32_t blitzar_solver_mask;
 #define BLITZAR_SOLVER_MASK_FMM (UINT32_C(1) << 2)
 #define BLITZAR_SOLVER_MASK_PM (UINT32_C(1) << 3)
 #define BLITZAR_SOLVER_MASK_TREEPM (UINT32_C(1) << 4)
+#define BLITZAR_SOLVER_MASK_KIFMM (UINT32_C(1) << 5)
 
 typedef uint32_t blitzar_feature_mask;
 

@@ -46,7 +46,7 @@ extern "C" blitzar_status blitzar_get_capabilities_v2(blitzar_capabilities_v2* c
 
     *capabilities = {struct_size, abi_version,
         BLITZAR_SOLVER_MASK_DIRECT | BLITZAR_SOLVER_MASK_BARNES_HUT | BLITZAR_SOLVER_MASK_FMM |
-            BLITZAR_SOLVER_MASK_PM | BLITZAR_SOLVER_MASK_TREEPM,
+            BLITZAR_SOLVER_MASK_PM | BLITZAR_SOLVER_MASK_TREEPM | BLITZAR_SOLVER_MASK_KIFMM,
         0, deferred_features, compiled_backends};
 
     return BLITZAR_STATUS_OK;

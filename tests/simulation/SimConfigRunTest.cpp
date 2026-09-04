@@ -33,6 +33,14 @@ units(length_scale=1.0, mass_scale=1.0, time_scale=1.0)
 generation(seed=42, deterministic=true)
 )";
 
+constexpr std::string_view KifmmSource =
+    R"(barnes_hut(opening_angle=0.35, max_particles=4, max_cells=64, leaf_capacity=4, max_depth=16)
+simulation(particle_count=4, dt=0.01, solver=kifmm, integrator=leapfrog_kdk)
+gravity(gravitational_constant=1.0, softening=0.01)
+units(length_scale=1.0, mass_scale=1.0, time_scale=1.0)
+generation(seed=42, deterministic=true)
+)";
+
 [[nodiscard]] blitzar_status ParseWithExtra(
     std::string_view extra, blitzar_sim::SimConfigFile& destination)
 {
@@ -80,6 +88,11 @@ int CheckValidConfiguration()
     BLITZAR_CHECK(config.solver == BLITZAR_SOLVER_BARNES_HUT);
     BLITZAR_CHECK(config.barnes_hut.opening_angle == 0.7);
     BLITZAR_CHECK(config.barnes_hut.max_cells == 64);
+
+    BLITZAR_CHECK(blitzar_sim::ParseConfig(KifmmSource, source) == BLITZAR_STATUS_OK);
+    BLITZAR_CHECK(blitzar_sim::BuildRunConfig(source, config) == BLITZAR_STATUS_OK);
+    BLITZAR_CHECK(config.solver == BLITZAR_SOLVER_KIFMM);
+    BLITZAR_CHECK(config.barnes_hut.opening_angle == 0.35);
 
     return 0;
 }

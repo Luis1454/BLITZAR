@@ -65,6 +65,7 @@ int main()
     BLITZAR_CHECK(!unknown.RequiresOctree());
     BLITZAR_CHECK(!unknown.RequiresGrid());
     BLITZAR_CHECK(BLITZAR_SOLVER_TREEPM == 4);
+    BLITZAR_CHECK(BLITZAR_SOLVER_KIFMM == 5);
 
     return 0;
 }

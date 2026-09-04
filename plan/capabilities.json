@@ -33,6 +33,14 @@
       "runtime_evidence": ["TST-P3-002"]
     },
     {
+      "id": "kifmm",
+      "public_value": 5,
+      "state": "implemented-qualified",
+      "compile_requirement": "C++20 CPU toolchain",
+      "runtime_requirement": "single-rank CPU",
+      "runtime_evidence": ["TST-P3-007"]
+    },
+    {
       "id": "pm",
       "public_value": 3,
       "state": "implemented-qualified",
@@ -76,7 +84,7 @@
         "solver": "kifmm",
         "spatial_resource": "octree",
         "private_workspace": "kernel-independent-multipole",
-        "state": "deferred"
+        "state": "implemented-qualified"
       },
       {
         "solver": "pm",

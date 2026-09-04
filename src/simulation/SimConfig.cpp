@@ -63,6 +63,17 @@ blitzar_status Sim::CreateSolver(
 
             return BLITZAR_STATUS_OK;
 
+        case BLITZAR_SOLVER_KIFMM:
+
+            if (!request.barnes_hut.IsValid()) {
+                return BLITZAR_STATUS_INVALID_ARGUMENT;
+            }
+
+            solver.emplace<KifmmSolverBundle>(
+                request.gravity, request.barnes_hut, request.staging_capacity);
+
+            return BLITZAR_STATUS_OK;
+
         case BLITZAR_SOLVER_PM:
 
             solver.emplace<PmSolverBundle>(request.gravity, request.staging_capacity);
@@ -191,7 +202,7 @@ blitzar_status Sim::SetBarnesHut(blitzar_barnes_hut::BarnesHutSettings candidate
     }
 
     if (solver_kind_ == BLITZAR_SOLVER_BARNES_HUT || solver_kind_ == BLITZAR_SOLVER_FMM ||
-        solver_kind_ == BLITZAR_SOLVER_TREEPM) {
+        solver_kind_ == BLITZAR_SOLVER_KIFMM || solver_kind_ == BLITZAR_SOLVER_TREEPM) {
         SolverVariant candidate_solver(
             std::in_place_type<DirectSolverBundle>, gravity_, particle_count_);
 

@@ -10,7 +10,7 @@
 #include <utility>
 #include <variant>
 
-static_assert(std::variant_size_v<blitzar_sim::SolverVariant> == 5);
+static_assert(std::variant_size_v<blitzar_sim::SolverVariant> == 6);
 static_assert(!std::is_copy_constructible_v<blitzar_solvers::SolverTreeResources>);
 static_assert(std::is_move_constructible_v<blitzar_solvers::SolverTreeResources>);
 

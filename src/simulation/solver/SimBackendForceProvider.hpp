@@ -65,6 +65,15 @@ template <> struct SimBackendForceTraits<blitzar_fmm::FmmSolver> final {
     }
 };
 
+template <> struct SimBackendForceTraits<blitzar_kifmm::KifmmSolver> final {
+    [[nodiscard]] static blitzar_status TryGpu(
+        const SimBackendForceContext<blitzar_kifmm::KifmmSolver>&,
+        const blitzar_solvers::SolverForceEvaluation&) noexcept
+    {
+        return BLITZAR_STATUS_UNSUPPORTED;
+    }
+};
+
 template <typename Solver> class SimBackendForceProvider final {
 public:
     explicit SimBackendForceProvider(SimBackendForceContext<Solver> context) noexcept

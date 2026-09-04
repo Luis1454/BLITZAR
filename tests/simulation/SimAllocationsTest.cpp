@@ -29,7 +29,8 @@ struct StateArrays final {
 [[nodiscard]] bool Configure(
     blitzar_sim::Sim& simulation, const StateArrays& state, blitzar_solver_kind solver) noexcept
 {
-    if ((solver == BLITZAR_SOLVER_BARNES_HUT || solver == BLITZAR_SOLVER_TREEPM) &&
+    if ((solver == BLITZAR_SOLVER_BARNES_HUT || solver == BLITZAR_SOLVER_KIFMM ||
+            solver == BLITZAR_SOLVER_TREEPM) &&
         simulation.SetBarnesHut({0.0, ParticleCount, 128, 1, 32}) != BLITZAR_STATUS_OK) {
         return false;
     }
@@ -91,6 +92,7 @@ int main()
         BLITZAR_CHECK(RunCase(simulation, BLITZAR_SOLVER_DIRECT));
         BLITZAR_CHECK(RunCase(simulation, BLITZAR_SOLVER_BARNES_HUT));
         BLITZAR_CHECK(RunCase(simulation, BLITZAR_SOLVER_FMM));
+        BLITZAR_CHECK(RunCase(simulation, BLITZAR_SOLVER_KIFMM));
         BLITZAR_CHECK(RunCase(simulation, BLITZAR_SOLVER_PM));
         BLITZAR_CHECK(RunCase(simulation, BLITZAR_SOLVER_TREEPM));
     }
