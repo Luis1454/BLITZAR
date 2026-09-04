@@ -26,7 +26,8 @@ blitzar_status Sim::Step() noexcept
 
     const bool distributed_mesh =
         runtime_.Mpi().IsDistributed() &&
-        (solver_kind_ == BLITZAR_SOLVER_PM || solver_kind_ == BLITZAR_SOLVER_TREEPM);
+        (solver_kind_ == BLITZAR_SOLVER_PM || solver_kind_ == BLITZAR_SOLVER_TREEPM ||
+            solver_kind_ == BLITZAR_SOLVER_KIFMM);
 
     const blitzar_status local_preflight = !step_ready        ? BLITZAR_STATUS_INVALID_ARGUMENT
                                            : distributed_mesh ? BLITZAR_STATUS_UNSUPPORTED

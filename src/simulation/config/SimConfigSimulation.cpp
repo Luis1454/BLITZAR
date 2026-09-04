@@ -43,7 +43,9 @@ namespace {
     }
 
     if (text == "kifmm") {
-        return BLITZAR_STATUS_UNSUPPORTED;
+        solver = BLITZAR_SOLVER_KIFMM;
+
+        return BLITZAR_STATUS_OK;
     }
 
     return BLITZAR_STATUS_INVALID_ARGUMENT;

@@ -5,6 +5,7 @@
 #include "solvers/barnes_hut/BhSolver.hpp"
 #include "solvers/direct/DirectSolver.hpp"
 #include "solvers/fmm/FmmSolver.hpp"
+#include "solvers/fmm/kifmm/KifmmSolver.hpp"
 #include "solvers/pm/PmSolver.hpp"
 #include "solvers/treepm/TreePmSolver.hpp"
 
@@ -88,6 +89,39 @@ struct FmmSolverBundle final {
     blitzar_fmm::FmmSolver solver;
 };
 
+struct KifmmSolverBundle final {
+    KifmmSolverBundle(blitzar_physics::GravityParameters gravity,
+        blitzar_barnes_hut::BarnesHutSettings settings, std::size_t capacity)
+        : resources({capacity, settings.max_cells, settings.leaf_capacity, settings.max_depth},
+              {settings.max_particles, settings.max_cells, settings.leaf_capacity,
+                  settings.max_depth}),
+          solver(gravity,
+              {settings.opening_angle, settings.max_particles, settings.max_cells,
+                  settings.leaf_capacity, settings.max_depth},
+              capacity, resources)
+    {
+    }
+
+    KifmmSolverBundle(const KifmmSolverBundle&) = delete;
+    KifmmSolverBundle& operator=(const KifmmSolverBundle&) = delete;
+    KifmmSolverBundle(KifmmSolverBundle&& other) noexcept
+        : resources(std::move(other.resources)), solver(std::move(other.solver))
+    {
+        solver.BindResources(resources);
+    }
+    KifmmSolverBundle& operator=(KifmmSolverBundle&& other) noexcept
+    {
+        resources = std::move(other.resources);
+        solver = std::move(other.solver);
+        solver.BindResources(resources);
+
+        return *this;
+    }
+
+    blitzar_solvers::SolverTreeResources resources;
+    blitzar_kifmm::KifmmSolver solver;
+};
+
 struct PmSolverBundle final {
     PmSolverBundle(blitzar_physics::GravityParameters gravity, std::size_t capacity)
         : solver(gravity, {{8, 8, 8}, capacity == 0 ? std::size_t{1} : capacity, 1.0}, capacity)
@@ -136,7 +170,7 @@ struct TreePmSolverBundle final {
 };
 
 using SolverVariant = std::variant<DirectSolverBundle, BarnesHutSolverBundle, FmmSolverBundle,
-    PmSolverBundle, TreePmSolverBundle>;
+    KifmmSolverBundle, PmSolverBundle, TreePmSolverBundle>;
 
 } // namespace blitzar_sim
 

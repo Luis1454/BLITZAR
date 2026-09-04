@@ -132,6 +132,10 @@ namespace {
 
         return "fmm";
 
+    case BLITZAR_SOLVER_KIFMM:
+
+        return "kifmm";
+
     case BLITZAR_SOLVER_PM:
 
         return "pm";

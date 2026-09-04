@@ -462,6 +462,20 @@
       "issue": 683,
       "status": "accepted",
       "decision": "The KIFMM workspace unit owns checked capacity products, fixed surface-node initialization, span access, and transactional growth because these methods define one allocation boundary for all solver-private storage."
+    },
+    {
+      "path": "tests/fmm/FmmKifmmQualificationTest.cpp",
+      "signals": ["branching", "function_count"],
+      "issue": 684,
+      "status": "accepted",
+      "decision": "The qualification executable keeps the independent Direct/FMM oracle, conservation, repeatability, capacity, singularity, and rollback cases together so one deterministic runtime boundary can qualify KIFMM before public promotion."
+    },
+    {
+      "path": "src/simulation/SimConfig.cpp",
+      "signals": ["branching"],
+      "issue": 684,
+      "status": "accepted",
+      "decision": "The simulation configuration boundary keeps solver construction, candidate rebuild, and resource-setting transactionality together so the newly public KIFMM variant follows the same commit policy as the existing solver families."
     }
   ]
 }

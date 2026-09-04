@@ -272,6 +272,15 @@ target_compile_features(blitzar_kifmm_test PRIVATE cxx_std_20)
 target_include_directories(blitzar_kifmm_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
 blitzar_enable_warnings(blitzar_kifmm_test)
 
+add_executable(blitzar_kifmm_qualification_test
+    tests/fixtures/FixtureAllocationMonitor.cpp
+    tests/fmm/FmmKifmmQualificationTest.cpp
+)
+target_link_libraries(blitzar_kifmm_qualification_test PRIVATE blitzar)
+target_compile_features(blitzar_kifmm_qualification_test PRIVATE cxx_std_20)
+target_include_directories(blitzar_kifmm_qualification_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
+blitzar_enable_warnings(blitzar_kifmm_qualification_test)
+
 add_executable(blitzar_pm_grid_test
     tests/pm/PmGridTest.cpp
 )
@@ -460,6 +469,7 @@ set(BLITZAR_TEST_TARGETS
     blitzar_hierarchy_test
     blitzar_fmm_test
     blitzar_kifmm_test
+    blitzar_kifmm_qualification_test
     blitzar_pm_grid_test
     blitzar_pm_test
     blitzar_treepm_test

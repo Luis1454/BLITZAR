@@ -80,7 +80,8 @@ enum class SolverKind : std::int32_t {
     BarnesHut = BLITZAR_SOLVER_BARNES_HUT,
     Fmm = BLITZAR_SOLVER_FMM,
     Pm = BLITZAR_SOLVER_PM,
-    TreePm = BLITZAR_SOLVER_TREEPM
+    TreePm = BLITZAR_SOLVER_TREEPM,
+    Kifmm = BLITZAR_SOLVER_KIFMM
 };
 
 enum class BackendKind : std::int32_t { Cpu = BLITZAR_BACKEND_CPU, Hip = BLITZAR_BACKEND_HIP };

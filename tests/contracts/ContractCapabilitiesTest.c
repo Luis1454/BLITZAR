@@ -21,6 +21,7 @@ int main(void)
     BLITZAR_CHECK((capabilities.implemented_solver_mask & BLITZAR_SOLVER_MASK_FMM) != 0);
     BLITZAR_CHECK((capabilities.implemented_solver_mask & BLITZAR_SOLVER_MASK_PM) != 0);
     BLITZAR_CHECK((capabilities.implemented_solver_mask & BLITZAR_SOLVER_MASK_TREEPM) != 0);
+    BLITZAR_CHECK((capabilities.implemented_solver_mask & BLITZAR_SOLVER_MASK_KIFMM) != 0);
     BLITZAR_CHECK((capabilities.unsupported_solver_mask &
                       (BLITZAR_SOLVER_MASK_PM | BLITZAR_SOLVER_MASK_TREEPM)) == 0);
 
@@ -56,6 +57,9 @@ int main(void)
 
     BLITZAR_CHECK(
         blitzar_simulation_set_solver(simulation, BLITZAR_SOLVER_FMM) == BLITZAR_STATUS_OK);
+
+    BLITZAR_CHECK(
+        blitzar_simulation_set_solver(simulation, BLITZAR_SOLVER_KIFMM) == BLITZAR_STATUS_OK);
 
     BLITZAR_CHECK(
         blitzar_simulation_set_solver(simulation, BLITZAR_SOLVER_PM) == BLITZAR_STATUS_OK);

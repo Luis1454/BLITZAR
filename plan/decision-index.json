@@ -86,6 +86,11 @@
     {"path": "plan/decisions/066-grid-pm-treepm-policy.md", "lifecycle": "active"},
     {"path": "plan/decisions/067-hdf5-cli-output-policy.md", "lifecycle": "active"},
     {"path": "plan/decisions/068-mpi-shard-persistence-policy.md", "lifecycle": "active"},
-    {"path": "plan/decisions/069-kifmm-workspace-policy.md", "lifecycle": "active"}
+    {
+      "path": "plan/decisions/069-kifmm-workspace-policy.md",
+      "lifecycle": "superseded",
+      "notes": "Qualification and public promotion boundary refined by Decision 070."
+    },
+    {"path": "plan/decisions/070-kifmm-qualification-policy.md", "lifecycle": "active"}
   ]
 }
