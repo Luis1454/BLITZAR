@@ -240,6 +240,30 @@
       "contract": "deterministic AABB BVH build, refit, rebuild, and traversal against exact neighbor reference, selected cell-linked index, and separate Octree baseline"
     },
     {
+      "id": "TST-P5-001",
+      "entrypoint": "tests/pm/PmGridTest.cpp",
+      "responsibility": "tests/pm/PmGridTest.cpp",
+      "mode": "qualification",
+      "ranks": 1,
+      "contract": "bounded Grid layout, clamped boundary mapping, CIC mass conservation, deterministic field storage, and generation invalidation"
+    },
+    {
+      "id": "TST-P5-002",
+      "entrypoint": "tests/pm/PmSolverTest.cpp",
+      "responsibility": "tests/pm/PmSolverTest.cpp",
+      "mode": "qualification",
+      "ranks": 1,
+      "contract": "single-rank CPU PM force repeatability, Direct CPU comparison, finite output, and steady-state allocation freedom"
+    },
+    {
+      "id": "TST-P5-003",
+      "entrypoint": "tests/treepm/TreePmTest.cpp",
+      "responsibility": "tests/treepm/TreePmTest.cpp",
+      "mode": "qualification",
+      "ranks": 1,
+      "contract": "single-rank CPU TreePM composition, Octree/Grid ownership, Direct CPU comparison, and steady-state allocation freedom"
+    },
+    {
       "id": "TST-P2-001",
       "entrypoint": "examples/c/CExample.c",
       "responsibility": "examples/c/CExample.c",

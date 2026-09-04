@@ -5,6 +5,8 @@
 #include "solvers/barnes_hut/BhSolver.hpp"
 #include "solvers/direct/DirectSolver.hpp"
 #include "solvers/fmm/FmmSolver.hpp"
+#include "solvers/pm/PmSolver.hpp"
+#include "solvers/treepm/TreePmSolver.hpp"
 
 #include <cstddef>
 #include <utility>
@@ -86,7 +88,55 @@ struct FmmSolverBundle final {
     blitzar_fmm::FmmSolver solver;
 };
 
-using SolverVariant = std::variant<DirectSolverBundle, BarnesHutSolverBundle, FmmSolverBundle>;
+struct PmSolverBundle final {
+    PmSolverBundle(blitzar_physics::GravityParameters gravity, std::size_t capacity)
+        : solver(gravity, {{8, 8, 8}, capacity == 0 ? std::size_t{1} : capacity, 1.0}, capacity)
+    {
+    }
+
+    PmSolverBundle(const PmSolverBundle&) = delete;
+    PmSolverBundle& operator=(const PmSolverBundle&) = delete;
+    PmSolverBundle(PmSolverBundle&&) noexcept = default;
+    PmSolverBundle& operator=(PmSolverBundle&&) noexcept = default;
+
+    blitzar_pm::PmSolver solver;
+};
+
+struct TreePmSolverBundle final {
+    TreePmSolverBundle(blitzar_physics::GravityParameters gravity,
+        blitzar_barnes_hut::BarnesHutSettings settings, std::size_t capacity)
+        : resources({capacity == 0 ? std::size_t{1} : capacity, settings.max_cells,
+                        settings.leaf_capacity, settings.max_depth},
+              {settings.max_particles, settings.max_cells, settings.leaf_capacity,
+                  settings.max_depth}),
+          solver(blitzar_pm::PmSolver(gravity,
+                     {{8, 8, 8}, capacity == 0 ? std::size_t{1} : capacity, 1.0}, capacity),
+              blitzar_barnes_hut::BhSolver(gravity, settings, capacity, resources), resources)
+    {
+    }
+
+    TreePmSolverBundle(const TreePmSolverBundle&) = delete;
+    TreePmSolverBundle& operator=(const TreePmSolverBundle&) = delete;
+    TreePmSolverBundle(TreePmSolverBundle&& other) noexcept
+        : resources(std::move(other.resources)), solver(std::move(other.solver))
+    {
+        solver.BindResources(resources);
+    }
+    TreePmSolverBundle& operator=(TreePmSolverBundle&& other) noexcept
+    {
+        resources = std::move(other.resources);
+        solver = std::move(other.solver);
+        solver.BindResources(resources);
+
+        return *this;
+    }
+
+    blitzar_solvers::SolverTreeResources resources;
+    blitzar_treepm::TreePmSolver solver;
+};
+
+using SolverVariant = std::variant<DirectSolverBundle, BarnesHutSolverBundle, FmmSolverBundle,
+    PmSolverBundle, TreePmSolverBundle>;
 
 } // namespace blitzar_sim
 

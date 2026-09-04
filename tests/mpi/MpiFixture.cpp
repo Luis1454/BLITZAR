@@ -102,7 +102,7 @@ StateArrays MigrationState() noexcept
 bool Configure(blitzar_sim::Sim& simulation, const StateArrays& state, double timestep,
     blitzar_solver_kind solver_kind) noexcept
 {
-    if (solver_kind == BLITZAR_SOLVER_BARNES_HUT &&
+    if ((solver_kind == BLITZAR_SOLVER_BARNES_HUT || solver_kind == BLITZAR_SOLVER_TREEPM) &&
         simulation.SetBarnesHut({0.0, ParticleCount, 128, 1, 32}) != BLITZAR_STATUS_OK) {
         return false;
     }

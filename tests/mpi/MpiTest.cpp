@@ -33,7 +33,7 @@ struct CaseResult final {
     bool passed = false;
 };
 
-using CaseResults = std::array<CaseResult, 13>;
+using CaseResults = std::array<CaseResult, 14>;
 
 ModeSelection SelectMode(std::string_view mode) noexcept
 {
@@ -86,6 +86,9 @@ CaseResults RunCases(blitzar_parallel::MpiContext& context, const ModeSelection&
 
     const bool allocation_case = blitzar_mpi_tests::RunAllocationCase();
     const bool migration_allocation_case = blitzar_mpi_tests::RunMigrationAllocationCase();
+    const bool distributed_mesh_rejection_case =
+        blitzar_mpi_tests::RunDistributedMeshRejectionCase();
+
     const bool rollback_case = blitzar_mpi_tests::RunRollbackCase();
     const bool boundary_case = blitzar_mpi_tests::RunBoundaryOwnershipCase(context);
     const bool error_synchronization_case = blitzar_mpi_tests::RunErrorSynchronizationCase(context);
@@ -102,6 +105,7 @@ CaseResults RunCases(blitzar_parallel::MpiContext& context, const ModeSelection&
         {"P1", "steady-state-allocation", allocation_case},
         {"P8", "migration-allocation", migration_allocation_case},
         {"P8", "rollback", rollback_case}, {"P7", "domain-boundary", boundary_case},
+        {"P5", "distributed-mesh-rejection", distributed_mesh_rejection_case},
         {"P7", "error-synchronization", error_synchronization_case},
         {"P7", "nested-context", nested_context_case},
         {"P7", "collective-validation", collective_validation_case},

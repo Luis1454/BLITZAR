@@ -40,6 +40,7 @@ struct StateArrays final {
 [[nodiscard]] bool RunMigrationAllocationCase() noexcept;
 [[nodiscard]] bool RunRollbackCase() noexcept;
 [[nodiscard]] bool RunOutOfDomainCase() noexcept;
+[[nodiscard]] bool RunDistributedMeshRejectionCase() noexcept;
 
 [[nodiscard]] bool RunErrorSynchronizationCase(blitzar_parallel::MpiContext& context) noexcept;
 [[nodiscard]] bool RunNestedContextCase(const blitzar_parallel::MpiContext& context) noexcept;

@@ -164,6 +164,24 @@
       "phase": "P1"
     },
     {
+      "id": "TST-P5-001",
+      "name": "grid-layout-and-deposition",
+      "command": "blitzar_pm_grid_test",
+      "phase": "P5"
+    },
+    {
+      "id": "TST-P5-002",
+      "name": "pm-cpu-reference-parity",
+      "command": "blitzar_pm_test",
+      "phase": "P5"
+    },
+    {
+      "id": "TST-P5-003",
+      "name": "treepm-composition-and-reference-parity",
+      "command": "blitzar_treepm_test",
+      "phase": "P5"
+    },
+    {
       "id": "TST-P2-001",
       "name": "c-example",
       "command": "blitzar_c_example",
@@ -420,6 +438,9 @@
         {"path": "src/solvers/direct", "prefix": "Direct"},
         {"path": "src/solvers/barnes_hut", "prefix": "Bh"},
         {"path": "src/solvers/fmm", "prefix": "Fmm"},
+        {"path": "src/grid", "prefix": "Grid"},
+        {"path": "src/solvers/pm", "prefix": "Pm"},
+        {"path": "src/solvers/treepm", "prefix": "TreePm"},
         {"path": "src/gpu/runtime", "prefix": "Gpu"},
         {"path": "src/gpu/memory", "prefix": "Gpu"},
         {"path": "src/gpu/direct", "prefix": "GpuDirect"},
@@ -460,6 +481,8 @@
         {"path": "tests/reduction", "prefix": "Reduction"},
         {"path": "tests/neighborhood", "prefix": "Neighbor"},
         {"path": "tests/bvh", "prefix": "Bvh"},
+        {"path": "tests/pm", "prefix": "Pm"},
+        {"path": "tests/treepm", "prefix": "TreePm"},
         {"path": "tests/simulation", "prefix": "Sim"},
         {"path": "examples/c", "prefix": "C"},
         {"path": "examples/cpp", "prefix": "Cpp"}
@@ -821,6 +844,18 @@
       "id": "CHK-P0-045",
       "name": "bvh-evidence-fixtures",
       "command": "python -m tools.evidence.bvh_evidence_test",
+      "phase": "P0"
+    },
+    {
+      "id": "CHK-P0-046",
+      "name": "grid-pm-evidence-contract",
+      "command": "python -m tools.evidence.pm_evidence --root . --check",
+      "phase": "P0"
+    },
+    {
+      "id": "CHK-P0-047",
+      "name": "grid-pm-evidence-fixtures",
+      "command": "python -m tools.evidence.pm_evidence_test",
       "phase": "P0"
     }
   ]

@@ -19,9 +19,12 @@ int main(void)
     BLITZAR_CHECK((capabilities.implemented_solver_mask & BLITZAR_SOLVER_MASK_DIRECT) != 0);
     BLITZAR_CHECK((capabilities.implemented_solver_mask & BLITZAR_SOLVER_MASK_BARNES_HUT) != 0);
     BLITZAR_CHECK((capabilities.implemented_solver_mask & BLITZAR_SOLVER_MASK_FMM) != 0);
-    BLITZAR_CHECK((capabilities.unsupported_solver_mask & BLITZAR_SOLVER_MASK_PM) != 0);
-    BLITZAR_CHECK((capabilities.unsupported_solver_mask & BLITZAR_SOLVER_MASK_TREEPM) != 0);
-    BLITZAR_CHECK((capabilities.deferred_feature_mask & BLITZAR_FEATURE_GRID) != 0);
+    BLITZAR_CHECK((capabilities.implemented_solver_mask & BLITZAR_SOLVER_MASK_PM) != 0);
+    BLITZAR_CHECK((capabilities.implemented_solver_mask & BLITZAR_SOLVER_MASK_TREEPM) != 0);
+    BLITZAR_CHECK((capabilities.unsupported_solver_mask &
+                      (BLITZAR_SOLVER_MASK_PM | BLITZAR_SOLVER_MASK_TREEPM)) == 0);
+
+    BLITZAR_CHECK((capabilities.deferred_feature_mask & BLITZAR_FEATURE_GRID) == 0);
     BLITZAR_CHECK((capabilities.deferred_feature_mask & BLITZAR_FEATURE_SNAPSHOT_PERSISTENCE) != 0);
     BLITZAR_CHECK((capabilities.compiled_backend_mask & BLITZAR_BACKEND_MASK_CPU) != 0);
     BLITZAR_CHECK(blitzar_get_capabilities_v2(NULL) == BLITZAR_STATUS_INVALID_ARGUMENT);
@@ -55,11 +58,11 @@ int main(void)
         blitzar_simulation_set_solver(simulation, BLITZAR_SOLVER_FMM) == BLITZAR_STATUS_OK);
 
     BLITZAR_CHECK(
-        blitzar_simulation_set_solver(simulation, BLITZAR_SOLVER_PM) == BLITZAR_STATUS_UNSUPPORTED);
+        blitzar_simulation_set_solver(simulation, BLITZAR_SOLVER_PM) == BLITZAR_STATUS_OK);
 
     BLITZAR_CHECK(blitzar_simulation_step(simulation) == BLITZAR_STATUS_OK);
-    BLITZAR_CHECK(blitzar_simulation_set_solver(simulation, BLITZAR_SOLVER_TREEPM) ==
-                  BLITZAR_STATUS_UNSUPPORTED);
+    BLITZAR_CHECK(
+        blitzar_simulation_set_solver(simulation, BLITZAR_SOLVER_TREEPM) == BLITZAR_STATUS_OK);
 
     BLITZAR_CHECK(blitzar_simulation_step(simulation) == BLITZAR_STATUS_OK);
     BLITZAR_CHECK(blitzar_simulation_set_solver(simulation, (blitzar_solver_kind)99) ==

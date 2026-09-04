@@ -49,6 +49,10 @@ int main()
     BLITZAR_CHECK(simulation.set_particles({position_x, position_y, position_z, velocity_x,
                       velocity_y, velocity_z, mass}) == blitzar::Status::Ok);
 
+    BLITZAR_CHECK(simulation.set_solver(blitzar::SolverKind::Pm) == blitzar::Status::Ok);
+    BLITZAR_CHECK(simulation.step() == blitzar::Status::Ok);
+    BLITZAR_CHECK(simulation.set_barnes_hut({0.0, 2, 128, 1, 32}) == blitzar::Status::Ok);
+    BLITZAR_CHECK(simulation.set_solver(blitzar::SolverKind::TreePm) == blitzar::Status::Ok);
     BLITZAR_CHECK(simulation.step() == blitzar::Status::Ok);
 
     std::array<double, 2> output_x{};

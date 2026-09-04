@@ -2,7 +2,7 @@
 
 Status: **FROZEN**  
 Product/API version: **1.0.0**
-Plan version: **1.0.49**
+Plan version: **1.0.50**
 
 This repository is a clean-room rewrite. The old repository, its source tree,
 its issues, and its documentation are not implementation inputs. Requirements
@@ -12,7 +12,8 @@ The authoritative planning state is the combination of this file,
 `plan/manifest.json`, `plan/quality.json`, `plan/decision-index.json`, and
 `plan/scaling.json`, `plan/layout.json`, `plan/reduction.json`,
 `plan/neighborhood.json`, `plan/output_contract.json`, `plan/delta.json`, and
-`plan/block_time.json`, `plan/bvh.json`, `plan/final_audit.json`.
+`plan/block_time.json`, `plan/bvh.json`, `plan/grid.json`, and
+`plan/final_audit.json`.
 Decision records under `plan/decisions/` preserve the rationale and migration
 history for that state.
 
@@ -38,9 +39,10 @@ contracts are implemented, explicitly unsupported, or deferred, together with
 the optional backend code compiled into the library. It does not claim that a
 GPU is visible or that MPI is running on more than one host.
 
-Direct, Barnes-Hut, and CPU FMM are implemented solver contracts. PM and
-TreePM remain explicit `BLITZAR_STATUS_UNSUPPORTED` selections and their
-production roots remain deferred. The output contract is frozen in
+Direct, Barnes-Hut, CPU FMM, PM, and TreePM are implemented CPU solver
+contracts. PM and TreePM are qualified for single-rank execution; their
+distributed mesh path remains explicitly unsupported until its ownership and
+halo contract is versioned. The output contract is frozen in
 `plan/output_contract.json`; the HDF5 and delta policies are frozen in
 `plan/hdf5.json` and `plan/delta.json`. The logical versioned
 `SnapshotFrameView` and the single-rank binary codec are implemented and
@@ -137,6 +139,14 @@ Octree remains a separate long-range baseline and the cell-linked structure
 remains the selected local-neighbor policy; no physical force or production
 gravity speedup is claimed.
 
+The P5 grid contract in `plan/grid.json` qualifies the materialized finite
+8³ Grid resource, cloud-in-cell deposition, softened discrete Green
+convolution, and clamped trilinear interpolation. `TST-P5-001` checks grid
+layout and mass conservation, `TST-P5-002` compares PM with the Direct CPU
+reference, and `TST-P5-003` checks TreePM composition. The PM and TreePM CPU
+paths are single-rank and allocation-free after preparation; no FFT, GPU
+speedup, or distributed mesh claim is made.
+
 ## Final Qualification
 
 `plan/final_audit.json` assigns an owner, category, and review gate to every
@@ -197,14 +207,16 @@ tests/layout/                     Morton ordering and bounded layout qualificati
 tests/reduction/                  Compensated reduction and conservation qualification
 tests/neighborhood/                Local-neighbor candidate and exact-reference qualification
 tests/bvh/                         AABB BVH irregular-query qualification
+tests/pm/                           Grid and PM CPU qualification
+tests/treepm/                       TreePM composition qualification
 examples/                        Minimal C and C++ SDK consumers
 plan/                            Frozen roadmap and machine-readable invariants
 tools/{architecture,gates,format,debug,evidence,audit}/ Repository policy checks
 ```
 
-`src/grid`, `src/solvers/pm`, and `src/solvers/treepm` are planned but not
-materialized roots. They remain in the deferred-root set until their production
-ownership and tests exist. Binary snapshot and single-rank metadata ownership
+`src/grid`, `src/solvers/pm`, and `src/solvers/treepm` are materialized P5
+production roots. Their ownership and acceptance tests are frozen in
+`plan/grid.json` and Decision 066. Binary snapshot and single-rank metadata ownership
 are materialized under `src/io`; the optional HDF5 adapter is capability-gated in
 `src/io/hdf5`, while CLI HDF5 output remains deferred. The CPU FMM root is materialized in P3
 with deterministic order-2 multipole qualification; GPU FMM remains outside
@@ -231,19 +243,18 @@ The phases are ordered dependencies, not a list of parallel experiments.
 
 ### Phase status
 
-- P0, P1, P2, and P3 are implemented and locally qualified.
+- P0, P1, P2, P3, and P5 are implemented and locally qualified.
 - P4 is implemented with capability-gated GPU execution evidence.
-- P5 remains deferred because its production roots are not materialized. P6 is
-  implemented locally in stages: its versioned frame contract, single-rank
+- P6 is implemented locally in stages: its versioned frame contract, single-rank
   binary codec, deterministic manifest, atomic output lifecycle, and configured
   CLI publication, the production run summary, deterministic snapshot restart,
   online conservation diagnostics, and snapshot post-processing are qualified,
   while the internal HDF5 adapter is capability-gated and CLI HDF5 output remains
   deferred.
-  P6 does not wait for the unrelated PM/TreePM
-  implementation in P5.
+  P6 does not depend on the PM/TreePM runtime path in P5.
 - P7 and P8 are implemented and locally qualified from the P3/P4 contracts;
-  they do not depend on the deferred P5/P6 roots.
+  their existing distributed qualification does not promote the single-rank
+  P5 mesh path into MPI.
 - The block-time scheduling candidate is qualified as a P1 evidence boundary,
   but it is not promoted into production. Any physical block integrator must
   be a later plan change with force-state, MPI, restart, rollback, and
@@ -273,7 +284,8 @@ without changing the Direct CPU trajectory.
 
 `TST-P1-007` qualifies local-neighbor candidates independently from long-range
 solver execution. It fixes the finite-box, radius, skin, ownership, ordering,
-rebuild, and memory contracts before any future SPH or grid implementation.
+rebuild, and memory contracts used by local interactions; it does not replace
+the P5 long-range Grid resource.
 
 `TST-P1-008` qualifies a bounded block-time schedule without changing the
 fixed-step KDK path. It compares deterministic event ledgers, verifies that
@@ -306,7 +318,7 @@ The executable configuration contract supports only `simulation`, `gravity`,
 `diagnostics`, and `restart` directives. It creates rewrite-native deterministic
 SoA input and executes the
 public C++ facade. Unknown directives, malformed arguments, non-deterministic
-generation, and deferred solver families are rejected rather than interpreted
+generation, and unsupported distributed mesh execution are rejected rather than interpreted
 through legacy behavior. The internal CLI composition target is kept on the
 static-library path; shared-library qualification covers only public consumers.
 
@@ -320,8 +332,8 @@ Barnes-Hut, FMM, KIFMM, PM, and TreePM. `OctreeView` exposes read-only
 topology, geometry, stable ordering, and cell ranges with generation and
 capacity validation. `OctreeResource` owns bounded preparation, and
 `SolverTreeResources` composes local and remote tree resources for hierarchical
-solver bundles. Direct contains no tree resource; PM and TreePM remain deferred
-until a Grid root is materialized. `TST-P3-003` covers the matrix and
+solver bundles. Direct contains no tree resource; PM owns a Grid resource and
+TreePM composes Octree and Grid resources. `TST-P3-003` covers the matrix and
 `TST-P3-004` covers resource lifetime and view invalidation. The
 `SolverForceEvaluation` is the only force request consumed by KDK. Typed
 `SolverForceRequest::Direct` and `SolverForceRequest::Tree` values are created
@@ -341,9 +353,16 @@ the selected OpenMP CPU solver remains the execution path.
 
 ### P5: Grid, PM, and TreePM
 
-Implement grid layout, mass deposition, boundary conditions, and the PM solver.
-TreePM composes the tree and grid contracts; it does not duplicate either
-implementation. CPU behavior is qualified before CUDA dispatch is enabled.
+Materialize the bounded Grid resource with finite non-periodic clamped
+boundaries, cloud-in-cell mass deposition, and deterministic softened discrete
+Green convolution. PM owns the Grid resource and exposes the typed CPU force
+request through the existing provider contract. TreePM composes PM with the
+existing Barnes-Hut resource and stages both fields before a weighted commit;
+it does not duplicate either implementation. The default CPU mesh is 8³ with
+an input-derived domain and one-unit padding. Single-rank CPU behavior is
+qualified against Direct before any accelerator dispatch; distributed PM and
+TreePM reject during step preflight until a global mesh ownership contract is
+added.
 
 ### P6: Persistence and Qualification
 
