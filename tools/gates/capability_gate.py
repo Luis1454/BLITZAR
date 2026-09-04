@@ -18,7 +18,7 @@ STATES = {
 }
 SOLVERS = {"direct": 0, "barnes-hut": 1, "fmm": 2, "pm": 3, "treepm": 4}
 BACKENDS = {"cpu", "hip", "mpi"}
-DEFERRED_ROOTS = {"src/grid", "src/solvers/pm", "src/solvers/treepm"}
+DEFERRED_ROOTS: set[str] = set()
 
 
 def load_json(path: pathlib.Path) -> object:
@@ -153,13 +153,13 @@ def validate_matrix(root: pathlib.Path) -> list[str]:
     )
     if "blitzar_get_capabilities_v2" not in api_info:
         errors.append("public capability function has no implementation")
-    if not re.search(
+    if re.search(
         r"case BLITZAR_SOLVER_PM:.*?case BLITZAR_SOLVER_TREEPM:.*?"
         r"return BLITZAR_STATUS_UNSUPPORTED;",
         config,
         re.DOTALL,
     ):
-        errors.append("PM and TreePM are not visibly rejected as unsupported")
+        errors.append("PM and TreePM remain visibly rejected as unsupported")
     errors.extend(validate_snapshot_description(plan))
 
     return errors

@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "plan_version": "1.0.49",
+  "plan_version": "1.0.50",
   "runner": "tools/audit/audit_final.py",
   "artifact_files": [
     "audit.json",
@@ -173,6 +173,24 @@
       "owner": "solver-maintainers",
       "category": "fmm-solver",
       "review_gate": "TST-P3-002"
+    },
+    {
+      "prefix": "src/grid/",
+      "owner": "solver-maintainers",
+      "category": "grid-resource",
+      "review_gate": "TST-P5-001"
+    },
+    {
+      "prefix": "src/solvers/pm/",
+      "owner": "solver-maintainers",
+      "category": "particle-mesh-solver",
+      "review_gate": "TST-P5-002"
+    },
+    {
+      "prefix": "src/solvers/treepm/",
+      "owner": "solver-maintainers",
+      "category": "tree-particle-mesh-solver",
+      "review_gate": "TST-P5-003"
     },
     {
       "prefix": "src/gpu/direct/",
@@ -750,7 +768,6 @@
     "real multi-node MPI and RDMA qualification",
     "physical NVIDIA CUDA execution when no CUDA device is exposed",
     "physical AMD HIP execution when no AMD device is exposed",
-    "PM and TreePM production implementations",
     "MPI/HIP shard persistence",
     "HDF5 CLI snapshot persistence",
     "GPU FMM",

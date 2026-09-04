@@ -1,0 +1,70 @@
+{
+  "schema_version": 1,
+  "plan_version": "1.0.50",
+  "phase": "P5",
+  "roots": [
+    "src/grid",
+    "src/solvers/pm",
+    "src/solvers/treepm"
+  ],
+  "precision": "float64",
+  "reference": {
+    "solver": "direct",
+    "backend": "cpu",
+    "comparison": "force vectors and deterministic KDK state"
+  },
+  "grid": {
+    "dimensions": [8, 8, 8],
+    "capacity": "simulation particle capacity",
+    "domain": "source AABB expanded by one length unit on every side; degenerate axes use a two-unit span centered on the source coordinate",
+    "boundary": "finite non-periodic; coordinates outside the domain are clamped to the nearest cell",
+    "deposition": "cloud-in-cell with mass-conserving trilinear weights",
+    "field": "softened discrete Newton Green convolution at cell centers",
+    "interpolation": "trilinear field interpolation with the same clamped cell policy",
+    "ordering": "z-major flat cells, then ascending source index"
+  },
+  "solvers": {
+    "pm": {
+      "id": "pm-cpu-v1",
+      "resource": "grid",
+      "scope": "single-rank CPU",
+      "selected": true
+    },
+    "treepm": {
+      "id": "treepm-cpu-v1",
+      "resources": ["octree", "grid"],
+      "composition": "0.5 PM long-range field plus 0.5 Barnes-Hut field",
+      "scope": "single-rank CPU",
+      "selected": true
+    }
+  },
+  "distributed": {
+    "status": "unsupported",
+    "reason": "P5 does not define a global mesh ownership or halo contract",
+    "preflight": "reject before transaction, migration, or state mutation"
+  },
+  "lifecycle": {
+    "initialization": "allocate bounded grid storage in the solver constructor",
+    "preparation": "derive the finite domain, clear storage, deposit sources, and build the field",
+    "steady_state": "zero dynamic allocations after Prepare",
+    "failure": "validate all views and commit force output only after a complete field evaluation"
+  },
+  "acceptance": {
+    "tests": ["TST-P5-001", "TST-P5-002", "TST-P5-003"],
+    "checks": ["CHK-P0-046", "CHK-P0-047"],
+    "relative_force_l2_error_max": 4.0,
+    "state_repeatability": "byte equal for identical inputs and settings",
+    "mass_conservation": "deposited grid mass equals source mass within 1e-12 relative",
+    "reference_policy": "Direct CPU remains unchanged and is the numerical oracle",
+    "sanitizers": "ASan and UBSan on the same CPU test matrix when toolchains are available"
+  },
+  "public_api": {
+    "changed": false,
+    "solver_values": "existing BLITZAR_SOLVER_PM and BLITZAR_SOLVER_TREEPM values",
+    "new_public_settings": false
+  },
+  "artifacts": {
+    "generated_outside_source": true,
+    "timing_claim": "none; P5 qualification records correctness and allocation behavior only"
+  }
+}

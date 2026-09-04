@@ -350,6 +350,55 @@
       "issue": 677,
       "status": "accepted",
       "decision": "The BVH contract validator keeps typed record parsing, rebuild/refit invariants, exact-neighbor hashes, and the non-promotion policy together at one evidence boundary; allocations only construct diagnostics and parsed records."
+    },
+    {
+      "path": "src/grid/GridLayout.cpp",
+      "signals": ["branching", "function_count"],
+      "issue": 683,
+      "status": "accepted",
+      "decision": "The grid layout unit keeps bounded dimension validation, z-major indexing, clamped cell location, and interpolation coordinates together because they are one immutable coordinate contract consumed by deposition and field interpolation."
+    },
+    {
+      "path": "src/grid/GridResource.cpp",
+      "signals": ["branching", "function_count"],
+      "issue": 683,
+      "status": "accepted",
+      "decision": "The grid resource unit keeps view generation, bounded source preparation, CIC deposition, Green convolution, and trilinear interpolation together as one owned storage lifecycle; solver composition and public configuration remain outside the resource."
+    },
+    {
+      "path": "src/solvers/treepm/TreePmSolver.cpp",
+      "signals": ["function_count"],
+      "issue": 683,
+      "status": "accepted",
+      "decision": "The TreePM composition root keeps construction, resource rebinding, capacity preparation, and component access together because it owns the lifecycle of the injected PM and Barnes-Hut solvers without duplicating either algorithm."
+    },
+    {
+      "path": "src/solvers/treepm/TreePmSolverForce.cpp",
+      "signals": ["branching"],
+      "issue": 683,
+      "status": "accepted",
+      "decision": "The TreePM force unit keeps request validation, typed PM and tree evaluation, weighted staging, and transactional force commit together because they form one bounded composition operation with no steady-state allocation."
+    },
+    {
+      "path": "tests/pm/PmSolverTest.cpp",
+      "signals": ["parameter_count"],
+      "issue": 683,
+      "status": "accepted",
+      "decision": "The PM fixture passes state, execution policy, solver, and three output spans explicitly so the Direct comparison and allocation-free repeatability assertions remain one visible acceptance boundary."
+    },
+    {
+      "path": "tests/treepm/TreePmTest.cpp",
+      "signals": ["parameter_count"],
+      "issue": 683,
+      "status": "accepted",
+      "decision": "The TreePM fixture passes state, execution policy, solver, and three output spans explicitly so resource ownership, composition repeatability, and Direct comparison remain one visible acceptance boundary."
+    },
+    {
+      "path": "tools/evidence/pm_evidence.py",
+      "signals": ["parameter_count"],
+      "issue": 683,
+      "status": "accepted",
+      "decision": "The PM evidence runner receives output, source root, contract, records, and errors explicitly at the artifact boundary so generated qualification remains external and deterministic."
     }
   ]
 }

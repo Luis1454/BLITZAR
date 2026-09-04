@@ -35,18 +35,18 @@
     {
       "id": "pm",
       "public_value": 3,
-      "state": "unsupported",
-      "compile_requirement": "No production implementation",
-      "runtime_requirement": "No runtime path",
-      "runtime_evidence": ["TST-P0-006"]
+      "state": "implemented-qualified",
+      "compile_requirement": "C++20 CPU toolchain",
+      "runtime_requirement": "single-rank CPU",
+      "runtime_evidence": ["TST-P5-002"]
     },
     {
       "id": "treepm",
       "public_value": 4,
-      "state": "unsupported",
-      "compile_requirement": "No production implementation",
-      "runtime_requirement": "No runtime path",
-      "runtime_evidence": ["TST-P0-006"]
+      "state": "implemented-qualified",
+      "compile_requirement": "C++20 CPU toolchain",
+      "runtime_requirement": "single-rank CPU",
+      "runtime_evidence": ["TST-P5-003"]
     }
   ],
   "solver_resource_contract": {
@@ -82,23 +82,23 @@
         "solver": "pm",
         "spatial_resource": "grid",
         "private_workspace": "none",
-        "state": "unsupported"
+        "state": "implemented-qualified"
       },
       {
         "solver": "treepm",
         "spatial_resource": "octree-and-grid",
         "private_workspace": "none",
-        "state": "unsupported"
+        "state": "implemented-qualified"
       }
     ],
-    "ownership_boundary": "concrete Octree views and solver tree-resource bundles are implemented by issue 681; typed force evaluation and provider dispatch are implemented by issue 682"
+    "ownership_boundary": "concrete Octree views and solver tree-resource bundles are implemented by issue 681; typed force evaluation and provider dispatch are implemented by issue 682; Grid storage and CPU PM/TreePM composition are owned by the P5 roots"
   },
   "features": [
     {
       "id": "grid",
-      "state": "deferred",
+      "state": "implemented-qualified",
       "root": "src/grid",
-      "runtime_evidence": []
+      "runtime_evidence": ["TST-P5-001", "CHK-P0-046"]
     },
     {
       "id": "snapshot-persistence",
