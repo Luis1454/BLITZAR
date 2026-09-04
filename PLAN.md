@@ -2,7 +2,7 @@
 
 Status: **FROZEN**  
 Product/API version: **1.0.0**
-Plan version: **1.0.50**
+Plan version: **1.0.51**
 
 This repository is a clean-room rewrite. The old repository, its source tree,
 its issues, and its documentation are not implementation inputs. Requirements
@@ -51,8 +51,10 @@ single-rank run manifest, atomic output lifecycle, configured CLI
 publication, human-readable and machine-readable production run summaries,
 deterministic snapshot restart, online
 conservation diagnostics, and snapshot post-processing are implemented and
-locally qualified. MPI/HIP shard persistence and HDF5 remain deferred to their
-dedicated issues.
+locally qualified. HDF5 CLI output is implemented as an optional
+capability-gated format. HDF5 remains capability-gated when its optional
+dependency is absent; MPI/HIP shard persistence remains deferred to its
+dedicated issue.
 
 The block-time qualification contract is frozen in `plan/block_time.json`.
 Its bounded scheduler model is evidence only: fixed-step KDK remains the
@@ -217,8 +219,8 @@ tools/{architecture,gates,format,debug,evidence,audit}/ Repository policy checks
 `src/grid`, `src/solvers/pm`, and `src/solvers/treepm` are materialized P5
 production roots. Their ownership and acceptance tests are frozen in
 `plan/grid.json` and Decision 066. Binary snapshot and single-rank metadata ownership
-are materialized under `src/io`; the optional HDF5 adapter is capability-gated in
-`src/io/hdf5`, while CLI HDF5 output remains deferred. The CPU FMM root is materialized in P3
+are materialized under `src/io`; the optional HDF5 adapter and CLI format
+selection are capability-gated in `src/io/hdf5`. The CPU FMM root is materialized in P3
 with deterministic order-2 multipole qualification; GPU FMM remains outside
 the current backend scope. The GPU runtime and native CUDA compatibility are
 owned by `src/gpu`; HIP kernels are co-located below `gpu/{direct,barnes_hut}`,
@@ -249,8 +251,7 @@ The phases are ordered dependencies, not a list of parallel experiments.
   binary codec, deterministic manifest, atomic output lifecycle, and configured
   CLI publication, the production run summary, deterministic snapshot restart,
   online conservation diagnostics, and snapshot post-processing are qualified,
-  while the internal HDF5 adapter is capability-gated and CLI HDF5 output remains
-  deferred.
+  while the internal HDF5 adapter and CLI HDF5 output are capability-gated.
   P6 does not depend on the PM/TreePM runtime path in P5.
 - P7 and P8 are implemented and locally qualified from the P3/P4 contracts;
   their existing distributed qualification does not promote the single-rank
@@ -381,11 +382,11 @@ snapshot post-processing, including byte parity with the online CSV, are
 covered by `TST-P6-010`. Output boundary qualification is covered by
 `TST-P6-011`: a single-rank MPI launch is byte-equivalent to the direct CPU CLI
 path, while multi-rank output is rejected before state capture or manifest
-preparation. MPI/HIP shard persistence remains open. The internal HDF5 adapter is
-capability-gated under `src/io/hdf5` and is covered by `TST-P6-012` when HDF5 is
-available; it does not change the public ABI or CLI output contract. The complete
-run pipeline remains unfinished; HDF5 remains deferred for CLI output until its
-public output contract is versioned.
+preparation. MPI/HIP shard persistence remains open. The internal HDF5 adapter
+and its CLI format selection are capability-gated under `src/io/hdf5`; they are
+covered by `TST-P6-012` and `TST-P6-014` when HDF5 is available, while the
+unavailable path is explicitly tested. HDF5 output does not change the public
+ABI, and restart/post-processing select the source manifest format.
 
 ### P6 optional HDF5 adapter qualification
 
@@ -398,7 +399,8 @@ headers remain binary-only. An unavailable dependency falls back to the binary
 codec or returns `BLITZAR_STATUS_UNSUPPORTED` for the optional adapter. The
 round-trip, corruption, truncation, restart, repeated-write, package, and
 unavailable-dependency evidence is registered by `TST-P6-012`, `CHK-P0-038`,
-`CHK-P0-039`, and the package consumer test.
+`CHK-P0-039`, and the package consumer test. Decision 067 extends that adapter
+through the configured CLI without changing the binary default.
 
 ### P6 snapshot delta qualification
 

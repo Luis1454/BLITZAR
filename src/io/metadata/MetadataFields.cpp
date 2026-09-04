@@ -71,12 +71,15 @@ namespace {
 
 [[nodiscard]] bool ReadMetadataOutput(MetadataCursor& cursor, MetadataOutput& output)
 {
+    std::string format;
+
     return cursor.Expect("    \"output\": {") &&
            cursor.ReadBoolean("      \"enabled\": ", ",", output.enabled) &&
+           cursor.ReadString("      \"format\": ", ",", format) &&
            cursor.ReadUnsigned("      \"every_steps\": ", ",", output.every_steps) &&
            cursor.ReadBoolean("      \"write_initial\": ", ",", output.write_initial) &&
            cursor.ReadBoolean("      \"write_final\": ", "", output.write_final) &&
-           cursor.Expect("    },");
+           ParseMetadataOutputFormat(format, output.format) && cursor.Expect("    },");
 }
 
 [[nodiscard]] bool ReadMetadataDiagnostics(MetadataCursor& cursor, MetadataDiagnostics& diagnostics)
@@ -151,7 +154,7 @@ bool ReadMetadataDistribution(MetadataCursor& cursor, MetadataRunInfo& info)
 }
 
 bool ReadMetadataOutputs(MetadataCursor& cursor, std::uint64_t expected_count,
-    std::vector<std::uint64_t>& completed_steps)
+    MetadataOutputFormat format, std::vector<std::uint64_t>& completed_steps)
 {
     if (expected_count > MetadataMaxStepCount + 1U ||
         !cursor.Expect("  \"completed_outputs\": [")) {
@@ -170,7 +173,7 @@ bool ReadMetadataOutputs(MetadataCursor& cursor, std::uint64_t expected_count,
             return false;
         }
 
-        const std::string expected_path = "states/" + StateFileName(step);
+        const std::string expected_path = "states/" + StateFileName(step, format);
         const std::string closing =
             index + 1U == static_cast<std::size_t>(expected_count) ? "    }" : "    },";
 

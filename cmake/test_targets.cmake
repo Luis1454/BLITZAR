@@ -102,6 +102,23 @@ target_include_directories(blitzar_cli_output_test PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/src)
 blitzar_enable_warnings(blitzar_cli_output_test)
 
+add_executable(blitzar_cli_hdf5_test
+    apps/blitzar/BlitzarOutput.cpp
+    apps/blitzar/BlitzarRestart.cpp
+    apps/blitzar/BlitzarSummary.cpp
+    apps/blitzar/BlitzarRun.cpp
+    tests/fixtures/FixtureRestart.cpp
+    tests/io/IoCliHdf5Test.cpp
+)
+target_link_libraries(blitzar_cli_hdf5_test PRIVATE blitzar)
+target_compile_features(blitzar_cli_hdf5_test PRIVATE cxx_std_20)
+target_include_directories(blitzar_cli_hdf5_test PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/apps/blitzar
+    ${CMAKE_CURRENT_SOURCE_DIR}/tests
+    ${CMAKE_CURRENT_SOURCE_DIR}/src)
+blitzar_enable_warnings(blitzar_cli_hdf5_test)
+blitzar_enable_hdf5(blitzar_cli_hdf5_test)
+
 add_executable(blitzar_cli_summary_test
     apps/blitzar/BlitzarOutput.cpp
     apps/blitzar/BlitzarRestart.cpp

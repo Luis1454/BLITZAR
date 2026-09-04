@@ -35,8 +35,8 @@ def validate_snapshot_description(plan: str) -> list[str]:
     errors: list[str] = []
     if "SnapshotFrameView" not in plan or "contract-qualified" not in plan:
         errors.append("PLAN.md must describe the qualified SnapshotFrameView contract")
-    if not re.search(r"HDF5 remains\s+deferred", plan):
-        errors.append("PLAN.md must keep binary and HDF5 persistence deferred")
+    if not re.search(r"HDF5 remains\s+capability-gated", plan):
+        errors.append("PLAN.md must keep HDF5 persistence capability-gated")
     return errors
 
 

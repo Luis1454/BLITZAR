@@ -1,5 +1,6 @@
 #include "BlitzarRestart.hpp"
 
+#include "io/hdf5/Hdf5Reader.hpp"
 #include "io/metadata/MetadataReader.hpp"
 #include "io/snapshot/SnapshotReader.hpp"
 
@@ -122,20 +123,27 @@ namespace {
 }
 
 [[nodiscard]] blitzar_status ReadRestartSnapshot(const blitzar_sim::SimConfigRun& config,
-    blitzar_sim::SimConfigState& state, blitzar_core::SnapshotHeader& header) noexcept
+    const blitzar_io::MetadataRunInfo& source, blitzar_sim::SimConfigState& state,
+    blitzar_core::SnapshotHeader& header) noexcept
 {
     try {
-        const std::string file_name = blitzar_io::StateFileName(config.restart.step);
+        const blitzar_io::MetadataOutputFormat format = source.configuration.output.format;
+        const std::string file_name = blitzar_io::StateFileName(config.restart.step, format);
 
         if (file_name.empty()) {
             return BLITZAR_STATUS_INVALID_ARGUMENT;
         }
 
         const std::filesystem::path path = config.restart.directory / "states" / file_name;
-        blitzar_io::SnapshotReader reader(
+        blitzar_io::SnapshotReader binary_reader(
             static_cast<std::size_t>(blitzar_core::SnapshotMaxParticleCount));
 
-        const blitzar_status status = reader.Read(path, header, MutablePayload(state));
+        blitzar_io::Hdf5Reader hdf5_reader(
+            static_cast<std::size_t>(blitzar_core::SnapshotMaxParticleCount));
+
+        const blitzar_status status = format == blitzar_io::MetadataOutputFormat::Hdf5
+                                          ? hdf5_reader.Read(path, header, MutablePayload(state))
+                                          : binary_reader.Read(path, header, MutablePayload(state));
 
         if (status != BLITZAR_STATUS_OK) {
             return status;
@@ -195,7 +203,8 @@ blitzar_status LoadRestartState(
         }
 
         blitzar_core::SnapshotHeader header{};
-        const blitzar_status snapshot_status = ReadRestartSnapshot(config, candidate, header);
+        const blitzar_status snapshot_status =
+            ReadRestartSnapshot(config, source, candidate, header);
 
         if (snapshot_status != BLITZAR_STATUS_OK) {
             return snapshot_status;

@@ -106,6 +106,10 @@ blitzar_status MetadataRunInfo::Validate() const noexcept
         return BLITZAR_STATUS_INVALID_ARGUMENT;
     }
 
+    if (MetadataOutputFormatName(output.format).empty()) {
+        return BLITZAR_STATUS_INVALID_ARGUMENT;
+    }
+
     if (diagnostics.enabled &&
         (diagnostics.every_steps == 0 ||
             (!diagnostics.energy && !diagnostics.momentum && !diagnostics.relative_error))) {
@@ -142,6 +146,11 @@ blitzar_status MetadataRunInfo::Validate() const noexcept
 
 std::string StateFileName(std::uint64_t step)
 {
+    return StateFileName(step, MetadataOutputFormat::Binary);
+}
+
+std::string StateFileName(std::uint64_t step, MetadataOutputFormat format)
+{
     if (step > MetadataMaxStateStep) {
         return {};
     }
@@ -158,9 +167,60 @@ std::string StateFileName(std::uint64_t step)
 
     name.append(digits.size() - digit_count, '0');
     name.append(digits.data(), digit_count);
-    name.append(".bin");
+
+    switch (format) {
+    case MetadataOutputFormat::Binary:
+
+        name.append(".bin");
+
+        break;
+
+    case MetadataOutputFormat::Hdf5:
+
+        name.append(".h5");
+
+        break;
+
+    default:
+
+        return {};
+    }
 
     return name;
+}
+
+std::string_view MetadataOutputFormatName(MetadataOutputFormat format) noexcept
+{
+    switch (format) {
+    case MetadataOutputFormat::Binary:
+
+        return "binary";
+
+    case MetadataOutputFormat::Hdf5:
+
+        return "hdf5";
+
+    default:
+
+        return {};
+    }
+}
+
+bool ParseMetadataOutputFormat(std::string_view text, MetadataOutputFormat& format) noexcept
+{
+    if (text == "binary") {
+        format = MetadataOutputFormat::Binary;
+
+        return true;
+    }
+
+    if (text == "hdf5") {
+        format = MetadataOutputFormat::Hdf5;
+
+        return true;
+    }
+
+    return false;
 }
 
 MetadataManifest::MetadataManifest(MetadataRunInfo info) : info_(std::move(info)) {}

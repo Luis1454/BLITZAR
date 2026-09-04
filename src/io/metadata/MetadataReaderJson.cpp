@@ -34,7 +34,8 @@ namespace {
         !ReadMetadataCapabilities(cursor, info.capabilities) ||
         !ReadMetadataDistribution(cursor, info) ||
         !cursor.ReadUnsigned("  \"completed_output_count\": ", ",", completed_count) ||
-        !ReadMetadataOutputs(cursor, completed_count, completed_steps)) {
+        !ReadMetadataOutputs(
+            cursor, completed_count, info.configuration.output.format, completed_steps)) {
         return false;
     }
 

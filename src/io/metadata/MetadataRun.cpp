@@ -95,7 +95,8 @@ MetadataRun::MetadataRun(std::filesystem::path root, MetadataRunInfo info)
     : root_(std::move(root).lexically_normal()), manifest_path_(root_ / "manifest.json"),
       states_path_(root_ / "states"), diagnostics_path_(root_ / "diagnostics"),
       manifest_(std::move(info)),
-      snapshot_writer_(static_cast<std::size_t>(blitzar_core::SnapshotMaxParticleCount))
+      snapshot_writer_(static_cast<std::size_t>(blitzar_core::SnapshotMaxParticleCount)),
+      hdf5_writer_(static_cast<std::size_t>(blitzar_core::SnapshotMaxParticleCount))
 {
     const std::uint64_t requested_steps =
         std::min(manifest_.Info().configuration.simulation.requested_steps, MetadataMaxStepCount);
@@ -113,6 +114,11 @@ blitzar_status MetadataRun::Prepare() noexcept
 
     if (info_status != BLITZAR_STATUS_OK) {
         return info_status;
+    }
+
+    if (manifest_.Info().configuration.output.format == MetadataOutputFormat::Hdf5 &&
+        !Hdf5Writer::IsAvailable()) {
+        return BLITZAR_STATUS_UNSUPPORTED;
     }
 
     bool root_created = false;
@@ -167,7 +173,7 @@ blitzar_status MetadataRun::Prepare() noexcept
 
 std::filesystem::path MetadataRun::StatePath(std::uint64_t step) const
 {
-    return states_path_ / StateFileName(step);
+    return states_path_ / StateFileName(step, manifest_.Info().configuration.output.format);
 }
 
 blitzar_status MetadataRun::ValidateFrame(blitzar_core::SnapshotFrameView frame) const noexcept
@@ -211,7 +217,10 @@ blitzar_status MetadataRun::PublishSnapshot(blitzar_core::SnapshotFrameView fram
 
     try {
         const std::filesystem::path destination = StatePath(frame.header.step);
-        const blitzar_status write_status = snapshot_writer_.WriteAtomic(destination, frame);
+        const blitzar_status write_status =
+            manifest_.Info().configuration.output.format == MetadataOutputFormat::Hdf5
+                ? hdf5_writer_.WriteAtomic(destination, frame)
+                : snapshot_writer_.WriteAtomic(destination, frame);
 
         if (write_status != BLITZAR_STATUS_OK) {
             return write_status;

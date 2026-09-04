@@ -144,6 +144,15 @@
       "contract": "deterministic XOR-RLE payload qualification for snapshot and transport views, indexed keyframe replay, checksum and transactional corruption rejection, bounded in-memory latency and binary fallback"
     },
     {
+      "id": "TST-P6-014",
+      "entrypoint": "tests/io/IoCliHdf5Test.cpp",
+      "responsibility": "tests/io/IoCliHdf5Test.cpp",
+      "mode": "capability-gated",
+      "ranks": 1,
+      "phase": "P6",
+      "contract": "CLI HDF5 output selection, manifest/file extension parity, and binary fallback"
+    },
+    {
       "id": "TST-P0-004",
       "entrypoint": "tests/contracts/ContractBoundedTest.cpp",
       "responsibility": "tests/contracts/ContractBoundedTest.cpp",

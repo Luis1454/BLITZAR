@@ -42,8 +42,8 @@ namespace {
     return true;
 }
 
-[[nodiscard]] blitzar_status ValidateStatesDirectory(
-    const std::filesystem::path& path, const std::vector<std::uint64_t>& steps) noexcept
+[[nodiscard]] blitzar_status ValidateStatesDirectory(const std::filesystem::path& path,
+    const std::vector<std::uint64_t>& steps, MetadataOutputFormat format) noexcept
 {
     std::error_code status_error;
     const std::filesystem::file_status status = std::filesystem::symlink_status(path, status_error);
@@ -56,7 +56,7 @@ namespace {
         std::set<std::string> expected_names;
 
         for (const std::uint64_t step : steps) {
-            const std::string name = StateFileName(step);
+            const std::string name = StateFileName(step, format);
 
             if (name.empty()) {
                 return BLITZAR_STATUS_INVALID_ARGUMENT;
@@ -136,7 +136,8 @@ blitzar_status ReadPostProcessInput(
 
         input.states_path = run_directory / "states";
 
-        return ValidateStatesDirectory(input.states_path, input.completed_steps);
+        return ValidateStatesDirectory(
+            input.states_path, input.completed_steps, input.info.configuration.output.format);
     }
     catch (const std::length_error&) {
         return BLITZAR_STATUS_INVALID_ARGUMENT;

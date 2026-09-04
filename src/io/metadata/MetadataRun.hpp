@@ -1,6 +1,7 @@
 #ifndef BLITZAR_IO_METADATA_METADATA_RUN_HPP
 #define BLITZAR_IO_METADATA_METADATA_RUN_HPP
 
+#include "io/hdf5/Hdf5Writer.hpp"
 #include "io/metadata/MetadataManifest.hpp"
 #include "io/snapshot/SnapshotWriter.hpp"
 
@@ -35,6 +36,7 @@ private:
     std::filesystem::path diagnostics_path_;
     MetadataManifest manifest_;
     SnapshotWriter snapshot_writer_;
+    Hdf5Writer hdf5_writer_;
     std::vector<std::uint64_t> completed_steps_;
     bool prepared_{};
 };
