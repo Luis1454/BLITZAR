@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "plan_version": "1.0.54",
+  "plan_version": "1.0.55",
   "configuration": {
     "path_base": "config_parent",
     "directives": {
@@ -29,6 +29,13 @@
           {"name": "directory", "type": "quoted_path", "required": true},
           {"name": "step", "type": "nonnegative_uint64", "required": true}
         ]
+      },
+      "execution": {
+        "optional": true,
+        "arguments": [
+          {"name": "mode", "type": "enum(strict|fast)", "required": true}
+        ],
+        "default": "strict"
       }
     }
   },
@@ -66,9 +73,24 @@
       "units",
       "barnes_hut",
       "generation",
+      "execution",
       "output",
       "diagnostics"
     ],
+    "execution_order": [
+      "mode",
+      "cpu",
+      "hip",
+      "mpi",
+      "precision",
+      "compiler",
+      "device",
+      "rng",
+      "compensator",
+      "ordering",
+      "bitwise_reproducible"
+    ],
+    "backend_execution_policy_order": ["fma", "reduction"],
     "capabilities_order": [
       "implemented_solver_mask",
       "unsupported_solver_mask",
@@ -161,6 +183,7 @@
         "units",
         "barnes_hut",
         "generation",
+        "execution",
         "scalar_bytes",
         "particle_count",
         "checksum",

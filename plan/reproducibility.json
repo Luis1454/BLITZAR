@@ -1,0 +1,82 @@
+{
+  "schema_version": 1,
+  "plan_version": "1.0.55",
+  "phase": "P6",
+  "issue": "#685",
+  "public_api": {
+    "changed": false,
+    "c_abi": "unchanged",
+    "cpp_wrapper": "unchanged",
+    "policy_boundary": "internal execution settings and CLI configuration"
+  },
+  "configuration": {
+    "directive": "execution",
+    "arguments": [
+      {"name": "mode", "type": "enum(strict|fast)", "required": true}
+    ],
+    "optional": true,
+    "default": "strict"
+  },
+  "modes": {
+    "strict": {
+      "fma": "disabled",
+      "reduction": "ordered",
+      "bitwise_reproducible": true,
+      "scope": "same backend, compiler identity, device identity, and plan version",
+      "restart": "step 0 to 100 equals step 0 to 50 save/reload/resume to 100"
+    },
+    "fast": {
+      "fma": "hardware",
+      "reduction": "backend",
+      "bitwise_reproducible": false,
+      "scope": "tolerance comparison only",
+      "restart": "numerical tolerance is required; bitwise equality is not advertised"
+    }
+  },
+  "backend_policy_order": ["cpu", "hip", "mpi"],
+  "backend_policy_fields": ["fma", "reduction"],
+  "restart_state": {
+    "integrator": "leapfrog_kdk",
+    "rng": "seeded-jitter-v1",
+    "compensator": "direct-plain;diagnostics-neumaier-v1",
+    "ordering": "stable-particle-id-v1",
+    "units": ["length_scale", "mass_scale", "time_scale"],
+    "precision": "float64",
+    "compiler": "exact compiler family and version identity",
+    "device": "selected execution boundary identity",
+    "math_mode": "execution mode plus per-backend FMA and reduction policies",
+    "seed": "generation.seed"
+  },
+  "snapshot_boundary": {
+    "mpi_in_flight": "forbidden",
+    "required_state": [
+      "integrator",
+      "rng",
+      "compensator",
+      "ordering",
+      "units",
+      "precision",
+      "compiler",
+      "device",
+      "math_mode"
+    ],
+    "publication": "capture only after the simulation reports no active ghost exchange"
+  },
+  "cross_backend": {
+    "reference": "direct CPU solver",
+    "comparison": "finite state and force tolerances",
+    "bitwise_policy": "same-backend strict only",
+    "gpu_device": "capability-gated"
+  },
+  "acceptance": {
+    "tests": ["TST-P6-009", "TST-P6-015"],
+    "checks": ["CHK-P0-048", "CHK-P0-049"],
+    "strict_restart": "byte-identical final snapshot and compatible manifest",
+    "fast_disclosure": "metadata bitwise_reproducible is false",
+    "boundary": "active MPI ghost exchange rejects snapshot capture"
+  },
+  "artifacts": {
+    "generated_outside_source": true,
+    "wall_clock_metadata": false
+  }
+}

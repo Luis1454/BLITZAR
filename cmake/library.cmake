@@ -101,6 +101,7 @@ set(BLITZAR_LIBRARY_SOURCES
     src/simulation/config/SimConfigOutput.cpp
     src/simulation/config/SimConfigDiagnostics.cpp
     src/simulation/config/SimConfigRestart.cpp
+    src/simulation/config/SimConfigExecution.cpp
     src/simulation/config/SimConfigRun.cpp
     src/simulation/initialization/SimConfigState.cpp
     src/simulation/state/SimParticleSet.cpp

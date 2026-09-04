@@ -1,6 +1,7 @@
 #ifndef BLITZAR_IO_METADATA_METADATA_MANIFEST_HPP
 #define BLITZAR_IO_METADATA_METADATA_MANIFEST_HPP
 
+#include "core/CoreExecution.hpp"
 #include "core/CoreSnapshot.hpp"
 
 #include <blitzar/blitzar.h>
@@ -49,6 +50,22 @@ struct MetadataGeneration final {
     bool deterministic{};
 };
 
+struct MetadataExecution final {
+    blitzar_core::ExecutionMode mode{blitzar_core::ExecutionMode::Strict};
+    blitzar_core::BackendExecutionPolicy cpu{};
+    blitzar_core::BackendExecutionPolicy hip{};
+    blitzar_core::BackendExecutionPolicy mpi{};
+    std::string precision{"float64"};
+    std::string compiler{"unknown"};
+    std::string device{"host-cpu"};
+    std::string rng{"seeded-jitter-v1"};
+    std::string compensator{"direct-plain;diagnostics-neumaier-v1"};
+    std::string ordering{"stable-particle-id-v1"};
+    bool bitwise_reproducible{true};
+
+    [[nodiscard]] blitzar_status Validate() const noexcept;
+};
+
 enum class MetadataOutputFormat : std::uint8_t {
     Binary,
     Hdf5,
@@ -76,6 +93,7 @@ struct MetadataRunConfiguration final {
     MetadataUnits units{};
     MetadataBarnesHut barnes_hut{};
     MetadataGeneration generation{};
+    MetadataExecution execution{};
     MetadataOutput output{};
     MetadataDiagnostics diagnostics{};
 };
@@ -102,6 +120,7 @@ struct MetadataRunInfo final {
 [[nodiscard]] std::string StateFileName(std::uint64_t step, MetadataOutputFormat format);
 [[nodiscard]] std::string StateShardFileName(
     std::uint64_t step, std::uint32_t rank_index, MetadataOutputFormat format);
+[[nodiscard]] std::string CurrentCompilerIdentity();
 [[nodiscard]] std::string_view MetadataOutputFormatName(MetadataOutputFormat format) noexcept;
 [[nodiscard]] bool ParseMetadataOutputFormat(
     std::string_view text, MetadataOutputFormat& format) noexcept;

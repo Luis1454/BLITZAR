@@ -76,12 +76,29 @@ namespace {
 
 } // namespace
 
+blitzar_status MetadataExecution::Validate() const noexcept
+{
+    if (ExecutionModeName(mode).empty() || !cpu.IsValid() || !hip.IsValid() || !mpi.IsValid() ||
+        precision != "float64" || compiler.empty() || device.empty() || rng.empty() ||
+        compensator.empty() || ordering.empty()) {
+        return BLITZAR_STATUS_INVALID_ARGUMENT;
+    }
+
+    const bool expected_bitwise_reproducible =
+        mode == blitzar_core::ExecutionMode::Strict && cpu.IsBitwiseReproducible() &&
+        hip.IsBitwiseReproducible() && mpi.IsBitwiseReproducible();
+
+    return bitwise_reproducible == expected_bitwise_reproducible ? BLITZAR_STATUS_OK
+                                                                 : BLITZAR_STATUS_INVALID_ARGUMENT;
+}
+
 blitzar_status MetadataRunInfo::Validate() const noexcept
 {
     const MetadataSimulation& simulation = configuration.simulation;
     const MetadataGravity& gravity = configuration.gravity;
     const MetadataUnits& units = configuration.units;
     const MetadataBarnesHut& barnes_hut = configuration.barnes_hut;
+    const MetadataExecution& execution = configuration.execution;
     const MetadataOutput& output = configuration.output;
     const MetadataDiagnostics& diagnostics = configuration.diagnostics;
 
@@ -100,6 +117,12 @@ blitzar_status MetadataRunInfo::Validate() const noexcept
 
     if (configuration.generation.deterministic == false) {
         return BLITZAR_STATUS_UNSUPPORTED;
+    }
+
+    const blitzar_status execution_status = execution.Validate();
+
+    if (execution_status != BLITZAR_STATUS_OK) {
+        return execution_status;
     }
 
     if (output.enabled && output.every_steps == 0) {
@@ -222,6 +245,23 @@ std::string StateShardFileName(
     name.append(state_name.substr(extension_position));
 
     return name;
+}
+
+std::string CurrentCompilerIdentity()
+{
+#if defined(__clang__)
+    return "clang-" + std::to_string(__clang_major__) + "." + std::to_string(__clang_minor__) +
+           "." + std::to_string(__clang_patchlevel__);
+#elif defined(__GNUC__)
+
+    return "gcc-" + std::to_string(__GNUC__) + "." + std::to_string(__GNUC_MINOR__) + "." +
+           std::to_string(__GNUC_PATCHLEVEL__);
+#elif defined(_MSC_VER)
+
+    return "msvc-" + std::to_string(_MSC_VER);
+#else
+    return "unknown";
+#endif
 }
 
 std::string_view MetadataOutputFormatName(MetadataOutputFormat format) noexcept

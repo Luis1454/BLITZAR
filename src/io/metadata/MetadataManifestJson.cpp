@@ -204,6 +204,96 @@ namespace {
     return static_cast<bool>(output);
 }
 
+[[nodiscard]] bool WriteBackendExecutionPolicy(std::ostream& output, std::string_view name,
+    const blitzar_core::BackendExecutionPolicy& policy, std::string_view suffix)
+{
+    output << "      \"" << name
+           << "\": {\n"
+              "        \"fma\": ";
+
+    if (!WriteJsonString(output, blitzar_core::FmaPolicyName(policy.fma))) {
+        return false;
+    }
+
+    output << ",\n"
+              "        \"reduction\": ";
+
+    if (!WriteJsonString(output, blitzar_core::ReductionPolicyName(policy.reduction))) {
+        return false;
+    }
+
+    output << "\n      }" << suffix;
+
+    return static_cast<bool>(output);
+}
+
+[[nodiscard]] bool WriteExecution(std::ostream& output, const MetadataExecution& settings)
+{
+    output << "    \"execution\": {\n"
+              "      \"mode\": ";
+
+    if (!WriteJsonString(output, blitzar_core::ExecutionModeName(settings.mode))) {
+        return false;
+    }
+
+    output << ",\n";
+
+    if (!WriteBackendExecutionPolicy(output, "cpu", settings.cpu, ",\n") ||
+        !WriteBackendExecutionPolicy(output, "hip", settings.hip, ",\n") ||
+        !WriteBackendExecutionPolicy(output, "mpi", settings.mpi, ",\n")) {
+        return false;
+    }
+
+    output << "      \"precision\": ";
+
+    if (!WriteJsonString(output, settings.precision)) {
+        return false;
+    }
+
+    output << ",\n"
+              "      \"compiler\": ";
+
+    if (!WriteJsonString(output, settings.compiler)) {
+        return false;
+    }
+
+    output << ",\n"
+              "      \"device\": ";
+
+    if (!WriteJsonString(output, settings.device)) {
+        return false;
+    }
+
+    output << ",\n"
+              "      \"rng\": ";
+
+    if (!WriteJsonString(output, settings.rng)) {
+        return false;
+    }
+
+    output << ",\n"
+              "      \"compensator\": ";
+
+    if (!WriteJsonString(output, settings.compensator)) {
+        return false;
+    }
+
+    output << ",\n"
+              "      \"ordering\": ";
+
+    if (!WriteJsonString(output, settings.ordering)) {
+        return false;
+    }
+
+    output << ",\n"
+              "      \"bitwise_reproducible\": "
+           << (settings.bitwise_reproducible ? "true" : "false")
+           << "\n"
+              "    },\n";
+
+    return static_cast<bool>(output);
+}
+
 [[nodiscard]] bool WriteConfiguration(
     std::ostream& output, const MetadataRunConfiguration& configuration)
 {
@@ -224,7 +314,8 @@ namespace {
            << "\n"
               "    },\n";
 
-    return WriteOutput(output, configuration.output) &&
+    return WriteExecution(output, configuration.execution) &&
+           WriteOutput(output, configuration.output) &&
            WriteDiagnostics(output, configuration.diagnostics) && output << "  },\n";
 }
 

@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "plan_version": "1.0.54",
+  "plan_version": "1.0.55",
   "record_schema_version": 1,
   "target": "blitzar_bvh_test",
   "runner": "tools/evidence/bvh_evidence.py",

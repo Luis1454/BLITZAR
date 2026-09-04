@@ -110,6 +110,12 @@
       "phase": "P6"
     },
     {
+      "id": "TST-P6-015",
+      "name": "reproducibility-policy-and-restart-state",
+      "command": "blitzar_reproducibility_test",
+      "phase": "P6"
+    },
+    {
       "id": "TST-P0-004",
       "name": "bounded-views-and-request-contracts",
       "command": "blitzar_bounded_contract_test",
@@ -881,6 +887,18 @@
       "id": "CHK-P0-047",
       "name": "grid-pm-evidence-fixtures",
       "command": "python -m tools.evidence.pm_evidence_test",
+      "phase": "P0"
+    },
+    {
+      "id": "CHK-P0-048",
+      "name": "reproducibility-policy-contract",
+      "command": "python -m tools.evidence.reproducibility_contract --root . --check",
+      "phase": "P0"
+    },
+    {
+      "id": "CHK-P0-049",
+      "name": "reproducibility-policy-fixtures",
+      "command": "python -m tools.evidence.reproducibility_contract_test",
       "phase": "P0"
     }
   ]
