@@ -386,6 +386,14 @@
       "contract": "typed force evaluation and local/remote CPU provider dispatch"
     },
     {
+      "id": "TST-P3-006",
+      "entrypoint": "tests/fmm/FmmKifmmTest.cpp",
+      "responsibility": "tests/fmm/FmmKifmmTest.cpp",
+      "mode": "",
+      "ranks": 1,
+      "contract": "internal KIFMM surfaces, bounded workspace, Direct parity, rollback, and repeatability"
+    },
+    {
       "id": "TST-P4-001",
       "entrypoint": "tests/gpu/GpuHipTest.cpp",
       "responsibility": "tests/gpu/GpuHipTest.cpp",

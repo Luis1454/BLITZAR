@@ -2,7 +2,7 @@
 
 Status: **FROZEN**  
 Product/API version: **1.0.0**
-Plan version: **1.0.52**
+Plan version: **1.0.53**
 
 This repository is a clean-room rewrite. The old repository, its source tree,
 its issues, and its documentation are not implementation inputs. Requirements
@@ -193,6 +193,7 @@ src/solvers/threading/            Bounded traversal resources
 src/solvers/direct/               O(N^2) CPU reference responsibilities
 src/solvers/barnes_hut/           Barnes-Hut tree orchestration
 src/solvers/fmm/                  FMM CPU responsibilities
+src/solvers/fmm/kifmm/            CPU KIFMM workspace and traversal
 src/solvers/pm/                  Particle-Mesh CPU and CUDA
 src/solvers/treepm/              TreePM composition and dispatch
 src/io/                          Binary snapshots and optional HDF5 adapter
@@ -344,6 +345,14 @@ capability and communication policy outside the integrator. `std::variant` is
 visited only at the simulation composition boundary. `TST-P3-005` covers the
 typed provider contract, local and remote CPU evaluation, and the preserved
 direct force semantics.
+
+The CPU KIFMM extension reuses the read-only Octree view and owns a bounded
+equivalent/check-surface workspace. Its deterministic interaction list uses the
+same acceptance criterion as FMM: near leaves are evaluated by the Direct CPU
+kernel, while accepted cells use a kernel-independent equivalent representation
+and a depth-indexed translation operator. KIFMM remains an internal solver until
+its independent accuracy, rollback, and capacity qualification is complete;
+the public ABI, CLI, and GPU/MPI paths are unchanged by this extension.
 
 ### P4: HIP Runtime and GPU Solvers
 

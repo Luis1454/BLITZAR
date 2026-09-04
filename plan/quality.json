@@ -242,6 +242,12 @@
       "phase": "P3"
     },
     {
+      "id": "TST-P3-006",
+      "name": "kifmm-internal-workspace-and-reference",
+      "command": "blitzar_kifmm_test",
+      "phase": "P3"
+    },
+    {
       "id": "TST-P4-001",
       "name": "hip-acceleration-and-fallback",
       "command": "blitzar_accelerator_test",
@@ -450,6 +456,7 @@
         {"path": "src/solvers/direct", "prefix": "Direct"},
         {"path": "src/solvers/barnes_hut", "prefix": "Bh"},
         {"path": "src/solvers/fmm", "prefix": "Fmm"},
+        {"path": "src/solvers/fmm/kifmm", "prefix": "Kifmm"},
         {"path": "src/grid", "prefix": "Grid"},
         {"path": "src/solvers/pm", "prefix": "Pm"},
         {"path": "src/solvers/treepm", "prefix": "TreePm"},

@@ -1,6 +1,6 @@
 {
   "product_version": "1.0.0",
-  "plan_version": "1.0.52",
+  "plan_version": "1.0.53",
   "status": "frozen",
   "product": "deterministic particle simulation SDK",
   "source_of_truth": [
@@ -63,6 +63,7 @@
     "src/solvers/direct",
     "src/solvers/barnes_hut",
     "src/solvers/fmm",
+    "src/solvers/fmm/kifmm",
     "src/solvers/pm",
     "src/solvers/treepm",
     "src/sdk",
