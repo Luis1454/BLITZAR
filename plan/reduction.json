@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "plan_version": "1.0.52",
+  "plan_version": "1.0.53",
   "record_schema_version": 1,
   "target": "blitzar_reduction_test",
   "runner": "tools/evidence/reduction_evidence.py",
