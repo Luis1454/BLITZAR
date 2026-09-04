@@ -83,6 +83,7 @@
     {"path": "plan/decisions/063-snapshot-delta-policy.md", "lifecycle": "active"},
     {"path": "plan/decisions/064-block-time-stepping-policy.md", "lifecycle": "active"},
     {"path": "plan/decisions/065-bvh-irregular-query-policy.md", "lifecycle": "active"},
-    {"path": "plan/decisions/066-grid-pm-treepm-policy.md", "lifecycle": "active"}
+    {"path": "plan/decisions/066-grid-pm-treepm-policy.md", "lifecycle": "active"},
+    {"path": "plan/decisions/067-hdf5-cli-output-policy.md", "lifecycle": "active"}
   ]
 }

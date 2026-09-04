@@ -1,5 +1,6 @@
 #include "io/postprocess/PostProcessState.hpp"
 
+#include "io/hdf5/Hdf5Reader.hpp"
 #include "io/snapshot/SnapshotReader.hpp"
 #include "simulation/initialization/SimConfigState.hpp"
 
@@ -66,13 +67,15 @@ blitzar_status ProcessSnapshots(const PostProcessInput& input, ConservationCsv& 
         return resize_status;
     }
 
-    SnapshotReader reader(count);
+    SnapshotReader binary_reader(count);
+    Hdf5Reader hdf5_reader(count);
     const blitzar_physics::GravityParameters gravity = MakeGravity(input.info);
 
     const MetadataDiagnostics& diagnostics = input.info.configuration.diagnostics;
 
     for (const std::uint64_t step : input.completed_steps) {
-        const std::string file_name = StateFileName(step);
+        const MetadataOutputFormat format = input.info.configuration.output.format;
+        const std::string file_name = StateFileName(step, format);
 
         if (file_name.empty()) {
             return BLITZAR_STATUS_INVALID_ARGUMENT;
@@ -80,7 +83,9 @@ blitzar_status ProcessSnapshots(const PostProcessInput& input, ConservationCsv& 
 
         blitzar_core::SnapshotHeader header{};
         const blitzar_status read_status =
-            reader.Read(input.states_path / file_name, header, MutablePayload(state));
+            format == MetadataOutputFormat::Hdf5
+                ? hdf5_reader.Read(input.states_path / file_name, header, MutablePayload(state))
+                : binary_reader.Read(input.states_path / file_name, header, MutablePayload(state));
 
         if (read_status != BLITZAR_STATUS_OK) {
             return read_status;

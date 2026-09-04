@@ -33,9 +33,15 @@ namespace {
         static_cast<std::uint64_t>(config.barnes_hut.max_depth)};
 
     info.configuration.generation = {config.seed, config.deterministic};
+
+    const blitzar_io::MetadataOutputFormat output_format =
+        config.output.format == blitzar_sim::SimConfigOutputFormat::Hdf5
+            ? blitzar_io::MetadataOutputFormat::Hdf5
+            : blitzar_io::MetadataOutputFormat::Binary;
+
     info.configuration.output = {config.output.enabled,
         static_cast<std::uint64_t>(config.output.every_steps), config.output.write_initial,
-        config.output.write_final};
+        config.output.write_final, output_format};
 
     info.configuration.diagnostics = {config.diagnostics.enabled,
         static_cast<std::uint64_t>(config.diagnostics.every_steps), config.diagnostics.energy,

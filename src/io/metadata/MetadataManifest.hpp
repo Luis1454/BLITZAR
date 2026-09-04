@@ -9,6 +9,7 @@
 #include <iosfwd>
 #include <span>
 #include <string>
+#include <string_view>
 
 namespace blitzar_io {
 
@@ -47,11 +48,17 @@ struct MetadataGeneration final {
     bool deterministic{};
 };
 
+enum class MetadataOutputFormat : std::uint8_t {
+    Binary,
+    Hdf5,
+};
+
 struct MetadataOutput final {
     bool enabled{};
     std::uint64_t every_steps{};
     bool write_initial{};
     bool write_final{};
+    MetadataOutputFormat format{MetadataOutputFormat::Binary};
 };
 
 struct MetadataDiagnostics final {
@@ -91,6 +98,10 @@ struct MetadataRunInfo final {
 };
 
 [[nodiscard]] std::string StateFileName(std::uint64_t step);
+[[nodiscard]] std::string StateFileName(std::uint64_t step, MetadataOutputFormat format);
+[[nodiscard]] std::string_view MetadataOutputFormatName(MetadataOutputFormat format) noexcept;
+[[nodiscard]] bool ParseMetadataOutputFormat(
+    std::string_view text, MetadataOutputFormat& format) noexcept;
 
 class MetadataManifest final {
 public:
@@ -103,6 +114,7 @@ public:
 private:
     [[nodiscard]] blitzar_status WriteFile(
         const std::filesystem::path& path, std::span<const std::uint64_t> completed_steps) const;
+
     [[nodiscard]] bool WriteDocument(
         std::ostream& output, std::span<const std::uint64_t> completed_steps) const;
 

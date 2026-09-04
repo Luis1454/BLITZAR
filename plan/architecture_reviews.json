@@ -163,6 +163,13 @@
       "decision": "Run configuration keeps directive dispatch, duplicate detection, required-field validation, and candidate commit together so parsing failures cannot mutate the caller's configuration; value policies are split into dedicated adapters."
     },
     {
+      "path": "src/simulation/config/SimConfigOutput.cpp",
+      "signals": ["branching"],
+      "issue": 684,
+      "status": "accepted",
+      "decision": "The output directive keeps binary defaulting, optional HDF5 format parsing, path validation, and candidate configuration assignment in one bounded semantic adapter; the format is internal and the capability check remains at output preparation."
+    },
+    {
       "path": "src/simulation/Sim.cpp",
       "signals": ["function_count"],
       "issue": 612,
@@ -185,7 +192,7 @@
     },
     {
       "path": "src/io/metadata/MetadataManifest.cpp",
-      "signals": ["branching"],
+      "signals": ["branching", "function_count"],
       "issue": 643,
       "status": "accepted",
       "decision": "Manifest validation and atomic publication remain one metadata contract: validation covers the complete persisted configuration before any file is opened, while the fixed-order writer delegates JSON field emission to MetadataManifestJson.cpp."

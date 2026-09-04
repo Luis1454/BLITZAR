@@ -281,6 +281,12 @@ EXPECTED_OUTPUT_CONTRACT = {
                 "optional": True,
                 "arguments": [
                     {"name": "directory", "type": "quoted_path", "required": True},
+                    {
+                        "name": "format",
+                        "type": "enum(binary|hdf5)",
+                        "required": False,
+                        "default": "binary",
+                    },
                     {"name": "every_steps", "type": "positive_int64", "required": True},
                     {"name": "write_initial", "type": "boolean", "required": True},
                     {"name": "write_final", "type": "boolean", "required": True},
@@ -307,7 +313,11 @@ EXPECTED_OUTPUT_CONTRACT = {
     "layout": {
         "manifest": "manifest.json",
         "state_directory": "states",
-        "state_pattern": "state-%08d.bin",
+        "state_patterns": {
+            "binary": "state-%08d.bin",
+            "hdf5": "state-%08d.h5",
+        },
+        "default_state_format": "binary",
         "diagnostics_directory": "diagnostics",
         "diagnostics_file": "conservation.csv",
         "postprocess_directory": "postProcessing",
@@ -341,7 +351,10 @@ EXPECTED_OUTPUT_CONTRACT = {
         ],
         "distribution_order": ["rank_count", "rank_index"],
         "completed_output_order": ["step", "path"],
-        "state_path_pattern": "states/state-%08d.bin",
+        "state_path_patterns": {
+            "binary": "states/state-%08d.bin",
+            "hdf5": "states/state-%08d.h5",
+        },
         "temporary_suffix": ".tmp",
         "atomic_publication": True,
         "wall_clock_metadata": False,
@@ -394,7 +407,10 @@ EXPECTED_OUTPUT_CONTRACT = {
         "metadata_deterministic": True,
         "restart": {
             "source_manifest": "manifest.json",
-            "state_path_pattern": "states/state-%08d.bin",
+            "state_path_patterns": {
+                "binary": "states/state-%08d.bin",
+                "hdf5": "states/state-%08d.h5",
+            },
             "step_semantics": "absolute_final_run_step",
             "selection": "explicit_step",
             "compatibility": [
@@ -415,7 +431,7 @@ EXPECTED_OUTPUT_CONTRACT = {
             ],
             "transactional": True,
             "distributed": "unsupported",
-            "hdf5": "unsupported",
+            "hdf5": "supported-when-capability-available",
         },
         "timestamp": "excluded",
     },

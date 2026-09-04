@@ -153,7 +153,7 @@ generation(seed=1, deterministic=true)
 int CheckOutputConfiguration()
 {
     constexpr std::string_view directives =
-        R"(output(directory="results", every_steps=2, write_initial=true, write_final=true)
+        R"(output(directory="results", every_steps=2, write_initial=true, write_final=true, format=hdf5)
 diagnostics(every_steps=3, energy=true, momentum=true, relative_error=false)
 )";
 
@@ -169,6 +169,7 @@ diagnostics(every_steps=3, energy=true, momentum=true, relative_error=false)
     BLITZAR_CHECK(config.output.every_steps == 2);
     BLITZAR_CHECK(config.output.write_initial);
     BLITZAR_CHECK(config.output.write_final);
+    BLITZAR_CHECK(config.output.format == blitzar_sim::SimConfigOutputFormat::Hdf5);
     BLITZAR_CHECK(config.diagnostics.enabled);
     BLITZAR_CHECK(config.diagnostics.every_steps == 3);
     BLITZAR_CHECK(config.diagnostics.energy);
@@ -221,7 +222,7 @@ int CheckRejectedOutputConfiguration()
 
     BLITZAR_CHECK(
         CheckRejectedOutput(
-            R"(output(directory="results", every_steps=1, write_initial=true, write_final=true, format=hdf5)
+            R"(output(directory="results", every_steps=1, write_initial=true, write_final=true, format=unknown)
 )") == 0);
 
     BLITZAR_CHECK(

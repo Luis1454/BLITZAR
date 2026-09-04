@@ -1,9 +1,18 @@
 {
   "schema_version": 1,
-  "plan_version": "1.0.50",
+  "plan_version": "1.0.51",
   "state": "capability-gated",
   "mode_values": ["AUTO", "ON", "OFF"],
   "fallback": "binary-snapshot-codec",
+  "cli_output": {
+    "directive": "output(format=hdf5)",
+    "manifest_format": "hdf5",
+    "state_pattern": "states/state-%08d.h5",
+    "restart": "source-manifest-selected",
+    "postprocess": "source-manifest-selected",
+    "unavailable_status": "BLITZAR_STATUS_UNSUPPORTED",
+    "preparation_is_transactional": true
+  },
   "file_extension": ".h5",
   "root_group": "particles",
   "header_attributes": [

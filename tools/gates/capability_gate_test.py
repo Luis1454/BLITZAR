@@ -19,7 +19,7 @@ class CapabilityGateTests(unittest.TestCase):
 
     def test_qualified_snapshot_contract_is_accepted(self) -> None:
         plan = "SnapshotFrameView is implemented and contract-qualified. "
-        plan += "HDF5 remains deferred until executable evidence exists."
+        plan += "HDF5 remains capability-gated until the optional dependency exists."
 
         self.assertEqual(validate_snapshot_description(plan), [])
 
@@ -30,7 +30,7 @@ class CapabilityGateTests(unittest.TestCase):
             errors,
             [
                 "PLAN.md must describe the qualified SnapshotFrameView contract",
-                "PLAN.md must keep binary and HDF5 persistence deferred",
+                "PLAN.md must keep HDF5 persistence capability-gated",
             ],
         )
 

@@ -160,6 +160,13 @@ namespace {
               "      \"enabled\": "
            << (settings.enabled ? "true" : "false")
            << ",\n"
+              "      \"format\": ";
+
+    if (!WriteJsonString(output, MetadataOutputFormatName(settings.format))) {
+        return false;
+    }
+
+    output << ",\n"
               "      \"every_steps\": "
            << settings.every_steps
            << ",\n"
@@ -255,15 +262,15 @@ namespace {
     return static_cast<bool>(output);
 }
 
-[[nodiscard]] bool WriteCompletedOutputs(
-    std::ostream& output, std::span<const std::uint64_t> completed_steps)
+[[nodiscard]] bool WriteCompletedOutputs(std::ostream& output,
+    std::span<const std::uint64_t> completed_steps, MetadataOutputFormat format)
 {
     output << "  \"completed_output_count\": " << completed_steps.size()
            << ",\n"
               "  \"completed_outputs\": [\n";
 
     for (std::size_t index = 0; index < completed_steps.size(); ++index) {
-        const std::string file_name = StateFileName(completed_steps[index]);
+        const std::string file_name = StateFileName(completed_steps[index], format);
 
         if (file_name.empty()) {
             return false;
@@ -305,8 +312,8 @@ bool MetadataManifest::WriteDocument(
 
     return WriteConfiguration(output, info_.configuration) &&
            WriteCapabilities(output, info_.capabilities) && WriteDistribution(output, info_) &&
-           WriteCompletedOutputs(output, completed_steps) && output << "}\n" &&
-           static_cast<bool>(output);
+           WriteCompletedOutputs(output, completed_steps, info_.configuration.output.format) &&
+           output << "}\n" && static_cast<bool>(output);
 }
 
 } // namespace blitzar_io
