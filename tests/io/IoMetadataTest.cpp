@@ -113,6 +113,16 @@ int CheckPreparation(const std::filesystem::path& root)
     BLITZAR_CHECK(manifest.find("\"length_scale\": 1") != std::string::npos);
     BLITZAR_CHECK(manifest.find("\"seed\": 42") != std::string::npos);
     BLITZAR_CHECK(manifest.find("\"deterministic\": true") != std::string::npos);
+    BLITZAR_CHECK(manifest.find("\"mode\": \"strict\"") != std::string::npos);
+    BLITZAR_CHECK(manifest.find("\"fma\": \"disabled\"") != std::string::npos);
+    BLITZAR_CHECK(manifest.find("\"reduction\": \"ordered\"") != std::string::npos);
+    BLITZAR_CHECK(manifest.find("\"precision\": \"float64\"") != std::string::npos);
+    BLITZAR_CHECK(manifest.find("\"rng\": \"seeded-jitter-v1\"") != std::string::npos);
+    BLITZAR_CHECK(manifest.find("\"compensator\": \"direct-plain;diagnostics-neumaier-v1\"") !=
+                  std::string::npos);
+
+    BLITZAR_CHECK(manifest.find("\"ordering\": \"stable-particle-id-v1\"") != std::string::npos);
+    BLITZAR_CHECK(manifest.find("\"bitwise_reproducible\": true") != std::string::npos);
     BLITZAR_CHECK(manifest.find("\"compiled_backend_mask\": 1") != std::string::npos);
     BLITZAR_CHECK(run.Prepare() == BLITZAR_STATUS_INVALID_ARGUMENT);
 

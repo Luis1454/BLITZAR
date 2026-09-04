@@ -2,7 +2,7 @@
 
 Status: **FROZEN**  
 Product/API version: **1.0.0**
-Plan version: **1.0.54**
+Plan version: **1.0.55**
 
 This repository is a clean-room rewrite. The old repository, its source tree,
 its issues, and its documentation are not implementation inputs. Requirements
@@ -13,7 +13,7 @@ The authoritative planning state is the combination of this file,
 `plan/scaling.json`, `plan/layout.json`, `plan/reduction.json`,
 `plan/neighborhood.json`, `plan/output_contract.json`, `plan/delta.json`, and
 `plan/block_time.json`, `plan/bvh.json`, `plan/grid.json`, and
-`plan/final_audit.json`.
+`plan/final_audit.json`, and `plan/reproducibility.json`.
 Decision records under `plan/decisions/` preserve the rationale and migration
 history for that state.
 
@@ -56,6 +56,14 @@ capability-gated format. Explicit MPI/HIP rank-shard persistence is implemented
 for the local qualification path; HDF5 remains capability-gated when its
 optional dependency is absent, and multi-node/RDMA qualification remains
 unverified.
+
+The execution-policy and restart-state contract is frozen in
+`plan/reproducibility.json`. Strict mode records ordered reductions and
+disabled deliberate FMA use for each backend and permits byte-identical
+restart only within the recorded backend, compiler, device, and plan identity.
+Fast mode records backend-defined arithmetic and is never advertised as
+bitwise reproducible. Snapshot publication checks that no MPI ghost exchange
+is active at the capture boundary.
 
 The block-time qualification contract is frozen in `plan/block_time.json`.
 Its bounded scheduler model is evidence only: fixed-step KDK remains the

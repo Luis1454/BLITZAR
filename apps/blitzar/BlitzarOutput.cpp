@@ -35,6 +35,11 @@ namespace {
         static_cast<std::uint64_t>(config.barnes_hut.max_depth)};
 
     info.configuration.generation = {config.seed, config.deterministic};
+    info.configuration.execution = {config.execution.mode, config.execution.cpu,
+        config.execution.hip, config.execution.mpi, "float64",
+        blitzar_io::CurrentCompilerIdentity(), "host-cpu", "seeded-jitter-v1",
+        "direct-plain;diagnostics-neumaier-v1", "stable-particle-id-v1",
+        config.execution.IsBitwiseReproducible()};
 
     const blitzar_io::MetadataOutputFormat output_format =
         config.output.format == blitzar_sim::SimConfigOutputFormat::Hdf5

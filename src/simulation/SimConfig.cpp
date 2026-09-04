@@ -238,4 +238,15 @@ blitzar_status Sim::SetSeed(std::uint64_t seed) noexcept
     return Remember(BLITZAR_STATUS_OK);
 }
 
+blitzar_status Sim::SetExecutionSettings(blitzar_core::ExecutionSettings settings) noexcept
+{
+    if (!settings.IsValid()) {
+        return Remember(BLITZAR_STATUS_INVALID_ARGUMENT);
+    }
+
+    execution_settings_ = settings;
+
+    return Remember(BLITZAR_STATUS_OK);
+}
+
 } // namespace blitzar_sim

@@ -32,6 +32,7 @@ public:
     [[nodiscard]] int MpiRank() const noexcept;
     [[nodiscard]] int MpiSize() const noexcept;
     [[nodiscard]] std::size_t LocalParticleCount() const noexcept;
+    [[nodiscard]] bool IsSnapshotBoundaryReady() const noexcept;
 
     [[nodiscard]] blitzar_status SetSolver(blitzar_solver_kind solver) noexcept;
     [[nodiscard]] blitzar_status SetIntegrator(blitzar_integrator_kind integrator) noexcept;
@@ -42,6 +43,8 @@ public:
         blitzar_barnes_hut::BarnesHutSettings settings) noexcept;
     [[nodiscard]] blitzar_status SetTimestep(blitzar_core::Scalar timestep) noexcept;
     [[nodiscard]] blitzar_status SetSeed(std::uint64_t seed) noexcept;
+    [[nodiscard]] blitzar_status SetExecutionSettings(
+        blitzar_core::ExecutionSettings settings) noexcept;
     [[nodiscard]] blitzar_status SetParticles(blitzar_core::ParticleStateView input) noexcept;
     [[nodiscard]] blitzar_status GetState(blitzar_core::ParticleOutputView output) const noexcept;
     [[nodiscard]] blitzar_status GetLocalState(blitzar_core::ParticleOutputView output,

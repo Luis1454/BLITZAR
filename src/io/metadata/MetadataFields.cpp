@@ -4,6 +4,7 @@
 #include <limits>
 #include <string>
 #include <system_error>
+#include <utility>
 
 namespace blitzar_io {
 
@@ -69,6 +70,70 @@ namespace {
            cursor.Expect("    },");
 }
 
+[[nodiscard]] bool ReadMetadataBackendExecutionPolicy(
+    MetadataCursor& cursor, std::string_view name, blitzar_core::BackendExecutionPolicy& policy)
+{
+    std::string fma;
+    std::string reduction;
+    blitzar_core::FmaPolicy parsed_fma{};
+    blitzar_core::ReductionPolicy parsed_reduction{};
+
+    if (!cursor.Expect(std::string{"      \""} + std::string{name} + "\": {") ||
+
+        !cursor.ReadString("        \"fma\": ", ",", fma) ||
+        !cursor.ReadString("        \"reduction\": ", "", reduction) ||
+        !blitzar_core::ParseFmaPolicy(fma, parsed_fma) ||
+        !blitzar_core::ParseReductionPolicy(reduction, parsed_reduction) ||
+        !cursor.Expect("      },")) {
+        return false;
+    }
+
+    policy = {parsed_fma, parsed_reduction};
+
+    return true;
+}
+
+[[nodiscard]] bool ReadMetadataExecution(MetadataCursor& cursor, MetadataExecution& execution)
+{
+    std::string mode;
+    std::string precision;
+    std::string compiler;
+    std::string device;
+    std::string rng;
+    std::string compensator;
+    std::string ordering;
+    bool bitwise_reproducible = false;
+    blitzar_core::ExecutionMode parsed_mode{};
+
+    if (!cursor.Expect("    \"execution\": {") ||
+        !cursor.ReadString("      \"mode\": ", ",", mode) ||
+        !blitzar_core::ParseExecutionMode(mode, parsed_mode) ||
+        !ReadMetadataBackendExecutionPolicy(cursor, "cpu", execution.cpu) ||
+        !ReadMetadataBackendExecutionPolicy(cursor, "hip", execution.hip) ||
+        !ReadMetadataBackendExecutionPolicy(cursor, "mpi", execution.mpi) ||
+        !cursor.ReadString("      \"precision\": ", ",", precision) ||
+        !cursor.ReadString("      \"compiler\": ", ",", compiler) ||
+        !cursor.ReadString("      \"device\": ", ",", device) ||
+        !cursor.ReadString("      \"rng\": ", ",", rng) ||
+        !cursor.ReadString("      \"compensator\": ", ",", compensator) ||
+        !cursor.ReadString("      \"ordering\": ", ",", ordering) ||
+        !cursor.ReadBoolean("      \"bitwise_reproducible\": ", "", bitwise_reproducible) ||
+        !cursor.Expect("    },")) {
+        return false;
+    }
+
+    execution.mode = parsed_mode;
+    execution.precision = std::move(precision);
+    execution.compiler = std::move(compiler);
+    execution.device = std::move(device);
+    execution.rng = std::move(rng);
+    execution.compensator = std::move(compensator);
+    execution.ordering = std::move(ordering);
+    execution.bitwise_reproducible = bitwise_reproducible;
+
+    return true;
+}
+
 [[nodiscard]] bool ReadMetadataOutput(MetadataCursor& cursor, MetadataOutput& output)
 {
     std::string format;
@@ -103,6 +168,7 @@ bool ReadMetadataConfiguration(MetadataCursor& cursor, MetadataRunConfiguration&
            ReadMetadataUnits(cursor, configuration.units) &&
            ReadMetadataBarnesHut(cursor, configuration.barnes_hut) &&
            ReadMetadataGeneration(cursor, configuration.generation) &&
+           ReadMetadataExecution(cursor, configuration.execution) &&
            ReadMetadataOutput(cursor, configuration.output) &&
            ReadMetadataDiagnostics(cursor, configuration.diagnostics) && cursor.Expect("  },");
 }

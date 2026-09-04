@@ -1,6 +1,6 @@
 {
   "product_version": "1.0.0",
-  "plan_version": "1.0.54",
+  "plan_version": "1.0.55",
   "status": "frozen",
   "product": "deterministic particle simulation SDK",
   "source_of_truth": [
@@ -20,7 +20,8 @@
     "plan/block_time.json",
     "plan/bvh.json",
     "plan/grid.json",
-    "plan/final_audit.json"
+    "plan/final_audit.json",
+    "plan/reproducibility.json"
   ],
   "roots": [
     "include/blitzar",

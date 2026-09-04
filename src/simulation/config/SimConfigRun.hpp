@@ -1,6 +1,7 @@
 #ifndef BLITZAR_SIMULATION_CONFIG_SIM_CONFIG_RUN_HPP
 #define BLITZAR_SIMULATION_CONFIG_SIM_CONFIG_RUN_HPP
 
+#include "core/CoreExecution.hpp"
 #include "simulation/config/SimConfigDiagnostics.hpp"
 #include "simulation/config/SimConfigFile.hpp"
 #include "simulation/config/SimConfigOutput.hpp"
@@ -40,6 +41,7 @@ struct SimConfigRun final {
     std::uint64_t seed{};
     std::int64_t steps{1};
     bool deterministic{};
+    blitzar_core::ExecutionSettings execution{};
     SimConfigRestart restart{};
 
     [[nodiscard]] std::uint64_t StartStep() const noexcept

@@ -162,6 +162,15 @@
       "contract": "CLI HDF5 output selection, manifest/file extension parity, and binary fallback"
     },
     {
+      "id": "TST-P6-015",
+      "entrypoint": "tests/contracts/ContractReproducibilityTest.cpp",
+      "responsibility": "tests/contracts/ContractReproducibilityTest.cpp",
+      "mode": "strict-fast-policy",
+      "ranks": 1,
+      "phase": "P6",
+      "contract": "strict and fast execution policy validation, restart-state manifest round-trip, and snapshot-boundary readiness"
+    },
+    {
       "id": "TST-P0-004",
       "entrypoint": "tests/contracts/ContractBoundedTest.cpp",
       "responsibility": "tests/contracts/ContractBoundedTest.cpp",

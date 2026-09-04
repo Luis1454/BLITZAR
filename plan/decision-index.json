@@ -91,6 +91,7 @@
       "lifecycle": "superseded",
       "notes": "Qualification and public promotion boundary refined by Decision 070."
     },
-    {"path": "plan/decisions/070-kifmm-qualification-policy.md", "lifecycle": "active"}
+    {"path": "plan/decisions/070-kifmm-qualification-policy.md", "lifecycle": "active"},
+    {"path": "plan/decisions/071-reproducibility-and-restart-state.md", "lifecycle": "active"}
   ]
 }

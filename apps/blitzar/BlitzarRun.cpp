@@ -81,6 +81,13 @@ int PrintFailure(BlitzarStreams streams, std::string_view phase, blitzar_status 
         return static_cast<blitzar_status>(status);
     }
 
+    const blitzar_status execution_status =
+        blitzar::CppSimulationAccess::SetExecutionSettings(simulation, config.execution);
+
+    if (execution_status != BLITZAR_STATUS_OK) {
+        return execution_status;
+    }
+
     return static_cast<blitzar_status>(simulation.set_seed(config.seed));
 }
 
@@ -203,7 +210,10 @@ struct CheckpointResult final {
     const auto started = std::chrono::steady_clock::now();
     CheckpointResult result;
 
-    blitzar_status status = CaptureState(context.simulation, context.state, context.local_count);
+    blitzar_status status =
+        blitzar::CppSimulationAccess::IsSnapshotBoundaryReady(context.simulation)
+            ? CaptureState(context.simulation, context.state, context.local_count)
+            : BLITZAR_STATUS_INVALID_ARGUMENT;
 
     status = context.output.SynchronizeStatus(status, "output-state");
 

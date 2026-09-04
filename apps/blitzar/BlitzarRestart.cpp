@@ -75,13 +75,34 @@ namespace {
     return generation.seed == config.seed && generation.deterministic == config.deterministic;
 }
 
+[[nodiscard]] bool EqualExecution(
+    const blitzar_sim::SimConfigRun& config, const blitzar_io::MetadataRunInfo& source)
+{
+    const blitzar_io::MetadataExecution& execution = source.configuration.execution;
+
+    return execution.mode == config.execution.mode &&
+           execution.cpu.fma == config.execution.cpu.fma &&
+           execution.cpu.reduction == config.execution.cpu.reduction &&
+           execution.hip.fma == config.execution.hip.fma &&
+           execution.hip.reduction == config.execution.hip.reduction &&
+           execution.mpi.fma == config.execution.mpi.fma &&
+           execution.mpi.reduction == config.execution.mpi.reduction &&
+           execution.precision == "float64" &&
+           execution.compiler == blitzar_io::CurrentCompilerIdentity() &&
+           execution.device == "host-cpu" && execution.rng == "seeded-jitter-v1" &&
+           execution.compensator == "direct-plain;diagnostics-neumaier-v1" &&
+           execution.ordering == "stable-particle-id-v1" &&
+           execution.bitwise_reproducible == config.execution.IsBitwiseReproducible();
+}
+
 [[nodiscard]] bool IsCompatible(
-    const blitzar_sim::SimConfigRun& config, const blitzar_io::MetadataRunInfo& source) noexcept
+    const blitzar_sim::SimConfigRun& config, const blitzar_io::MetadataRunInfo& source)
 {
     return source.product_version == blitzar::version() &&
            source.plan_version == blitzar::plan_version() && EqualSimulation(config, source) &&
            EqualGravity(config, source) && EqualUnits(config, source) &&
-           EqualBarnesHut(config, source) && EqualGeneration(config, source);
+           EqualBarnesHut(config, source) && EqualGeneration(config, source) &&
+           EqualExecution(config, source);
 }
 
 [[nodiscard]] bool ContainsStep(

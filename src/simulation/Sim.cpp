@@ -148,6 +148,11 @@ std::size_t Sim::LocalParticleCount() const noexcept
     return local_particle_count_;
 }
 
+bool Sim::IsSnapshotBoundaryReady() const noexcept
+{
+    return !runtime_.Mpi().IsGhostExchangeActive(runtime_.Exchange().PersistentGhostExchange());
+}
+
 const blitzar_parallel::MpiMigrationTrace& Sim::LastMpiMigrationTrace() const noexcept
 {
     return migration_trace_;

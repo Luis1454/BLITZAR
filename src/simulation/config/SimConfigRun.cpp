@@ -81,6 +81,9 @@ namespace {
     else if (name == "restart") {
         index = 8;
     }
+    else if (name == "execution") {
+        index = 9;
+    }
     else {
         return false;
     }
@@ -128,6 +131,10 @@ namespace {
 
         return ApplyRestartDirective(directive, config);
 
+    case 9:
+
+        return ApplyExecutionDirective(directive, config);
+
     default:
 
         return BLITZAR_STATUS_INTERNAL_ERROR;
@@ -135,7 +142,7 @@ namespace {
 }
 
 [[nodiscard]] blitzar_status ApplyDirective(const SimConfigFile::Directive& directive,
-    std::array<bool, 9>& seen, SimConfigRun& config) noexcept
+    std::array<bool, 10>& seen, SimConfigRun& config) noexcept
 {
     std::size_t index = 0;
 
@@ -174,7 +181,7 @@ blitzar_status BuildRunConfig(const SimConfigFile& source,
 {
     try {
         SimConfigRun candidate;
-        std::array<bool, 9> seen{};
+        std::array<bool, 10> seen{};
 
         for (const SimConfigFile::Directive& directive : source.directives) {
             const blitzar_status status = ApplyDirective(directive, seen, candidate);
@@ -194,6 +201,12 @@ blitzar_status BuildRunConfig(const SimConfigFile& source,
         }
 
         if (candidate.barnes_hut.max_particles < candidate.particle_count) {
+            return BLITZAR_STATUS_INVALID_ARGUMENT;
+        }
+
+        candidate.execution.seed = candidate.seed;
+
+        if (!candidate.execution.IsValid()) {
             return BLITZAR_STATUS_INVALID_ARGUMENT;
         }
 

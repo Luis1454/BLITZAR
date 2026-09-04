@@ -88,6 +88,14 @@ target_compile_features(blitzar_metadata_io_test PRIVATE cxx_std_20)
 target_include_directories(blitzar_metadata_io_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
 blitzar_enable_warnings(blitzar_metadata_io_test)
 
+add_executable(blitzar_reproducibility_test
+    tests/contracts/ContractReproducibilityTest.cpp
+)
+target_link_libraries(blitzar_reproducibility_test PRIVATE blitzar)
+target_compile_features(blitzar_reproducibility_test PRIVATE cxx_std_20)
+target_include_directories(blitzar_reproducibility_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
+blitzar_enable_warnings(blitzar_reproducibility_test)
+
 add_executable(blitzar_cli_output_test
     apps/blitzar/BlitzarOutput.cpp
     apps/blitzar/BlitzarRestart.cpp
@@ -454,6 +462,7 @@ set(BLITZAR_TEST_TARGETS
     blitzar_snapshot_delta_test
     blitzar_hdf5_test
     blitzar_metadata_io_test
+    blitzar_reproducibility_test
     blitzar_cli_output_test
     blitzar_cli_summary_test
     blitzar_cli_restart_test

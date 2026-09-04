@@ -17,6 +17,7 @@ constexpr std::string_view FullConfig =
 gravity(gravitational_constant=1.0, softening=0.01)
 units(length_scale=1.0, mass_scale=1.0, time_scale=1.0)
 generation(seed=42, deterministic=true)
+execution(mode=strict)
 run(steps=6)
 output(directory="output", every_steps=2, write_initial=false, write_final=true)
 )";
@@ -26,6 +27,7 @@ constexpr std::string_view SplitConfig =
 gravity(gravitational_constant=1.0, softening=0.01)
 units(length_scale=1.0, mass_scale=1.0, time_scale=1.0)
 generation(seed=42, deterministic=true)
+execution(mode=strict)
 run(steps=1)
 output(directory="output", every_steps=2, write_initial=false, write_final=true)
 )";
@@ -35,6 +37,7 @@ constexpr std::string_view RestartConfig =
 gravity(gravitational_constant=1.0, softening=0.01)
 units(length_scale=1.0, mass_scale=1.0, time_scale=1.0)
 generation(seed=42, deterministic=true)
+execution(mode=strict)
 run(steps=6)
 output(directory="output", every_steps=2, write_initial=false, write_final=true)
 restart(directory="../split/output", step=1)

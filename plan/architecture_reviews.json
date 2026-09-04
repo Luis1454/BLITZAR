@@ -416,10 +416,10 @@
     },
     {
       "path": "src/io/metadata/MetadataFields.cpp",
-      "signals": ["branching"],
+      "signals": ["branching", "function_count"],
       "issue": 685,
       "status": "accepted",
-      "decision": "The metadata parser keeps the single-path and ordered-rank-shard output grammars at the manifest boundary so malformed or reordered shard references cannot enter post-process or restart; filesystem and payload validation remain outside the parser."
+      "decision": "The metadata parser keeps the fixed-order execution policy, single-path, and ordered-rank-shard grammars at the manifest boundary so malformed or reordered reproducibility and output state cannot enter post-process or restart; filesystem and payload validation remain outside the parser."
     },
     {
       "path": "src/io/postprocess/PostProcessState.cpp",
@@ -476,6 +476,13 @@
       "issue": 684,
       "status": "accepted",
       "decision": "The simulation configuration boundary keeps solver construction, candidate rebuild, and resource-setting transactionality together so the newly public KIFMM variant follows the same commit policy as the existing solver families."
+    },
+    {
+      "path": "src/io/metadata/MetadataManifestJson.cpp",
+      "signals": ["function_count"],
+      "issue": 685,
+      "status": "accepted",
+      "decision": "The manifest writer keeps the fixed-order execution policy block beside the existing configuration writers so reproducibility metadata remains deterministic and serialization ownership stays at the metadata boundary."
     }
   ]
 }

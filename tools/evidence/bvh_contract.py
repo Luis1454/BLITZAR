@@ -10,7 +10,7 @@ from typing import Any
 
 SCHEMA_VERSION = 1
 RECORD_SCHEMA_VERSION = 1
-PLAN_VERSION = "1.0.54"
+PLAN_VERSION = "1.0.55"
 WORKLOADS = {"dense", "sparse", "clustered", "moving"}
 INTEGER_FIELDS = {
     "schema",

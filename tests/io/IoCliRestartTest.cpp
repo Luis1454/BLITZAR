@@ -26,6 +26,7 @@ constexpr std::string_view FullConfig =
 gravity(gravitational_constant=1.0, softening=0.01)
 units(length_scale=1.0, mass_scale=1.0, time_scale=1.0)
 generation(seed=42, deterministic=true)
+execution(mode=strict)
 run(steps=6)
 output(directory="output", every_steps=2, write_initial=false, write_final=true)
 )";
@@ -35,6 +36,7 @@ constexpr std::string_view SplitConfig =
 gravity(gravitational_constant=1.0, softening=0.01)
 units(length_scale=1.0, mass_scale=1.0, time_scale=1.0)
 generation(seed=42, deterministic=true)
+execution(mode=strict)
 run(steps=1)
 output(directory="output", every_steps=2, write_initial=false, write_final=true)
 )";
@@ -44,6 +46,7 @@ constexpr std::string_view RestartConfig =
 gravity(gravitational_constant=1.0, softening=0.01)
 units(length_scale=1.0, mass_scale=1.0, time_scale=1.0)
 generation(seed=42, deterministic=true)
+execution(mode=strict)
 run(steps=6)
 output(directory="output", every_steps=2, write_initial=false, write_final=true)
 restart(directory="../split/output", step=1)
@@ -181,24 +184,27 @@ int CheckCorruptionAndTruncation(const std::filesystem::path& base,
 int CheckCompatibility(const std::filesystem::path& base, const std::filesystem::path& source_state,
     std::span<const std::uint8_t> valid_bytes)
 {
-    const std::array<std::pair<std::string_view, std::string_view>, 4> changes{
+    const std::array<std::pair<std::string_view, std::string_view>, 5> changes{
         std::pair{"solver", "solver=barnes_hut"}, std::pair{"units", "length_scale=2.0"},
-        std::pair{"count", "particle_count=3"}, std::pair{"integrator", "integrator=euler"}};
+        std::pair{"count", "particle_count=3"}, std::pair{"integrator", "integrator=euler"},
+        std::pair{"execution", "mode=fast"}};
 
     for (const auto& [name, replacement] : changes) {
         std::string config(RestartConfig);
-        const std::size_t position = name == "solver"  ? config.find("solver=direct")
-                                     : name == "units" ? config.find("length_scale=1.0")
-                                     : name == "count" ? config.find("particle_count=4")
-                                                       : config.find("integrator=leapfrog_kdk");
+        const std::size_t position = name == "solver"       ? config.find("solver=direct")
+                                     : name == "units"      ? config.find("length_scale=1.0")
+                                     : name == "count"      ? config.find("particle_count=4")
+                                     : name == "integrator" ? config.find("integrator=leapfrog_kdk")
+                                                            : config.find("mode=strict");
 
         BLITZAR_CHECK(position != std::string::npos);
 
         const std::size_t length = name == "solver"  ? std::string_view{"solver=direct"}.size()
                                    : name == "units" ? std::string_view{"length_scale=1.0"}.size()
-                                   : name == "count"
-                                       ? std::string_view{"particle_count=4"}.size()
-                                       : std::string_view{"integrator=leapfrog_kdk"}.size();
+                                   : name == "count" ? std::string_view{"particle_count=4"}.size()
+                                   : name == "integrator"
+                                       ? std::string_view{"integrator=leapfrog_kdk"}.size()
+                                       : std::string_view{"mode=strict"}.size();
 
         config.replace(position, length, replacement);
 
