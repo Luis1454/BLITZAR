@@ -434,6 +434,34 @@
       "issue": 685,
       "status": "accepted",
       "decision": "The state-access unit keeps global gather and non-collective local capture beside their shared packet/state validation while preserving separate call contracts; local output is sorted by stable ID and never invokes the distributed gather."
+    },
+    {
+      "path": "src/solvers/fmm/kifmm/KifmmOperator.cpp",
+      "signals": ["branching", "function_length"],
+      "issue": 683,
+      "status": "accepted",
+      "decision": "The KIFMM operator unit owns deterministic surface-operator inversion and equivalent-weight construction because those operations share the private workspace and must complete before any force commit; the long numerical kernels are bounded by the fixed surface order."
+    },
+    {
+      "path": "src/solvers/fmm/kifmm/KifmmSolver.cpp",
+      "signals": ["function_count"],
+      "issue": 683,
+      "status": "accepted",
+      "decision": "The KIFMM composition unit keeps settings, resource binding, capacity replacement, request validation, and transactional entrypoint behavior together as the solver lifecycle boundary; surface algebra and traversal are delegated to dedicated units."
+    },
+    {
+      "path": "src/solvers/fmm/kifmm/KifmmTraverse.cpp",
+      "signals": ["branching"],
+      "issue": 683,
+      "status": "accepted",
+      "decision": "The KIFMM traversal unit keeps interaction-list construction, near-field Direct accumulation, far-field equivalent evaluation, and staged target commits together because they form one deterministic tree walk; explicit request objects preserve source and ownership context."
+    },
+    {
+      "path": "src/solvers/fmm/kifmm/KifmmWorkspace.cpp",
+      "signals": ["function_count"],
+      "issue": 683,
+      "status": "accepted",
+      "decision": "The KIFMM workspace unit owns checked capacity products, fixed surface-node initialization, span access, and transactional growth because these methods define one allocation boundary for all solver-private storage."
     }
   ]
 }

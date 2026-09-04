@@ -121,6 +121,10 @@ set(BLITZAR_LIBRARY_SOURCES
     src/solvers/fmm/FmmSolver.cpp
     src/solvers/fmm/FmmMultipole.cpp
     src/solvers/fmm/FmmTraverse.cpp
+    src/solvers/fmm/kifmm/KifmmWorkspace.cpp
+    src/solvers/fmm/kifmm/KifmmSolver.cpp
+    src/solvers/fmm/kifmm/KifmmOperator.cpp
+    src/solvers/fmm/kifmm/KifmmTraverse.cpp
     src/trees/octree/Octree.cpp
     src/trees/octree/OctreeAccess.cpp
     src/trees/octree/OctreeConstruction.cpp

@@ -63,6 +63,7 @@
     "src/solvers/direct",
     "src/solvers/barnes_hut",
     "src/solvers/fmm",
+    "src/solvers/fmm/kifmm",
     "src/solvers/pm",
     "src/solvers/treepm",
     "src/sdk",

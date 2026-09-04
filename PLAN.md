@@ -193,6 +193,7 @@ src/solvers/threading/            Bounded traversal resources
 src/solvers/direct/               O(N^2) CPU reference responsibilities
 src/solvers/barnes_hut/           Barnes-Hut tree orchestration
 src/solvers/fmm/                  FMM CPU responsibilities
+src/solvers/fmm/kifmm/            CPU KIFMM workspace and traversal
 src/solvers/pm/                  Particle-Mesh CPU and CUDA
 src/solvers/treepm/              TreePM composition and dispatch
 src/io/                          Binary snapshots and optional HDF5 adapter

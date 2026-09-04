@@ -6,6 +6,7 @@
 #include "solvers/barnes_hut/BhSolver.hpp"
 #include "solvers/direct/DirectSolver.hpp"
 #include "solvers/fmm/FmmSolver.hpp"
+#include "solvers/fmm/kifmm/KifmmSolver.hpp"
 #include "solvers/pm/PmSolver.hpp"
 #include "solvers/treepm/TreePmSolver.hpp"
 
@@ -63,6 +64,35 @@ template <> struct SolverCpuForceTraits<blitzar_barnes_hut::BhSolver> final {
 template <> struct SolverCpuForceTraits<blitzar_fmm::FmmSolver> final {
     [[nodiscard]] static blitzar_status Evaluate(
         blitzar_fmm::FmmSolver& solver, const SolverForceEvaluation& request) noexcept
+    {
+        const blitzar_status prepare_status = solver.Prepare(request.targets.count);
+
+        if (prepare_status != BLITZAR_STATUS_OK) {
+            return prepare_status;
+        }
+
+        const bool local = request.source_kind == SolverForceSourceKind::Local;
+
+        blitzar_trees::OctreeResource& resource =
+            local ? solver.Resources().Local() : solver.Resources().Remote();
+
+        const blitzar_status resource_status = resource.Prepare(request.sources);
+
+        if (resource_status != BLITZAR_STATUS_OK) {
+            return resource_status;
+        }
+
+        const SolverForceRequest::Tree typed_request{request.targets, request.sources,
+            request.forces, request.settings, resource, resource.View(), request.source_kind,
+            !local, local};
+
+        return solver.Evaluate(typed_request);
+    }
+};
+
+template <> struct SolverCpuForceTraits<blitzar_kifmm::KifmmSolver> final {
+    [[nodiscard]] static blitzar_status Evaluate(
+        blitzar_kifmm::KifmmSolver& solver, const SolverForceEvaluation& request) noexcept
     {
         const blitzar_status prepare_status = solver.Prepare(request.targets.count);
 
