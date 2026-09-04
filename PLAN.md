@@ -2,7 +2,7 @@
 
 Status: **FROZEN**  
 Product/API version: **1.0.0**
-Plan version: **1.0.51**
+Plan version: **1.0.52**
 
 This repository is a clean-room rewrite. The old repository, its source tree,
 its issues, and its documentation are not implementation inputs. Requirements
@@ -52,9 +52,10 @@ publication, human-readable and machine-readable production run summaries,
 deterministic snapshot restart, online
 conservation diagnostics, and snapshot post-processing are implemented and
 locally qualified. HDF5 CLI output is implemented as an optional
-capability-gated format. HDF5 remains capability-gated when its optional
-dependency is absent; MPI/HIP shard persistence remains deferred to its
-dedicated issue.
+capability-gated format. Explicit MPI/HIP rank-shard persistence is implemented
+for the local qualification path; HDF5 remains capability-gated when its
+optional dependency is absent, and multi-node/RDMA qualification remains
+unverified.
 
 The block-time qualification contract is frozen in `plan/block_time.json`.
 Its bounded scheduler model is evidence only: fixed-step KDK remains the
@@ -381,8 +382,10 @@ coverage are covered by `TST-P6-009`. Online conservation diagnostics and
 snapshot post-processing, including byte parity with the online CSV, are
 covered by `TST-P6-010`. Output boundary qualification is covered by
 `TST-P6-011`: a single-rank MPI launch is byte-equivalent to the direct CPU CLI
-path, while multi-rank output is rejected before state capture or manifest
-preparation. MPI/HIP shard persistence remains open. The internal HDF5 adapter
+path. Explicit MPI/HIP rank shards are covered by `TST-P7-006`: each rank writes
+one local state file, the root manifest is published only after all shard writes
+complete, and no distributed output path invokes the `GetState` gather. The
+internal HDF5 adapter
 and its CLI format selection are capability-gated under `src/io/hdf5`; they are
 covered by `TST-P6-012` and `TST-P6-014` when HDF5 is available, while the
 unavailable path is explicitly tested. HDF5 output does not change the public
@@ -422,18 +425,18 @@ are outside this candidate evaluation, and the public ABI is unchanged.
 ### P6 output boundary qualification
 
 The CLI creates an internal MPI context only when configured output is enabled.
-If that context observes more than one rank, the run returns
-`BLITZAR_STATUS_UNSUPPORTED` before initialization, state capture, or output
-preparation. This prevents the distributed `Sim::GetState` gather operation from
-being used implicitly by persistence; that operation remains available to the
-internal MPI qualification tests.
+If that context observes more than one rank, the run uses the explicit shard
+contract in Decision 068. Local state capture is non-collective, every rank
+publishes an atomic rank-local file, and the root manifest is updated only after
+collective status confirmation. The distributed `Sim::GetState` gather remains
+available to internal numerical qualification, but is not used by persistence.
 
 `TST-P6-004` records separate steady-clock measurements for physics steps and
 output checkpoints. The physics interval contains only `Simulation::step`, and
 the output interval contains state capture plus snapshot/diagnostic publication.
 These values are qualification instrumentation only: they are not persisted in
 manifests, snapshots, or the public summary. HIP device execution remains
-capability-gated; MPI output qualification covers one host and explicitly does
+capability-gated; shard output qualification covers one host and explicitly does
 not claim multi-node or RDMA behavior.
 
 ### Sprint 6: Optional HIP Acceleration
@@ -493,6 +496,16 @@ with particle count and rank count so memory can be compared across `P=1`,
 The root-only input contract, two/four-rank parity, Barnes-Hut migration, and
 rollback behavior are covered by `TST-P7-001`, `TST-P7-002`, and
 `TST-P7-004`.
+
+Distributed persistence uses the same root-only input and local ownership
+boundaries. Each checkpoint writes one strictly ID-ordered shard per rank and
+publishes a root manifest only after all rank-local atomic writes succeed.
+Restart requires the source rank count and reconstructs the global initialization
+state explicitly on rank zero before the existing bounded distribution. The
+post-process path enumerates and validates every shard without a hidden gather.
+Online distributed diagnostics remain unsupported pending a versioned global
+reduction contract. `TST-P7-006` covers the two-rank shard, rerun, and restart
+acceptance path.
 
 ### P8: MPI Boundary and KDK Overlap
 

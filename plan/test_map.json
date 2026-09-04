@@ -123,7 +123,16 @@
       "mode": "mpi-output-boundary",
       "ranks": 2,
       "phase": "P6",
-      "contract": "single-rank MPI and direct CPU byte parity, multi-rank output rejection before state capture, and no implicit full gather"
+      "contract": "single-rank MPI and direct CPU byte parity"
+    },
+    {
+      "id": "TST-P7-006",
+      "entrypoint": "tests/io/IoMpiShardOutputTest.cmake",
+      "responsibility": "tests/io/IoMpiShardOutputTest.cmake",
+      "mode": "mpi-sharded-output",
+      "ranks": 2,
+      "phase": "P7",
+      "contract": "explicit rank-local snapshot shards, root manifest publication, no hidden full gather, rerun rejection, and distributed restart"
     },
     {
       "id": "TST-P6-012",

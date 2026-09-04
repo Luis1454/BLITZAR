@@ -81,9 +81,15 @@
     },
     {
       "id": "TST-P6-011",
-      "name": "mpi-cli-output-boundary-and-single-rank-parity",
+      "name": "mpi-cli-single-rank-output-parity",
       "command": "cmake -DBLITZAR_CLI=blitzar_cli -DMPIEXEC_EXECUTABLE=mpiexec -DMPIEXEC_NUMPROC_FLAG=-np -DBLITZAR_TEST_ROOT=${CMAKE_CURRENT_BINARY_DIR}/blitzar-output-boundary-649 -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/io/IoMpiOutputTest.cmake",
       "phase": "P6"
+    },
+    {
+      "id": "TST-P7-006",
+      "name": "mpi-explicit-shard-output-and-restart",
+      "command": "cmake -DBLITZAR_CLI=blitzar_cli -DMPIEXEC_EXECUTABLE=mpiexec -DMPIEXEC_NUMPROC_FLAG=-np -DBLITZAR_TEST_ROOT=${CMAKE_CURRENT_BINARY_DIR}/blitzar-shard-output-685 -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/io/IoMpiShardOutputTest.cmake",
+      "phase": "P7"
     },
     {
       "id": "TST-P6-012",
