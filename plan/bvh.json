@@ -1,0 +1,112 @@
+{
+  "schema_version": 1,
+  "plan_version": "1.0.49",
+  "record_schema_version": 1,
+  "target": "blitzar_bvh_test",
+  "runner": "tools/evidence/bvh_evidence.py",
+  "precision": "float64",
+  "seed": 424242,
+  "particle_count": 96,
+  "steps": 6,
+  "radius": 0.75,
+  "skin": 0.4,
+  "leaf_size": 4,
+  "reference": {
+    "id": "exact-directed-neighbor-v1",
+    "description": "Exact directed O(N^2) neighbor set preserving target and source order"
+  },
+  "selected_neighbor": {
+    "id": "cell-linked-v1",
+    "description": "Existing selected cell-linked local-neighbor candidate"
+  },
+  "long_range_baseline": {
+    "id": "octree-v1",
+    "description": "Existing Octree structural baseline for long-range gravity"
+  },
+  "workloads": ["dense", "sparse", "clustered", "moving"],
+  "policies": {
+    "bounding_volume": "axis-aligned bounding boxes over float64 particle coordinates",
+    "split": "longest AABB spatial extent; median; coordinate then particle index",
+    "traversal": "iterative LIFO; push right before left; stable particle index output",
+    "distance": "inclusive squared-distance comparison in float64",
+    "rebuild": "static build once; moving initial build plus refit; full rebuild baseline",
+    "refit": "bottom-up reverse node order with unchanged topology"
+  },
+  "comparison": {
+    "neighbor_oracle": "exact-directed-neighbor-v1",
+    "selected_neighbor": "cell-linked-v1",
+    "octree_local_neighbor_oracle": false,
+    "bvh_gravity_replacement": false
+  },
+  "decision": {
+    "status": "not-selected",
+    "reason": "BVH is qualified for irregular local queries only; no production long-range promotion is justified by this bounded evidence",
+    "production_long_range": "octree-v1",
+    "promotion_requires": [
+      "bounded production ownership contract",
+      "physical collision or SPH workload gain",
+      "memory and rebuild policy under target scale",
+      "downstream numerical parity and end-to-end evidence"
+    ]
+  },
+  "required_record_fields": [
+    "schema",
+    "seed",
+    "scenario",
+    "particles",
+    "steps",
+    "radius",
+    "skin",
+    "leaf_size",
+    "bvh_build_ns",
+    "bvh_refit_ns",
+    "bvh_query_ns",
+    "bvh_rebuild_ns",
+    "cell_linked_build_ns",
+    "cell_linked_query_ns",
+    "bvh_rebuild_count",
+    "bvh_refit_count",
+    "bvh_rebuild_baseline_count",
+    "bvh_neighbor_count",
+    "cell_linked_neighbor_count",
+    "reference_count",
+    "bvh_memory_bytes",
+    "bvh_workspace_bytes",
+    "cell_linked_memory_bytes",
+    "bvh_hash",
+    "bvh_topology_hash",
+    "cell_linked_hash",
+    "reference_hash",
+    "bvh_ordering_hash",
+    "cell_linked_ordering_hash",
+    "octree_build_ns",
+    "octree_cells",
+    "octree_memory_bytes",
+    "octree_hash",
+    "finite",
+    "correct",
+    "repeatable",
+    "deterministic",
+    "refit_correct",
+    "rebuild_correct",
+    "refit_parity",
+    "selected",
+    "decision"
+  ],
+  "invariants": [
+    "AABBs are deterministic for a fixed frame and stable median split",
+    "traversal is iterative and emits sorted source indices per target",
+    "refit preserves topology and matches the full rebuild query result",
+    "both BVH and cell-linked results match the exact directed neighbor reference",
+    "Octree remains a separate long-range baseline and is not a local-neighbor oracle",
+    "the cell-linked candidate remains the selected local-neighbor policy",
+    "the BVH is not promoted into the production gravity path"
+  ],
+  "artifacts": {
+    "generated_outside_source": true,
+    "files": ["metadata.json", "results.json", "summary.md", "run.log"],
+    "hardware_counters": "not_claimed",
+    "physical_force_speedup": "not_claimed",
+    "long_range_replacement": "not_claimed"
+  }
+}

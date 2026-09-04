@@ -2,7 +2,7 @@
 
 Status: **FROZEN**  
 Product/API version: **1.0.0**
-Plan version: **1.0.48**
+Plan version: **1.0.49**
 
 This repository is a clean-room rewrite. The old repository, its source tree,
 its issues, and its documentation are not implementation inputs. Requirements
@@ -12,7 +12,7 @@ The authoritative planning state is the combination of this file,
 `plan/manifest.json`, `plan/quality.json`, `plan/decision-index.json`, and
 `plan/scaling.json`, `plan/layout.json`, `plan/reduction.json`,
 `plan/neighborhood.json`, `plan/output_contract.json`, `plan/delta.json`, and
-`plan/block_time.json`, `plan/final_audit.json`.
+`plan/block_time.json`, `plan/bvh.json`, `plan/final_audit.json`.
 Decision records under `plan/decisions/` preserve the rationale and migration
 history for that state.
 
@@ -56,6 +56,12 @@ The block-time qualification contract is frozen in `plan/block_time.json`.
 Its bounded scheduler model is evidence only: fixed-step KDK remains the
 production integrator, and the reported work reduction is not a physical or
 end-to-end speedup claim.
+
+The BVH qualification contract is frozen in `plan/bvh.json`. It measures an
+iterative AABB index for irregular local queries against the exact directed
+neighbor reference, the selected cell-linked candidate, and a separate Octree
+baseline. BVH refit and full rebuild produce the same query results, but the
+candidate is not promoted into the production long-range gravity path.
 
 HIP is capability-gated: compiler support and device execution are separate
 conditions, and a CPU fallback is retained when no device is visible. MPI is
@@ -123,6 +129,14 @@ the scheduler loop. The candidate remains `not-selected`: no asynchronous
 force state, MPI transport change, snapshot ABI change, or public SDK change
 is introduced until a complete end-to-end implementation is qualified.
 
+The BVH qualification contract in `plan/bvh.json` compares dense, sparse,
+clustered, and moving local-query workloads. `TST-P1-009` checks deterministic
+AABB construction, iterative traversal, exact neighbor parity, stable output
+ordering, refit/rebuild parity, memory, and wall-clock measurements. The
+Octree remains a separate long-range baseline and the cell-linked structure
+remains the selected local-neighbor policy; no physical force or production
+gravity speedup is claimed.
+
 ## Final Qualification
 
 `plan/final_audit.json` assigns an owner, category, and review gate to every
@@ -182,6 +196,7 @@ tests/{contracts,fixtures,fmm,gpu,integration,mpi,octree,package,scaling,simulat
 tests/layout/                     Morton ordering and bounded layout qualification
 tests/reduction/                  Compensated reduction and conservation qualification
 tests/neighborhood/                Local-neighbor candidate and exact-reference qualification
+tests/bvh/                         AABB BVH irregular-query qualification
 examples/                        Minimal C and C++ SDK consumers
 plan/                            Frozen roadmap and machine-readable invariants
 tools/{architecture,gates,format,debug,evidence,audit}/ Repository policy checks
@@ -265,6 +280,13 @@ fixed-step KDK path. It compares deterministic event ledgers, verifies that
 ownership migration occurs only at a synchronization boundary, and checks
 exact restart and rollback replay. The result is a scheduling proxy and does
 not establish physical conservation or end-to-end simulation speedup.
+
+`TST-P1-009` qualifies an AABB BVH only for irregular local queries. It uses
+an explicit stack, deterministic median splits, stable source ordering, and a
+bottom-up refit policy, then compares both refit and full-rebuild passes with
+the exact neighbor reference and selected cell-linked index. The existing
+Octree is reported separately as the long-range baseline; the BVH is not a
+production gravity replacement.
 
 ### P2: Public SDK and CLI
 
