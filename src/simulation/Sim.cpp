@@ -14,9 +14,9 @@ Sim::Sim(std::size_t particle_count)
       timestep_(1.0), particles_ready_(false), execution_settings_{}, snapshot_header_{},
       last_status_(runtime_.Mpi().Status()), last_backend_(BLITZAR_BACKEND_CPU),
       solver_(std::in_place_type<DirectSolverBundle>, gravity_, particle_count), integrator_{},
-      particle_ids_(particle_count), local_particle_count_(0), exchange_buffer_{},
-      rollback_arena_buffer_{}, rollback_force_buffer_{}, rollback_exchange_buffer_{},
-      migration_buffer_{}, gathered_buffer_{}
+      particle_ids_(particle_count), output_order_(particle_count), local_particle_count_(0),
+      exchange_buffer_{}, rollback_arena_buffer_{}, rollback_force_buffer_{},
+      rollback_exchange_buffer_{}, migration_buffer_{}, gathered_buffer_{}
 {
     const blitzar_status capacity_status = runtime_.Exchange().CapacityStatus();
 
@@ -81,6 +81,9 @@ blitzar_status Sim::EnsureLocalCapacity(std::size_t capacity) noexcept
     try {
         if (particle_ids_.size() < capacity) {
             particle_ids_.resize(capacity);
+        }
+        if (output_order_.size() < capacity) {
+            output_order_.resize(capacity);
         }
     }
     catch (const std::length_error&) {

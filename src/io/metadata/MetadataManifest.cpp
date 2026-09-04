@@ -116,7 +116,8 @@ blitzar_status MetadataRunInfo::Validate() const noexcept
         return BLITZAR_STATUS_INVALID_ARGUMENT;
     }
 
-    if (rank_count != 1 || rank_index != 0) {
+    if (rank_count == 0 || rank_index >= rank_count || rank_index > MetadataMaxRankIndex ||
+        rank_count > MetadataMaxRankIndex + 1U) {
         return BLITZAR_STATUS_UNSUPPORTED;
     }
 
@@ -185,6 +186,39 @@ std::string StateFileName(std::uint64_t step, MetadataOutputFormat format)
 
         return {};
     }
+
+    return name;
+}
+
+std::string StateShardFileName(
+    std::uint64_t step, std::uint32_t rank_index, MetadataOutputFormat format)
+{
+    if (rank_index > MetadataMaxRankIndex) {
+        return {};
+    }
+
+    const std::string state_name = StateFileName(step, format);
+
+    if (state_name.empty()) {
+        return {};
+    }
+
+    std::array<char, 8> digits{};
+    const auto conversion = std::to_chars(
+        digits.data(), digits.data() + digits.size(), static_cast<std::uint64_t>(rank_index));
+
+    if (conversion.ec != std::errc{}) {
+        return {};
+    }
+
+    const std::size_t digit_count = static_cast<std::size_t>(conversion.ptr - digits.data());
+    const std::size_t extension_position = state_name.find_last_of('.');
+    std::string name = state_name.substr(0, extension_position);
+
+    name.append(".rank-");
+    name.append(digits.size() - digit_count, '0');
+    name.append(digits.data(), digit_count);
+    name.append(state_name.substr(extension_position));
 
     return name;
 }

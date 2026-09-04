@@ -96,6 +96,16 @@ if(BLITZAR_MPI_ENABLED)
                 -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/io/IoMpiOutputTest.cmake
         )
         set_tests_properties(TST-P6-011 PROPERTIES TIMEOUT 120)
+        add_test(
+            NAME TST-P7-006
+            COMMAND cmake
+                -DBLITZAR_CLI=$<TARGET_FILE:blitzar_cli>
+                -DMPIEXEC_EXECUTABLE=${MPIEXEC_EXECUTABLE}
+                -DMPIEXEC_NUMPROC_FLAG=${MPIEXEC_NUMPROC_FLAG}
+                -DBLITZAR_TEST_ROOT=${CMAKE_CURRENT_BINARY_DIR}/blitzar-shard-output-685
+                -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/io/IoMpiShardOutputTest.cmake
+        )
+        set_tests_properties(TST-P7-006 PROPERTIES TIMEOUT 120)
     endif()
 
     add_test(

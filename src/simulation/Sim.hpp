@@ -44,6 +44,8 @@ public:
     [[nodiscard]] blitzar_status SetSeed(std::uint64_t seed) noexcept;
     [[nodiscard]] blitzar_status SetParticles(blitzar_core::ParticleStateView input) noexcept;
     [[nodiscard]] blitzar_status GetState(blitzar_core::ParticleOutputView output) const noexcept;
+    [[nodiscard]] blitzar_status GetLocalState(blitzar_core::ParticleOutputView output,
+        std::span<std::uint64_t> ids, std::size_t& count) const noexcept;
     [[nodiscard]] blitzar_status Step() noexcept;
     void SetFaultForTesting(blitzar_hip::Fault fault) noexcept;
     void SetMpiOverlapForTesting(blitzar_parallel::MpiOverlapMode mode) noexcept;
@@ -108,6 +110,7 @@ private:
     SolverVariant solver_;
     blitzar_integration::KdkLeapfrog integrator_;
     std::vector<std::uint64_t> particle_ids_;
+    mutable std::vector<std::size_t> output_order_;
     std::size_t local_particle_count_;
     blitzar_parallel::PacketBuffer exchange_buffer_;
     blitzar_parallel::PacketBuffer rollback_arena_buffer_;

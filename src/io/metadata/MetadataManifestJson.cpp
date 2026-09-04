@@ -263,22 +263,45 @@ namespace {
 }
 
 [[nodiscard]] bool WriteCompletedOutputs(std::ostream& output,
-    std::span<const std::uint64_t> completed_steps, MetadataOutputFormat format)
+    std::span<const std::uint64_t> completed_steps, const MetadataRunInfo& info)
 {
     output << "  \"completed_output_count\": " << completed_steps.size()
            << ",\n"
               "  \"completed_outputs\": [\n";
 
     for (std::size_t index = 0; index < completed_steps.size(); ++index) {
-        const std::string file_name = StateFileName(completed_steps[index], format);
+        const std::uint64_t step = completed_steps[index];
 
-        if (file_name.empty()) {
-            return false;
+        output << "    {\n      \"step\": " << step << ",\n";
+
+        if (info.rank_count == 1U) {
+            const std::string file_name = StateFileName(step, info.configuration.output.format);
+
+            if (file_name.empty()) {
+                return false;
+            }
+
+            output << "      \"path\": \"states/" << file_name << "\"\n    }";
+        }
+        else {
+            output << "      \"shards\": [\n";
+
+            for (std::uint32_t rank = 0; rank < info.rank_count; ++rank) {
+                const std::string file_name =
+                    StateShardFileName(step, rank, info.configuration.output.format);
+
+                if (file_name.empty()) {
+                    return false;
+                }
+
+                output << "        \"states/" << file_name << "\""
+                       << (rank + 1U == info.rank_count ? "\n" : ",\n");
+            }
+
+            output << "      ]\n    }";
         }
 
-        output << "    {\n      \"step\": " << completed_steps[index]
-               << ",\n      \"path\": \"states/" << file_name << "\"\n    }"
-               << (index + 1U == completed_steps.size() ? "\n" : ",\n");
+        output << (index + 1U == completed_steps.size() ? "\n" : ",\n");
     }
 
     output << "  ]\n";
@@ -312,8 +335,8 @@ bool MetadataManifest::WriteDocument(
 
     return WriteConfiguration(output, info_.configuration) &&
            WriteCapabilities(output, info_.capabilities) && WriteDistribution(output, info_) &&
-           WriteCompletedOutputs(output, completed_steps, info_.configuration.output.format) &&
-           output << "}\n" && static_cast<bool>(output);
+           WriteCompletedOutputs(output, completed_steps, info_) && output << "}\n" &&
+           static_cast<bool>(output);
 }
 
 } // namespace blitzar_io

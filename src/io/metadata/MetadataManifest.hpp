@@ -15,6 +15,7 @@ namespace blitzar_io {
 
 inline constexpr std::uint64_t MetadataMaxStepCount = 100000;
 inline constexpr std::uint64_t MetadataMaxStateStep = 99999999;
+inline constexpr std::uint32_t MetadataMaxRankIndex = 99999999;
 
 struct MetadataSimulation final {
     std::uint64_t particle_count{};
@@ -99,6 +100,8 @@ struct MetadataRunInfo final {
 
 [[nodiscard]] std::string StateFileName(std::uint64_t step);
 [[nodiscard]] std::string StateFileName(std::uint64_t step, MetadataOutputFormat format);
+[[nodiscard]] std::string StateShardFileName(
+    std::uint64_t step, std::uint32_t rank_index, MetadataOutputFormat format);
 [[nodiscard]] std::string_view MetadataOutputFormatName(MetadataOutputFormat format) noexcept;
 [[nodiscard]] bool ParseMetadataOutputFormat(
     std::string_view text, MetadataOutputFormat& format) noexcept;

@@ -106,6 +106,11 @@ MetadataRun::MetadataRun(std::filesystem::path root, MetadataRunInfo info)
 
 blitzar_status MetadataRun::Prepare() noexcept
 {
+    return Prepare(true);
+}
+
+blitzar_status MetadataRun::Prepare(bool manifest_owner) noexcept
+{
     if (prepared_) {
         return BLITZAR_STATUS_INVALID_ARGUMENT;
     }
@@ -119,6 +124,20 @@ blitzar_status MetadataRun::Prepare() noexcept
     if (manifest_.Info().configuration.output.format == MetadataOutputFormat::Hdf5 &&
         !Hdf5Writer::IsAvailable()) {
         return BLITZAR_STATUS_UNSUPPORTED;
+    }
+
+    if (manifest_.Info().rank_count == 1U && !manifest_owner) {
+        return BLITZAR_STATUS_INVALID_ARGUMENT;
+    }
+
+    if (manifest_.Info().rank_count > 1U && manifest_owner && manifest_.Info().rank_index != 0U) {
+        return BLITZAR_STATUS_INVALID_ARGUMENT;
+    }
+
+    if (!manifest_owner) {
+        prepared_ = true;
+
+        return BLITZAR_STATUS_OK;
     }
 
     bool root_created = false;
@@ -173,7 +192,14 @@ blitzar_status MetadataRun::Prepare() noexcept
 
 std::filesystem::path MetadataRun::StatePath(std::uint64_t step) const
 {
-    return states_path_ / StateFileName(step, manifest_.Info().configuration.output.format);
+    const MetadataRunInfo& info = manifest_.Info();
+
+    const std::string file_name =
+        info.rank_count == 1U
+            ? StateFileName(step, info.configuration.output.format)
+            : StateShardFileName(step, info.rank_index, info.configuration.output.format);
+
+    return states_path_ / file_name;
 }
 
 blitzar_status MetadataRun::ValidateFrame(blitzar_core::SnapshotFrameView frame) const noexcept
@@ -187,8 +213,15 @@ blitzar_status MetadataRun::ValidateFrame(blitzar_core::SnapshotFrameView frame)
     const MetadataRunInfo& info = manifest_.Info();
     const MetadataSimulation& simulation = info.configuration.simulation;
 
-    if (frame.header.particle_count != simulation.particle_count ||
-        frame.header.step > simulation.requested_steps ||
+    const bool single_rank = info.rank_count == 1U;
+    const bool distribution_valid =
+        single_rank ? frame.header.distribution == blitzar_core::SnapshotDistribution::SingleRank &&
+                          frame.header.particle_count == simulation.particle_count
+                    : frame.header.distribution == blitzar_core::SnapshotDistribution::Sharded &&
+                          frame.header.id_policy == blitzar_core::SnapshotIdPolicy::GlobalStable &&
+                          frame.header.particle_count <= simulation.particle_count;
+
+    if (!distribution_valid || frame.header.step > simulation.requested_steps ||
         frame.header.rank_count != info.rank_count || frame.header.rank_index != info.rank_index) {
         return BLITZAR_STATUS_INVALID_ARGUMENT;
     }
@@ -226,6 +259,10 @@ blitzar_status MetadataRun::PublishSnapshot(blitzar_core::SnapshotFrameView fram
             return write_status;
         }
 
+        if (manifest_.Info().rank_count > 1U) {
+            return BLITZAR_STATUS_OK;
+        }
+
         completed_steps_.push_back(frame.header.step);
 
         const blitzar_status manifest_status =
@@ -249,6 +286,52 @@ blitzar_status MetadataRun::PublishSnapshot(blitzar_core::SnapshotFrameView fram
     catch (const std::length_error&) {
         return BLITZAR_STATUS_INVALID_ARGUMENT;
     }
+}
+
+blitzar_status MetadataRun::CommitDistributedSnapshot(std::uint64_t step) noexcept
+{
+    if (!prepared_ || manifest_.Info().rank_count <= 1U || manifest_.Info().rank_index != 0U ||
+        HasCompletedStep(step) || (!completed_steps_.empty() && step <= completed_steps_.back())) {
+        return BLITZAR_STATUS_INVALID_ARGUMENT;
+    }
+
+    try {
+        completed_steps_.push_back(step);
+
+        const blitzar_status manifest_status =
+            manifest_.WriteAtomic(manifest_path_, completed_steps_);
+
+        if (manifest_status != BLITZAR_STATUS_OK) {
+            completed_steps_.pop_back();
+
+            return manifest_status;
+        }
+
+        return BLITZAR_STATUS_OK;
+    }
+    catch (const std::bad_alloc&) {
+        return BLITZAR_STATUS_ALLOCATION_FAILURE;
+    }
+    catch (const std::length_error&) {
+        return BLITZAR_STATUS_INVALID_ARGUMENT;
+    }
+}
+
+blitzar_status MetadataRun::DiscardDistributedSnapshot(std::uint64_t step) noexcept
+{
+    if (!prepared_ || manifest_.Info().rank_count <= 1U) {
+        return BLITZAR_STATUS_INVALID_ARGUMENT;
+    }
+
+    std::error_code remove_error;
+
+    std::filesystem::remove(StatePath(step), remove_error);
+
+    if (remove_error) {
+        return BLITZAR_STATUS_INTERNAL_ERROR;
+    }
+
+    return BLITZAR_STATUS_OK;
 }
 
 const std::filesystem::path& MetadataRun::Root() const noexcept

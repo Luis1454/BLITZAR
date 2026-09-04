@@ -43,7 +43,8 @@ namespace {
 }
 
 [[nodiscard]] blitzar_status ValidateStatesDirectory(const std::filesystem::path& path,
-    const std::vector<std::uint64_t>& steps, MetadataOutputFormat format) noexcept
+    const std::vector<std::uint64_t>& steps, MetadataOutputFormat format,
+    std::uint32_t rank_count) noexcept
 {
     std::error_code status_error;
     const std::filesystem::file_status status = std::filesystem::symlink_status(path, status_error);
@@ -56,13 +57,26 @@ namespace {
         std::set<std::string> expected_names;
 
         for (const std::uint64_t step : steps) {
-            const std::string name = StateFileName(step, format);
+            if (rank_count == 1U) {
+                const std::string name = StateFileName(step, format);
 
-            if (name.empty()) {
-                return BLITZAR_STATUS_INVALID_ARGUMENT;
+                if (name.empty()) {
+                    return BLITZAR_STATUS_INVALID_ARGUMENT;
+                }
+
+                expected_names.insert(name);
             }
+            else {
+                for (std::uint32_t rank = 0; rank < rank_count; ++rank) {
+                    const std::string name = StateShardFileName(step, rank, format);
 
-            expected_names.insert(name);
+                    if (name.empty()) {
+                        return BLITZAR_STATUS_INVALID_ARGUMENT;
+                    }
+
+                    expected_names.insert(name);
+                }
+            }
         }
 
         const std::filesystem::directory_iterator end;
@@ -136,8 +150,8 @@ blitzar_status ReadPostProcessInput(
 
         input.states_path = run_directory / "states";
 
-        return ValidateStatesDirectory(
-            input.states_path, input.completed_steps, input.info.configuration.output.format);
+        return ValidateStatesDirectory(input.states_path, input.completed_steps,
+            input.info.configuration.output.format, input.info.rank_count);
     }
     catch (const std::length_error&) {
         return BLITZAR_STATUS_INVALID_ARGUMENT;
@@ -148,15 +162,23 @@ blitzar_status ReadPostProcessInput(
 }
 
 blitzar_status ValidateSnapshotFrame(const blitzar_core::SnapshotHeader& header,
-    const MetadataRunInfo& info, std::uint64_t expected_step) noexcept
+    const MetadataRunInfo& info, std::uint64_t expected_step, std::uint32_t expected_rank) noexcept
 {
     const MetadataSimulation& simulation = info.configuration.simulation;
 
     const double expected_time = static_cast<double>(expected_step) * simulation.timestep;
 
-    if (header.particle_count != simulation.particle_count || header.step != expected_step ||
-        header.time != expected_time || header.rank_count != info.rank_count ||
-        header.rank_index != info.rank_index) {
+    const bool single_rank = info.rank_count == 1U;
+    const bool distribution_valid =
+        single_rank ? header.distribution == blitzar_core::SnapshotDistribution::SingleRank &&
+                          header.particle_count == simulation.particle_count
+                    : header.distribution == blitzar_core::SnapshotDistribution::Sharded &&
+                          header.id_policy == blitzar_core::SnapshotIdPolicy::GlobalStable &&
+                          header.particle_count <= simulation.particle_count;
+
+    if (!distribution_valid || header.step != expected_step || header.time != expected_time ||
+        header.rank_count != info.rank_count || header.rank_index != expected_rank ||
+        expected_rank >= info.rank_count) {
         return BLITZAR_STATUS_INVALID_ARGUMENT;
     }
 

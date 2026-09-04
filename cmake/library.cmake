@@ -67,6 +67,7 @@ set(BLITZAR_LIBRARY_SOURCES
     src/sdk/cpp/CppSimulation.cpp
     src/sdk/cpp/CppSimulationConfig.cpp
     src/sdk/cpp/CppSimulationData.cpp
+    src/sdk/cpp/CppSimulationAccess.cpp
     src/io/snapshot/SnapshotWire.cpp
     src/io/snapshot/SnapshotChecksum.cpp
     src/io/snapshot/SnapshotDelta.cpp

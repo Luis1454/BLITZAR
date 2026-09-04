@@ -46,6 +46,29 @@ struct SnapshotStorage final {
     return {header, payload};
 }
 
+[[nodiscard]] blitzar_core::SnapshotFrameView MakeShardFrame(
+    const SnapshotStorage& storage, std::uint32_t rank_index) noexcept
+{
+    blitzar_core::SnapshotHeader header{};
+
+    header.particle_count = storage.ids.size();
+    header.step = 11;
+    header.time = 2.5;
+    header.rank_count = 2;
+    header.rank_index = rank_index;
+    header.distribution = blitzar_core::SnapshotDistribution::Sharded;
+    header.id_policy = blitzar_core::SnapshotIdPolicy::GlobalStable;
+
+    return {header, {std::span<const std::uint64_t>(storage.ids),
+                        std::span<const blitzar_core::Scalar>(storage.position_x),
+                        std::span<const blitzar_core::Scalar>(storage.position_y),
+                        std::span<const blitzar_core::Scalar>(storage.position_z),
+                        std::span<const blitzar_core::Scalar>(storage.velocity_x),
+                        std::span<const blitzar_core::Scalar>(storage.velocity_y),
+                        std::span<const blitzar_core::Scalar>(storage.velocity_z),
+                        std::span<const blitzar_core::Scalar>(storage.mass)}};
+}
+
 [[nodiscard]] blitzar_core::SnapshotMutablePayloadView MakeTarget(SnapshotStorage& storage) noexcept
 {
     return {std::span<std::uint64_t>(storage.ids),
@@ -203,6 +226,34 @@ int CheckRejections(
     return 0;
 }
 
+int CheckShardRoundTrip(
+    const std::filesystem::path& first_path, const std::filesystem::path& second_path)
+{
+    SnapshotStorage input{};
+
+    input.ids = {2, 7};
+
+    const blitzar_core::SnapshotFrameView frame = MakeShardFrame(input, 1);
+    blitzar_io::SnapshotWriter writer(2);
+
+    BLITZAR_CHECK(writer.Write(first_path, frame) == BLITZAR_STATUS_OK);
+    BLITZAR_CHECK(writer.Write(second_path, frame) == BLITZAR_STATUS_OK);
+    BLITZAR_CHECK(ReadBytes(first_path) == ReadBytes(second_path));
+
+    SnapshotStorage output{};
+    blitzar_core::SnapshotHeader header{};
+    blitzar_io::SnapshotReader reader(2);
+
+    BLITZAR_CHECK(reader.Read(first_path, header, MakeTarget(output)) == BLITZAR_STATUS_OK);
+    BLITZAR_CHECK(header.rank_count == 2U);
+    BLITZAR_CHECK(header.rank_index == 1U);
+    BLITZAR_CHECK(header.distribution == blitzar_core::SnapshotDistribution::Sharded);
+    BLITZAR_CHECK(header.id_policy == blitzar_core::SnapshotIdPolicy::GlobalStable);
+    BLITZAR_CHECK(SameState(input, output));
+
+    return 0;
+}
+
 } // namespace
 
 int main()
@@ -211,12 +262,16 @@ int main()
     const std::filesystem::path first_path = directory / "blitzar-snapshot-642-a.bin";
     const std::filesystem::path second_path = directory / "blitzar-snapshot-642-b.bin";
     const std::filesystem::path probe_path = directory / "blitzar-snapshot-642-probe.bin";
+    const std::filesystem::path shard_first_path = directory / "blitzar-snapshot-685-a.bin";
+    const std::filesystem::path shard_second_path = directory / "blitzar-snapshot-685-b.bin";
 
     std::error_code cleanup_error;
 
     std::filesystem::remove(first_path, cleanup_error);
     std::filesystem::remove(second_path, cleanup_error);
     std::filesystem::remove(probe_path, cleanup_error);
+    std::filesystem::remove(shard_first_path, cleanup_error);
+    std::filesystem::remove(shard_second_path, cleanup_error);
 
     SnapshotStorage input{};
 
@@ -225,10 +280,13 @@ int main()
     const std::vector<std::uint8_t> valid_bytes = ReadBytes(first_path);
 
     BLITZAR_CHECK(CheckRejections(valid_bytes, probe_path) == 0);
+    BLITZAR_CHECK(CheckShardRoundTrip(shard_first_path, shard_second_path) == 0);
 
     std::filesystem::remove(first_path, cleanup_error);
     std::filesystem::remove(second_path, cleanup_error);
     std::filesystem::remove(probe_path, cleanup_error);
+    std::filesystem::remove(shard_first_path, cleanup_error);
+    std::filesystem::remove(shard_second_path, cleanup_error);
 
     return 0;
 }

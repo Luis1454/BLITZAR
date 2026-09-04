@@ -100,8 +100,15 @@ int main()
     header.distribution = blitzar_core::SnapshotDistribution::Sharded;
     header.id_policy = blitzar_core::SnapshotIdPolicy::GlobalStable;
     header.rank_count = 2;
+    storage.mass[0] = 1.0;
 
-    BLITZAR_CHECK(header.Validate() == BLITZAR_STATUS_UNSUPPORTED);
+    BLITZAR_CHECK(header.Validate() == BLITZAR_STATUS_OK);
+    BLITZAR_CHECK((blitzar_core::SnapshotFrameView{header, MakePayload(storage)}).Validate() ==
+                  BLITZAR_STATUS_OK);
+
+    header.rank_count = 1;
+
+    BLITZAR_CHECK(header.Validate() == BLITZAR_STATUS_INVALID_ARGUMENT);
 
     return 0;
 }

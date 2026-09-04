@@ -99,4 +99,59 @@ blitzar_status Sim::GetState(blitzar_core::ParticleOutputView output) const noex
     return Remember(status);
 }
 
+blitzar_status Sim::GetLocalState(blitzar_core::ParticleOutputView output,
+    std::span<std::uint64_t> ids, std::size_t& count) const noexcept
+{
+    count = 0;
+
+    if (!runtime_.Mpi().IsUsable()) {
+        return Remember(runtime_.Mpi().Status());
+    }
+
+    const bool output_valid = particles_ready_ && output.count >= local_particle_count_ &&
+                              ids.size() >= local_particle_count_ &&
+                              blitzar_core::IsValid(output) &&
+                              particle_state_.Particles().Count() == local_particle_count_ &&
+                              local_particle_count_ <= particle_ids_.size() &&
+                              local_particle_count_ <= output_order_.size() &&
+                              blitzar_core::IsValid(particle_state_.Particles().State());
+
+    if (!output_valid) {
+        return Remember(BLITZAR_STATUS_INVALID_ARGUMENT);
+    }
+
+    const blitzar_core::ParticleStateView state = particle_state_.Particles().State();
+
+    for (std::size_t index = 0; index < local_particle_count_; ++index) {
+        output_order_[index] = index;
+    }
+
+    std::sort(output_order_.begin(),
+        output_order_.begin() + static_cast<std::ptrdiff_t>(local_particle_count_),
+        [this](std::size_t left, std::size_t right) {
+            return particle_ids_[left] < particle_ids_[right];
+        });
+
+    for (std::size_t index = 0; index < local_particle_count_; ++index) {
+        const std::size_t source = output_order_[index];
+
+        if (source >= state.count || (index != 0U && particle_ids_[source] <= ids[index - 1U])) {
+            return Remember(BLITZAR_STATUS_INTERNAL_ERROR);
+        }
+
+        ids[index] = particle_ids_[source];
+        output.x[index] = state.x[source];
+        output.y[index] = state.y[source];
+        output.z[index] = state.z[source];
+        output.velocity_x[index] = state.velocity_x[source];
+        output.velocity_y[index] = state.velocity_y[source];
+        output.velocity_z[index] = state.velocity_z[source];
+        output.mass[index] = state.mass[source];
+    }
+
+    count = local_particle_count_;
+
+    return Remember(BLITZAR_STATUS_OK);
+}
+
 } // namespace blitzar_sim
