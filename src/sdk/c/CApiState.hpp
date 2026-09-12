@@ -4,7 +4,7 @@
 #include "simulation/Sim.hpp"
 
 #include <atomic>
-#include <blitzar/blitzar.h>
+#include <blitzar/c/blitzar.h>
 #include <cstddef>
 #include <cstdint>
 #include <span>

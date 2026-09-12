@@ -2,10 +2,10 @@
 #define BLITZAR_TREES_OCTREE_OCTREE_HPP
 
 #include "core/CoreTypes.hpp"
-#include "trees/octree/OctreeMorton.hpp"
+#include "trees/octree/build/OctreeMorton.hpp"
 
 #include <array>
-#include <blitzar/blitzar.h>
+#include <blitzar/c/blitzar.h>
 #include <cstddef>
 #include <cstdint>
 #include <functional>

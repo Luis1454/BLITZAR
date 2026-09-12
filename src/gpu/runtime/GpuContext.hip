@@ -23,7 +23,7 @@
 #include "gpu/runtime/GpuRuntimeError.inl"
 #include "gpu/runtime/GpuRuntimeTransfer.inl"
 #include "gpu/direct/GpuDirectCompute.inl"
-#include "gpu/barnes_hut/GpuBhTree.inl"
-#include "gpu/barnes_hut/GpuBhCompute.inl"
+#include "gpu/bh/GpuBhTree.inl"
+#include "gpu/bh/GpuBhCompute.inl"
 #include "gpu/runtime/GpuRuntimeLife.inl"
 // clang-format on

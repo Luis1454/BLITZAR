@@ -4,7 +4,7 @@
 #include "core/CoreTypes.hpp"
 #include "mpi/native/MpiNativeSession.hpp"
 
-#include <blitzar/blitzar.h>
+#include <blitzar/c/blitzar.h>
 #include <cstdint>
 #include <span>
 #include <string_view>

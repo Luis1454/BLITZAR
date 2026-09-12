@@ -12,24 +12,24 @@
     },
     {
       "id": "TST-P0-002",
-      "entrypoint": "tests/contracts/ContractCApiTest.c",
-      "responsibility": "tests/contracts/ContractCApiTest.c",
+      "entrypoint": "tests/contracts/c/ApiTest.c",
+      "responsibility": "tests/contracts/c/ApiTest.c",
       "mode": "",
       "ranks": 1,
       "contract": "C ABI lifecycle and invalid input"
     },
     {
       "id": "TST-P0-003",
-      "entrypoint": "tests/contracts/ContractTest.cpp",
-      "responsibility": "tests/contracts/ContractTest.cpp",
+      "entrypoint": "tests/contracts/cpp/ContractTest.cpp",
+      "responsibility": "tests/contracts/cpp/ContractTest.cpp",
       "mode": "",
       "ranks": 1,
       "contract": "public and internal value contracts"
     },
     {
       "id": "TST-P6-001",
-      "entrypoint": "tests/contracts/ContractSnapshotTest.cpp",
-      "responsibility": "tests/contracts/ContractSnapshotTest.cpp",
+      "entrypoint": "tests/contracts/cpp/SnapshotTest.cpp",
+      "responsibility": "tests/contracts/cpp/SnapshotTest.cpp",
       "mode": "",
       "ranks": 1,
       "phase": "P6",
@@ -37,8 +37,8 @@
     },
     {
       "id": "TST-P6-002",
-      "entrypoint": "tests/io/IoSnapshotTest.cpp",
-      "responsibility": "tests/io/IoSnapshotTest.cpp",
+      "entrypoint": "tests/io/snap/SnapTest.cpp",
+      "responsibility": "tests/io/snap/SnapTest.cpp",
       "mode": "",
       "ranks": 1,
       "phase": "P6",
@@ -46,8 +46,8 @@
     },
     {
       "id": "TST-P6-003",
-      "entrypoint": "tests/io/IoMetadataTest.cpp",
-      "responsibility": "tests/io/IoMetadataTest.cpp",
+      "entrypoint": "tests/io/md/MdTest.cpp",
+      "responsibility": "tests/io/md/MdTest.cpp",
       "mode": "",
       "ranks": 1,
       "phase": "P6",
@@ -55,8 +55,8 @@
     },
     {
       "id": "TST-P6-004",
-      "entrypoint": "tests/io/IoCliOutputTest.cpp",
-      "responsibility": "tests/io/IoCliOutputTest.cpp",
+      "entrypoint": "tests/io/cli/CliOutputTest.cpp",
+      "responsibility": "tests/io/cli/CliOutputTest.cpp",
       "mode": "",
       "ranks": 1,
       "phase": "P6",
@@ -64,8 +64,8 @@
     },
     {
       "id": "TST-P6-005",
-      "entrypoint": "tests/physics/ConservationMetricsTest.cpp",
-      "responsibility": "tests/physics/ConservationMetricsTest.cpp",
+      "entrypoint": "tests/physics/conservation/ConservationTest.cpp",
+      "responsibility": "tests/physics/conservation/ConservationTest.cpp",
       "mode": "",
       "ranks": 1,
       "phase": "P6",
@@ -73,8 +73,8 @@
     },
     {
       "id": "TST-P6-006",
-      "entrypoint": "tests/io/IoCliSummaryTest.cpp",
-      "responsibility": "tests/io/IoCliSummaryTest.cpp",
+      "entrypoint": "tests/io/cli/CliSummaryTest.cpp",
+      "responsibility": "tests/io/cli/CliSummaryTest.cpp",
       "mode": "",
       "ranks": 1,
       "phase": "P6",
@@ -82,8 +82,8 @@
     },
     {
       "id": "TST-P6-007",
-      "entrypoint": "tests/io/IoCliUsageTest.cmake",
-      "responsibility": "tests/io/IoCliUsageTest.cmake",
+      "entrypoint": "tests/io/cli/CliUsageTest.cmake",
+      "responsibility": "tests/io/cli/CliUsageTest.cmake",
       "mode": "",
       "ranks": 1,
       "phase": "P6",
@@ -91,8 +91,8 @@
     },
     {
       "id": "TST-P6-008",
-      "entrypoint": "tests/io/IoCliRestartTest.cpp",
-      "responsibility": "tests/io/IoCliRestartTest.cpp",
+      "entrypoint": "tests/io/cli/CliRestartTest.cpp",
+      "responsibility": "tests/io/cli/CliRestartTest.cpp",
       "mode": "",
       "ranks": 1,
       "phase": "P6",
@@ -100,8 +100,8 @@
     },
     {
       "id": "TST-P6-009",
-      "entrypoint": "tests/io/IoCliProcessRestartTest.cpp",
-      "responsibility": "tests/io/IoCliProcessRestartTest.cpp",
+      "entrypoint": "tests/io/cli/CliProcessRestartTest.cpp",
+      "responsibility": "tests/io/cli/CliProcessRestartTest.cpp",
       "mode": "production-entrypoint",
       "ranks": 1,
       "phase": "P6",
@@ -109,8 +109,8 @@
     },
     {
       "id": "TST-P6-010",
-      "entrypoint": "tests/io/IoCliPostProcessTest.cpp",
-      "responsibility": "tests/io/IoCliPostProcessTest.cpp",
+      "entrypoint": "tests/io/cli/CliPostTest.cpp",
+      "responsibility": "tests/io/cli/CliPostTest.cpp",
       "mode": "production-entrypoint",
       "ranks": 1,
       "phase": "P6",
@@ -118,8 +118,8 @@
     },
     {
       "id": "TST-P6-011",
-      "entrypoint": "tests/io/IoMpiOutputTest.cmake",
-      "responsibility": "tests/io/IoMpiOutputTest.cmake",
+      "entrypoint": "tests/io/mpi/MpiOutputTest.cmake",
+      "responsibility": "tests/io/mpi/MpiOutputTest.cmake",
       "mode": "mpi-output-boundary",
       "ranks": 2,
       "phase": "P6",
@@ -127,8 +127,8 @@
     },
     {
       "id": "TST-P7-006",
-      "entrypoint": "tests/io/IoMpiShardOutputTest.cmake",
-      "responsibility": "tests/io/IoMpiShardOutputTest.cmake",
+      "entrypoint": "tests/io/mpi/MpiShardOutputTest.cmake",
+      "responsibility": "tests/io/mpi/MpiShardOutputTest.cmake",
       "mode": "mpi-sharded-output",
       "ranks": 2,
       "phase": "P7",
@@ -136,8 +136,8 @@
     },
     {
       "id": "TST-P6-012",
-      "entrypoint": "tests/io/IoHdf5Test.cpp",
-      "responsibility": "tests/io/IoHdf5Test.cpp",
+      "entrypoint": "tests/io/hdf5/Hdf5Test.cpp",
+      "responsibility": "tests/io/hdf5/Hdf5Test.cpp",
       "mode": "optional-hdf5",
       "ranks": 1,
       "phase": "P6",
@@ -145,8 +145,8 @@
     },
     {
       "id": "TST-P6-013",
-      "entrypoint": "tests/io/IoSnapshotDeltaTest.cpp",
-      "responsibility": "tests/io/IoSnapshotDeltaTest.cpp",
+      "entrypoint": "tests/io/snap/SnapDeltaTest.cpp",
+      "responsibility": "tests/io/snap/SnapDeltaTest.cpp",
       "mode": "delta-qualification",
       "ranks": 1,
       "phase": "P6",
@@ -154,8 +154,8 @@
     },
     {
       "id": "TST-P6-014",
-      "entrypoint": "tests/io/IoCliHdf5Test.cpp",
-      "responsibility": "tests/io/IoCliHdf5Test.cpp",
+      "entrypoint": "tests/io/cli/CliHdf5Test.cpp",
+      "responsibility": "tests/io/cli/CliHdf5Test.cpp",
       "mode": "capability-gated",
       "ranks": 1,
       "phase": "P6",
@@ -163,132 +163,140 @@
     },
     {
       "id": "TST-P6-015",
-      "entrypoint": "tests/contracts/ContractReproducibilityTest.cpp",
-      "responsibility": "tests/contracts/ContractReproducibilityTest.cpp",
+      "entrypoint": "tests/contracts/cpp/ReproTest.cpp",
+      "responsibility": "tests/contracts/cpp/ReproTest.cpp",
       "mode": "strict-fast-policy",
       "ranks": 1,
       "phase": "P6",
-      "contract": "strict and fast execution policy validation, restart-state manifest round-trip, and snapshot-boundary readiness"
+      "contract": "strict CPU and fast accelerator policy validation, policy-consuming arithmetic, versioned restart metadata round-trip, and snapshot-boundary readiness"
     },
     {
       "id": "TST-P0-004",
-      "entrypoint": "tests/contracts/ContractBoundedTest.cpp",
-      "responsibility": "tests/contracts/ContractBoundedTest.cpp",
+      "entrypoint": "tests/contracts/cpp/BoundedTest.cpp",
+      "responsibility": "tests/contracts/cpp/BoundedTest.cpp",
       "mode": "",
       "ranks": 1,
       "contract": "bounded views and request validation"
     },
     {
       "id": "TST-P0-005",
-      "entrypoint": "tests/contracts/ContractAbiTest.c",
-      "responsibility": "tests/contracts/ContractAbiTest.c",
+      "entrypoint": "tests/contracts/c/AbiTest.c",
+      "responsibility": "tests/contracts/c/AbiTest.c",
       "mode": "",
       "ranks": 1,
       "contract": "ABI v1 and v2 consumer compatibility"
     },
     {
       "id": "TST-P0-006",
-      "entrypoint": "tests/contracts/ContractCapabilitiesTest.c",
-      "responsibility": "tests/contracts/ContractCapabilitiesTest.c",
+      "entrypoint": "tests/contracts/c/CapabilitiesTest.c",
+      "responsibility": "tests/contracts/c/CapabilitiesTest.c",
       "mode": "",
       "ranks": 1,
       "contract": "capability report and transactional unsupported solver selection"
     },
     {
       "id": "TST-P1-001",
-      "entrypoint": "tests/integration/KdkDynamicsTest.cpp",
-      "responsibility": "tests/integration/KdkDynamicsTest.cpp",
+      "entrypoint": "tests/integration/kdk/KdkDynamicsTest.cpp",
+      "responsibility": "tests/integration/kdk/KdkDynamicsTest.cpp",
       "mode": "",
       "ranks": 1,
       "contract": "deterministic dynamics behavior"
     },
     {
       "id": "TST-P1-002",
-      "entrypoint": "tests/integration/KdkNumericalTest.cpp",
-      "responsibility": "tests/integration/KdkNumericalTest.cpp",
+      "entrypoint": "tests/integration/kdk/KdkNumericalTest.cpp",
+      "responsibility": "tests/integration/kdk/KdkNumericalTest.cpp",
       "mode": "",
       "ranks": 1,
       "contract": "conservation and repeatability"
     },
     {
       "id": "TST-P1-003",
-      "entrypoint": "tests/simulation/SimAllocationsTest.cpp",
-      "responsibility": "tests/simulation/SimAllocationsTest.cpp",
+      "entrypoint": "tests/simulation/alloc/SimAllocationsTest.cpp",
+      "responsibility": "tests/simulation/alloc/SimAllocationsTest.cpp",
       "mode": "",
       "ranks": 1,
       "contract": "steady-state allocation-free execution"
     },
     {
       "id": "TST-P1-004",
-      "entrypoint": "tests/scaling/ScaleTest.cpp",
-      "responsibility": "tests/scaling/ScaleRunTest.cpp",
+      "entrypoint": "tests/scaling/workload/ScaleTest.cpp",
+      "responsibility": "tests/scaling/run/ScaleRunTest.cpp",
       "mode": "benchmark",
       "ranks": 1,
       "contract": "performance metrics, allocation behavior, and Direct CPU oracle"
     },
     {
       "id": "TST-P1-005",
-      "entrypoint": "tests/layout/LayoutRunner.cpp",
-      "responsibility": "tests/layout/LayoutBenchmark.cpp",
+      "entrypoint": "tests/layout/LayoutTest.cpp",
+      "responsibility": "tests/layout/bench/LayoutBenchmark.cpp",
       "mode": "benchmark",
       "ranks": 1,
       "contract": "Morton comparison/radix ordering, bounded SoA/AoSoA metrics, Octree parity, and byte repeatability"
     },
     {
       "id": "TST-P1-006",
-      "entrypoint": "tests/reduction/ReductionRunner.cpp",
-      "responsibility": "tests/reduction/ReductionBenchmark.cpp",
+      "entrypoint": "tests/reduction/ReductionTest.cpp",
+      "responsibility": "tests/reduction/bench/ReductionBenchmark.cpp",
       "mode": "benchmark",
       "ranks": 1,
       "contract": "Plain/Kahan/Neumaier cancellation metrics, vectorization eligibility, Direct/KDK conservation, and default-policy parity"
     },
     {
       "id": "TST-P1-007",
-      "entrypoint": "tests/neighborhood/NeighborRunner.cpp",
-      "responsibility": "tests/neighborhood/NeighborBenchmark.cpp",
+      "entrypoint": "tests/neighborhood/run/NeighborTest.cpp",
+      "responsibility": "tests/neighborhood/bench/NeighborBenchmark.cpp",
       "mode": "benchmark",
       "ranks": 1,
       "contract": "deterministic local-neighbor candidate matrix, exact reference parity, rebuild schedule, and separate Octree baseline"
     },
     {
       "id": "TST-P1-008",
-      "entrypoint": "tests/scaling/ScaleBlock.cpp",
-      "responsibility": "tests/scaling/ScaleBlockQualification.cpp",
+      "entrypoint": "tests/scaling/block/ScaleBlockTest.cpp",
+      "responsibility": "tests/scaling/block/ScaleBlockQualifTest.cpp",
       "mode": "qualification",
       "ranks": 1,
       "contract": "bounded block-time schedule against fixed KDK, deterministic active order, migration boundary, restart, rollback, and non-mutation"
     },
     {
       "id": "TST-P1-009",
-      "entrypoint": "tests/bvh/BvhRunner.cpp",
-      "responsibility": "tests/bvh/BvhBenchmark.cpp",
+      "entrypoint": "tests/bvh/run/BvhTest.cpp",
+      "responsibility": "tests/bvh/bench/BvhBenchmark.cpp",
       "mode": "qualification",
       "ranks": 1,
       "contract": "deterministic AABB BVH build, refit, rebuild, and traversal against exact neighbor reference, selected cell-linked index, and separate Octree baseline"
     },
     {
       "id": "TST-P5-001",
-      "entrypoint": "tests/pm/PmGridTest.cpp",
-      "responsibility": "tests/pm/PmGridTest.cpp",
+      "entrypoint": "tests/grid/resource/GridResourceTest.cpp",
+      "responsibility": "tests/grid/resource/GridResourceTest.cpp",
       "mode": "qualification",
       "ranks": 1,
       "contract": "bounded Grid layout, clamped boundary mapping, CIC mass conservation, deterministic field storage, and generation invalidation"
     },
     {
       "id": "TST-P5-002",
-      "entrypoint": "tests/pm/PmSolverTest.cpp",
-      "responsibility": "tests/pm/PmSolverTest.cpp",
+      "entrypoint": "tests/solvers/pm/PmTest.cpp",
+      "responsibility": "tests/solvers/pm/PmTest.cpp",
       "mode": "qualification",
       "ranks": 1,
       "contract": "single-rank CPU PM force repeatability, Direct CPU comparison, finite output, and steady-state allocation freedom"
     },
     {
       "id": "TST-P5-003",
-      "entrypoint": "tests/treepm/TreePmTest.cpp",
-      "responsibility": "tests/treepm/TreePmTest.cpp",
+      "entrypoint": "tests/solvers/treepm/TreePmTest.cpp",
+      "responsibility": "tests/solvers/treepm/TreePmTest.cpp",
       "mode": "qualification",
       "ranks": 1,
       "contract": "single-rank CPU TreePM composition, Octree/Grid ownership, Direct CPU comparison, and steady-state allocation freedom"
+    },
+    {
+      "id": "TST-P5-004",
+      "entrypoint": "tests/grid/layout/GridLayoutTest.cpp",
+      "responsibility": "tests/grid/layout/GridLayoutTest.cpp",
+      "mode": "",
+      "ranks": 1,
+      "contract": "bounded Grid value contract: invalid default state, dimension and origin accessors, clamped cell mapping, and deterministic cell count"
     },
     {
       "id": "TST-P2-001",
@@ -316,8 +324,8 @@
     },
     {
       "id": "TST-P2-004",
-      "entrypoint": "tests/package/package_consumer.cmake",
-      "responsibility": "tests/package/package_consumer.cmake",
+      "entrypoint": "tests/package/ConsumerTest.cmake",
+      "responsibility": "tests/package/ConsumerTest.cmake",
       "mode": "",
       "ranks": 1,
       "contract": "installed CMake package consumer"
@@ -332,8 +340,8 @@
     },
     {
       "id": "TST-P2-006",
-      "entrypoint": "tests/simulation/SimConfigFileTest.cpp",
-      "responsibility": "tests/simulation/SimConfigFileTest.cpp",
+      "entrypoint": "tests/simulation/cfg/SimConfigFileTest.cpp",
+      "responsibility": "tests/simulation/cfg/SimConfigFileTest.cpp",
       "mode": "",
       "ranks": 1,
       "contract": "legacy directive-file syntax and transactional rejection"
@@ -348,72 +356,88 @@
     },
     {
       "id": "TST-P2-008",
-      "entrypoint": "tests/simulation/SimConfigRunTest.cpp",
-      "responsibility": "tests/simulation/SimConfigRunTest.cpp",
+      "entrypoint": "tests/simulation/cfg/SimConfigRunTest.cpp",
+      "responsibility": "tests/simulation/cfg/SimConfigRunTest.cpp",
       "mode": "",
       "ranks": 1,
       "contract": "supported directives, output and diagnostics policies, defaults, and transactional rejection"
     },
     {
       "id": "TST-P3-001",
-      "entrypoint": "tests/octree/OctreeHierarchyTest.cpp",
-      "responsibility": "tests/octree/OctreeHierarchyTest.cpp",
+      "entrypoint": "tests/trees/octree/build/OctreeBuildTest.cpp",
+      "responsibility": "tests/trees/octree/build/OctreeBuildTest.cpp",
       "mode": "",
       "ranks": 1,
       "contract": "hierarchy reference behavior"
     },
     {
       "id": "TST-P3-002",
-      "entrypoint": "tests/fmm/FmmTest.cpp",
-      "responsibility": "tests/fmm/FmmTest.cpp",
+      "entrypoint": "tests/solvers/fmm/FmmTest.cpp",
+      "responsibility": "tests/solvers/fmm/FmmTest.cpp",
       "mode": "",
       "ranks": 1,
       "contract": "FMM reference and capacity"
     },
     {
       "id": "TST-P3-003",
-      "entrypoint": "tests/contracts/ContractSolverResourceTest.cpp",
-      "responsibility": "tests/contracts/ContractSolverResourceTest.cpp",
+      "entrypoint": "tests/contracts/cpp/SolverResourceTest.cpp",
+      "responsibility": "tests/contracts/cpp/SolverResourceTest.cpp",
       "mode": "",
       "ranks": 1,
       "contract": "orthogonal solver and resource requirements"
     },
     {
       "id": "TST-P3-004",
-      "entrypoint": "tests/contracts/ContractSpatialResourceTest.cpp",
-      "responsibility": "tests/contracts/ContractSpatialResourceTest.cpp",
+      "entrypoint": "tests/contracts/cpp/SpatialResourceTest.cpp",
+      "responsibility": "tests/contracts/cpp/SpatialResourceTest.cpp",
       "mode": "",
       "ranks": 1,
       "contract": "read-only Octree views, generation validation, and typed resource lifetime"
     },
     {
       "id": "TST-P3-005",
-      "entrypoint": "tests/contracts/ContractForceProviderTest.cpp",
-      "responsibility": "tests/contracts/ContractForceProviderTest.cpp",
+      "entrypoint": "tests/contracts/cpp/ForceProviderTest.cpp",
+      "responsibility": "tests/contracts/cpp/ForceProviderTest.cpp",
       "mode": "",
       "ranks": 1,
       "contract": "typed force evaluation and local/remote CPU provider dispatch"
     },
     {
       "id": "TST-P3-006",
-      "entrypoint": "tests/fmm/FmmKifmmTest.cpp",
-      "responsibility": "tests/fmm/FmmKifmmTest.cpp",
+      "entrypoint": "tests/solvers/fmm/kifmm/KifmmTest.cpp",
+      "responsibility": "tests/solvers/fmm/kifmm/KifmmTest.cpp",
       "mode": "",
       "ranks": 1,
       "contract": "internal KIFMM surfaces, bounded workspace, Direct parity, rollback, and repeatability"
     },
     {
       "id": "TST-P3-007",
-      "entrypoint": "tests/fmm/FmmKifmmQualificationTest.cpp",
-      "responsibility": "tests/fmm/FmmKifmmQualificationTest.cpp",
+      "entrypoint": "tests/solvers/fmm/kifmm/KifmmQualifTest.cpp",
+      "responsibility": "tests/solvers/fmm/kifmm/KifmmQualifTest.cpp",
       "mode": "",
       "ranks": 1,
       "contract": "CPU KIFMM qualification against Direct and FMM, conservation, deterministic ordering, capacity, and failed-evaluation rollback"
     },
     {
+      "id": "TST-P3-008",
+      "entrypoint": "tests/trees/octree/resource/OctreeResourceTest.cpp",
+      "responsibility": "tests/trees/octree/resource/OctreeResourceTest.cpp",
+      "mode": "",
+      "ranks": 1,
+      "contract": "bounded Octree resource preparation, view validity, capacity reuse, and generation invalidation"
+    },
+    {
+      "id": "TST-P3-009",
+      "entrypoint": "tests/trees/octree/view/OctreeViewTest.cpp",
+      "responsibility": "tests/trees/octree/view/OctreeViewTest.cpp",
+      "mode": "",
+      "ranks": 1,
+      "contract": "read-only Octree view contract, Morton ordering, parent-child access, and bounds validation"
+    },
+    {
       "id": "TST-P4-001",
-      "entrypoint": "tests/gpu/GpuHipTest.cpp",
-      "responsibility": "tests/gpu/GpuHipTest.cpp",
+      "entrypoint": "tests/gpu/GpuRuntimeTest.cpp",
+      "responsibility": "tests/gpu/GpuRuntimeTest.cpp",
       "mode": "",
       "ranks": 1,
       "contract": "HIP acceleration and fallback"
@@ -421,7 +445,7 @@
     {
       "id": "TST-P7-001",
       "entrypoint": "tests/mpi/MpiTest.cpp",
-      "responsibility": "tests/mpi/MpiFixture.cpp",
+      "responsibility": "tests/mpi/fixture/MpiFixtureTest.cpp",
       "mode": "",
       "ranks": 2,
       "contract": "MPI two-rank distribution parity"
@@ -429,7 +453,7 @@
     {
       "id": "TST-P7-002",
       "entrypoint": "tests/mpi/MpiTest.cpp",
-      "responsibility": "tests/mpi/MpiFixture.cpp",
+      "responsibility": "tests/mpi/fixture/MpiFixtureTest.cpp",
       "mode": "",
       "ranks": 4,
       "contract": "MPI four-rank distribution parity"
@@ -437,7 +461,7 @@
     {
       "id": "TST-P8-001",
       "entrypoint": "tests/mpi/MpiTest.cpp",
-      "responsibility": "tests/mpi/MpiFixture.cpp",
+      "responsibility": "tests/mpi/fixture/MpiFixtureTest.cpp",
       "mode": "migration",
       "ranks": 2,
       "contract": "in-step migration parity"
@@ -445,7 +469,7 @@
     {
       "id": "TST-P7-003",
       "entrypoint": "tests/mpi/MpiTest.cpp",
-      "responsibility": "tests/mpi/MpiFixture.cpp",
+      "responsibility": "tests/mpi/fixture/MpiFixtureTest.cpp",
       "mode": "single",
       "ranks": 1,
       "contract": "one-rank failure completion"
@@ -453,7 +477,7 @@
     {
       "id": "TST-P7-004",
       "entrypoint": "tests/mpi/MpiTest.cpp",
-      "responsibility": "tests/mpi/MpiFixture.cpp",
+      "responsibility": "tests/mpi/fixture/MpiFixtureTest.cpp",
       "mode": "barnes-hut-migration",
       "ranks": 2,
       "contract": "Barnes-Hut migration parity"
@@ -461,7 +485,7 @@
     {
       "id": "TST-P7-005",
       "entrypoint": "tests/mpi/MpiTest.cpp",
-      "responsibility": "tests/mpi/MpiValidationTest.cpp",
+      "responsibility": "tests/mpi/domain/MpiValidationTest.cpp",
       "mode": "large-count",
       "ranks": 2,
       "contract": "large-count rejection"
@@ -469,7 +493,7 @@
     {
       "id": "TST-P8-002",
       "entrypoint": "tests/mpi/MpiTest.cpp",
-      "responsibility": "tests/mpi/MpiDomainTest.cpp",
+      "responsibility": "tests/mpi/domain/MpiDomainTest.cpp",
       "mode": "out-of-domain",
       "ranks": 2,
       "contract": "out-of-domain rollback"
@@ -477,23 +501,23 @@
     {
       "id": "TST-P8-003",
       "entrypoint": "tests/mpi/MpiTest.cpp",
-      "responsibility": "tests/mpi/MpiOverlapTest.cpp",
+      "responsibility": "tests/mpi/overlap/MpiOverlapTest.cpp",
       "mode": "overlap",
       "ranks": 2,
       "contract": "overlap timeline, volume, speedup, and parity"
     },
     {
       "id": "TST-P0-007",
-      "entrypoint": "tests/scaling/ScaleTest.cpp",
-      "responsibility": "tests/scaling/ScaleTest.cpp",
+      "entrypoint": "tests/scaling/workload/ScaleTest.cpp",
+      "responsibility": "tests/scaling/workload/ScaleTest.cpp",
       "mode": "smoke",
       "ranks": 1,
       "contract": "deterministic scaling harness record and CPU oracle boundary"
     },
     {
       "id": "TST-P0-008",
-      "entrypoint": "tests/package/shared_cli_contract.cmake",
-      "responsibility": "tests/package/shared_cli_contract.cmake",
+      "entrypoint": "tests/package/CliContractTest.cmake",
+      "responsibility": "tests/package/CliContractTest.cmake",
       "mode": "",
       "ranks": 1,
       "phase": "P0",

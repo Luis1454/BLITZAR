@@ -1,0 +1,85 @@
+{
+  "schema_version": 1,
+  "plan_version": "1.0.60",
+  "phase": "P9",
+  "issue": "OPS-002",
+  "status": "planned",
+  "title": "Portable restart state and resolved runtime identity",
+  "owner": "io-and-parallel-maintainers",
+  "depends_on": ["P4", "P6", "P7", "P8"],
+  "numerical_oracle": "Direct CPU strict reference with exact stable-ID coverage and declared finite-state tolerances",
+  "scope": {
+    "snapshot_schema": {
+      "current": "V1 particle state remains supported for the current same-rank contract",
+      "target": "V2 backend-neutral payload with explicit compatibility rejection for incomplete state",
+      "state_fields": [
+        "particle_state",
+        "integrator_state",
+        "rng_state",
+        "unit_system",
+        "execution_math_state",
+        "backend_identity",
+        "global_domain",
+        "source_ownership"
+      ],
+      "derived_state": "recomputed after decode and redistribution rather than serialized as an opaque cache"
+    },
+    "rank_count_change": {
+      "source_rank_count": "serialized in the V2 restart state",
+      "destination_rank_count": "taken from the current execution topology",
+      "global_bounds": "serialized and validated before repartition",
+      "source_domains": "serialized for deterministic ownership reconstruction",
+      "stable_particle_ids": "authoritative ordering and coverage key",
+      "transaction": "decode, validate, repartition, and commit only after all destination state is valid"
+    },
+    "backend_identity": {
+      "initial_fast_manifest": "runtime-selected is permitted only before backend selection",
+      "final_manifest": "must record the resolved backend and device identity before persistent output is complete",
+      "strict": "cpu and host-cpu",
+      "fast": "cpu or hip with the resolved device boundary",
+      "bitwise_fast": false
+    }
+  },
+  "compatibility": {
+    "v1_read": "accepted only under the existing particle-state and same-rank contract",
+    "v2_write": "required for portable state and rank-count-changing restart",
+    "v1_rank_count_change": "rejected with an explicit compatibility status",
+    "public_api": "C ABI and C++ wrapper remain unchanged"
+  },
+  "acceptance": {
+    "planned_cases": [
+      {
+        "id": "P9-AC-001",
+        "name": "complete-state-round-trip",
+        "contract": "V2 round-trip preserves particle, integrator, RNG, units, math, and ownership state"
+      },
+      {
+        "id": "P9-AC-002",
+        "name": "same-rank-byte-parity",
+        "contract": "uninterrupted and V2 save/reload/resume strict CPU runs produce byte-identical final state"
+      },
+      {
+        "id": "P9-AC-003",
+        "name": "rank-count-changing-restart",
+        "contract": "V2 restart from N source ranks to M destination ranks preserves stable-ID coverage and matches the Direct CPU tolerance oracle"
+      },
+      {
+        "id": "P9-AC-004",
+        "name": "resolved-fast-backend-identity",
+        "contract": "final fast manifests record cpu or hip and the resolved device; runtime-selected cannot remain in completed persistent output"
+      },
+      {
+        "id": "P9-AC-005",
+        "name": "transactional-restart-rejection",
+        "contract": "incomplete state, invalid ownership metadata, checksum errors, and active communication leave destination state unchanged"
+      }
+    ],
+    "implementation_registration": "convert planned cases into TST-P9 identifiers and CTest entries when P9 implementation begins",
+    "qualification": "CPU strict reference is mandatory; MPI rank-change and HIP backend identity are capability-gated evidence lanes"
+  },
+  "migration": {
+    "legacy_v1": "read-only compatibility remains explicit and cannot claim portable restart",
+    "manifest": "schema and backend identity changes are versioned before V2 publication",
+    "rollback": "failed conversion or repartition never replaces the source-compatible destination state"
+  }
+}

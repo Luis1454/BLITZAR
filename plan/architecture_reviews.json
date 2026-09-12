@@ -3,486 +3,700 @@
   "reviews": [
     {
       "path": "cmake/test_targets.cmake",
-      "signals": ["include_dependencies"],
+      "signals": [
+        "include_dependencies"
+      ],
       "issue": 610,
       "status": "accepted",
       "decision": "The test-target composition module owns explicit links for the complete unit, MPI, and public-header matrix; its dependency count is the test topology and is isolated from production and package target ownership."
     },
     {
       "path": "src/core/CoreSnapshot.hpp",
-      "signals": ["branching"],
+      "signals": [
+        "branching"
+      ],
       "issue": 641,
       "status": "accepted",
       "decision": "The snapshot contract keeps header compatibility, single-rank identity validation, and immutable SoA frame validation together so an IO writer receives one preflighted value boundary; serialization, disk access, and distributed shards remain outside this header."
     },
     {
       "path": "src/mpi/native/MpiNative.cpp",
-      "signals": ["function_count"],
+      "signals": [
+        "function_count"
+      ],
       "issue": 603,
       "status": "accepted",
       "decision": "The lifecycle adapter keeps runtime initialization, external ownership, and process-exit finalization together; collectives, packet operations, and ghost requests are split into separate native units."
     },
     {
       "path": "src/mpi/native/MpiNativeGhost.cpp",
-      "signals": ["branching"],
+      "signals": [
+        "branching"
+      ],
       "issue": 603,
       "status": "accepted",
       "decision": "The ghost adapter combines platform guards with request validation and cancellation so MPI request lifetime is closed in one native boundary; transport orchestration remains outside the file."
     },
     {
-      "path": "tests/contracts/ContractCApiTest.c",
-      "signals": ["function_length"],
+      "path": "tests/contracts/c/ApiTest.c",
+      "signals": [
+        "function_length"
+      ],
       "issue": 599,
       "status": "accepted",
       "decision": "The C ABI fixture keeps one end-to-end lifecycle scenario so ABI ordering and cleanup remain visible; its length is registered for review rather than hidden from the repository report."
     },
     {
-      "path": "tests/contracts/ContractBoundedTest.cpp",
-      "signals": ["function_length", "include_dependencies"],
+      "path": "tests/contracts/cpp/BoundedTest.cpp",
+      "signals": [
+        "function_length",
+        "include_dependencies"
+      ],
       "issue": 599,
       "status": "accepted",
       "decision": "The bounded-view fixture validates related invalid-input cases and the split SDK contracts in one contract scenario; its length and include dependencies are tracked and remain outside production code."
     },
     {
-      "path": "tests/contracts/ContractTest.cpp",
-      "signals": ["function_length"],
+      "path": "tests/contracts/cpp/ContractTest.cpp",
+      "signals": [
+        "function_length"
+      ],
       "issue": 599,
       "status": "accepted",
       "decision": "The contract fixture groups the public and internal invariant checks needed to detect drift across the SDK boundary; the review signal remains explicit."
     },
     {
-      "path": "tests/integration/KdkDynamicsTest.cpp",
-      "signals": ["function_length"],
+      "path": "tests/integration/kdk/KdkDynamicsTest.cpp",
+      "signals": [
+        "function_length"
+      ],
       "issue": 599,
       "status": "accepted",
       "decision": "The dynamics fixture keeps deterministic physical cases together so shared setup and comparison rules cannot diverge; the signal is registered for later focused decomposition."
     },
     {
-      "path": "tests/octree/OctreeHierarchyTest.cpp",
-      "signals": ["function_length"],
+      "path": "tests/trees/octree/build/OctreeBuildTest.cpp",
+      "signals": [
+        "function_length"
+      ],
       "issue": 599,
       "status": "accepted",
       "decision": "The hierarchy fixture compares tree construction and solver behavior in one deterministic scenario; its test-only function length is visible and reviewed."
     },
     {
       "path": "tests/simulation/SimLifecycleTest.cpp",
-      "signals": ["function_length"],
+      "signals": [
+        "function_length"
+      ],
       "issue": 599,
       "status": "accepted",
       "decision": "The lifecycle fixture intentionally exercises construction, mutation, failure, and cleanup in sequence; the signal is accepted as a test-harness responsibility review."
     },
     {
       "path": "tools/architecture/architecture_report.py",
-      "signals": ["parameter_count"],
+      "signals": [
+        "parameter_count"
+      ],
       "issue": 599,
       "status": "accepted",
       "decision": "The architecture gate keeps one five-argument file-analysis boundary so profile thresholds and exception handling are applied consistently; the signal is registered and does not waive production thresholds."
     },
     {
       "path": "tools/gates/argument_gate.py",
-      "signals": ["branching"],
+      "signals": [
+        "branching"
+      ],
       "issue": 599,
       "status": "accepted",
       "decision": "The callable scanner handles C++ lexical edge cases and explicit exceptions in one validator; its branching is tool-local and remains covered by its fixture suite."
     },
     {
       "path": "tools/format/format_blocks.py",
-      "signals": ["branching", "function_count", "function_length", "parameter_count"],
+      "signals": [
+        "branching",
+        "function_count",
+        "function_length",
+        "parameter_count"
+      ],
       "issue": 599,
       "status": "accepted",
       "decision": "The formatter implements the repository's scope-sensitive grouping grammar and recursive statement handling; the current complexity is exposed for a later tool decomposition instead of ignored."
     },
     {
       "path": "tools/gates/plan_check.py",
-      "signals": ["branching", "function_length"],
+      "signals": [
+        "branching",
+        "function_count",
+        "function_length"
+      ],
       "issue": 599,
       "status": "accepted",
       "decision": "The frozen-plan gate validates mutually dependent manifest, roots, phase, CTest, naming, and forbidden-reference contracts; its signal is registered while the gate remains a single policy boundary."
     },
     {
+      "path": "tools/gates/plan_check_test.py",
+      "signals": [
+        "function_count"
+      ],
+      "issue": 599,
+      "status": "accepted",
+      "decision": "The frozen-plan fixture keeps independent rejection cases together so changes to the manifest contract cannot pass through an untested validation path; its test-local function count is registered for later decomposition."
+    },
+    {
       "path": "tools/gates/naming_gate.py",
-      "signals": ["allocation", "branching"],
+      "signals": [
+        "allocation",
+        "branching"
+      ],
       "issue": 600,
       "status": "accepted",
       "decision": "The naming report materializes separate collision, exception, length, type-mapping, and responsibility result lists so CI can distinguish each contract failure; allocation and branching are limited to deterministic policy-report construction."
     },
     {
       "path": "tools/gates/public_api_gate.py",
-      "signals": ["branching"],
+      "signals": [
+        "branching"
+      ],
       "issue": 602,
       "status": "accepted",
       "decision": "The public boundary gate keeps include, pointer, fixed-width ABI, internal-facade, and parameter-exception checks in one diagnostic boundary so a public contract violation reports its owning rule and source line."
     },
     {
       "path": "tools/gates/capability_gate.py",
-      "signals": ["allocation", "branching", "function_length"],
+      "signals": [
+        "allocation",
+        "branching",
+        "function_length"
+      ],
       "issue": 611,
       "status": "accepted",
       "decision": "The capability gate keeps matrix validation, deferred-root checks, and public unsupported-status checks in one policy boundary so compile claims cannot drift from the frozen plan; its tool-local signals are covered by the fixture and do not waive production thresholds."
     },
     {
-      "path": "tests/scaling/ScaleTest.cpp",
-      "signals": ["branching"],
+      "path": "tests/scaling/workload/ScaleTest.cpp",
+      "signals": [
+        "branching"
+      ],
       "issue": 612,
       "status": "accepted",
       "decision": "The scaling CLI keeps option parsing and stable record emission together so every workload invocation has the same machine-readable fields; its branching is test-harness local and is covered by the evidence runner fixtures."
     },
     {
       "path": "tools/evidence/evidence_contract.py",
-      "signals": ["allocation", "branching"],
+      "signals": [
+        "allocation",
+        "branching"
+      ],
       "issue": 612,
       "status": "accepted",
       "decision": "The pure contract module validates and expands one versioned workload schema and parses rank records; its report-list allocations and validation branches are policy-local, deterministic, and covered by release_evidence_test.py."
     },
     {
       "path": "tools/evidence/release_evidence.py",
-      "signals": ["branching"],
+      "signals": [
+        "branching"
+      ],
       "issue": 671,
       "status": "accepted",
       "decision": "The evidence runner keeps command execution, rank validation, capability metadata, and external artifact publication in one benchmark boundary; its branching is the explicit state policy for passed, failed, skipped, and unknown evidence."
     },
     {
       "path": "tools/evidence/hdf5_evidence.py",
-      "signals": ["branching"],
+      "signals": [
+        "branching"
+      ],
       "issue": 650,
       "status": "accepted",
       "decision": "The HDF5 evidence runner keeps contract validation, backend record parsing, and enabled/unavailable qualification in one deterministic evidence boundary; its branching is policy validation covered by dedicated fixtures."
     },
     {
       "path": "src/mpi/exchange/MpiMigration.cpp",
-      "signals": ["branching", "function_length"],
+      "signals": [
+        "branching",
+        "function_length"
+      ],
       "issue": 612,
       "status": "accepted",
       "decision": "Migration retains one collective transaction boundary so every early return records the same diagnostic status and clears received packets consistently; packet preparation and exchange remain split into dedicated methods."
     },
     {
-      "path": "src/simulation/config/SimConfigRun.cpp",
-      "signals": ["branching"],
+      "path": "src/simulation/cfg/run/SimConfigRun.cpp",
+      "signals": [
+        "branching"
+      ],
       "issue": 640,
       "status": "accepted",
       "decision": "Run configuration keeps directive dispatch, duplicate detection, required-field validation, and candidate commit together so parsing failures cannot mutate the caller's configuration; value policies are split into dedicated adapters."
     },
     {
-      "path": "src/simulation/config/SimConfigOutput.cpp",
-      "signals": ["branching"],
+      "path": "src/simulation/cfg/output/SimConfigOutput.cpp",
+      "signals": [
+        "branching"
+      ],
       "issue": 684,
       "status": "accepted",
       "decision": "The output directive keeps binary defaulting, optional HDF5 format parsing, path validation, and candidate configuration assignment in one bounded semantic adapter; the format is internal and the capability check remains at output preparation."
     },
     {
       "path": "src/simulation/Sim.cpp",
-      "signals": ["function_count"],
+      "signals": [
+        "function_count"
+      ],
       "issue": 612,
       "status": "accepted",
       "decision": "The added rank, local-count, overlap, and migration accessors form one observability boundary for the internal qualification harness; they do not widen the public SDK ABI or add simulation responsibilities."
     },
     {
-      "path": "src/io/snapshot/SnapshotReader.cpp",
-      "signals": ["branching", "function_length"],
+      "path": "src/io/snap/codec/SnapshotReader.cpp",
+      "signals": [
+        "branching",
+        "function_length"
+      ],
       "issue": 642,
       "status": "accepted",
       "decision": "The reader keeps bounded file loading, header and payload preflight, checksum and EOF verification, and transactional decode in one persistence boundary; fixed wire parsing is delegated to SnapshotWire and the read path is bounded by the frozen snapshot contract."
     },
     {
       "path": "src/io/hdf5/Hdf5Reader.cpp",
-      "signals": ["branching"],
+      "signals": [
+        "branching"
+      ],
       "issue": 650,
       "status": "accepted",
       "decision": "The HDF5 reader keeps schema validation, bounded staging, checksum verification, and transactional commit in one adapter boundary; the public snapshot contract remains independent of the optional backend."
     },
     {
-      "path": "src/io/metadata/MetadataManifest.cpp",
-      "signals": ["branching", "function_count"],
+      "path": "src/io/md/manifest/MetadataManifest.cpp",
+      "signals": [
+        "branching",
+        "function_count",
+        "function_length"
+      ],
       "issue": 643,
       "status": "accepted",
       "decision": "Manifest validation and atomic publication remain one metadata contract: validation covers the complete persisted configuration before any file is opened, while the fixed-order writer delegates JSON field emission to MetadataManifestJson.cpp."
     },
     {
-      "path": "src/io/metadata/MetadataRun.cpp",
-      "signals": ["branching", "function_count"],
+      "path": "src/io/md/run/MetadataRun.cpp",
+      "signals": [
+        "branching",
+        "function_count"
+      ],
       "issue": 685,
       "status": "accepted",
       "decision": "The run boundary keeps preparation, ordered local shard publication, root manifest commit, rollback, and path observability together; the publication state machine is shared by binary and HDF5 adapters without duplicating distributed coordination."
     },
     {
       "path": "apps/blitzar/BlitzarRun.cpp",
-      "signals": ["branching", "function_count", "function_length"],
+      "signals": [
+        "branching",
+        "function_count",
+        "function_length"
+      ],
       "issue": 685,
       "status": "accepted",
       "decision": "The CLI run entrypoint keeps topology preflight, simulation setup, non-collective local capture, collective status handling, checkpoint execution, and summary publication together as one orchestration boundary; shard persistence is delegated to the output and metadata boundaries."
     },
     {
       "path": "apps/blitzar/BlitzarOutput.cpp",
-      "signals": ["branching", "function_count", "function_length", "parameter_count"],
+      "signals": [
+        "branching",
+        "function_count",
+        "function_length",
+        "parameter_count"
+      ],
       "issue": 685,
       "status": "accepted",
       "decision": "The CLI output boundary keeps topology validation, collective status synchronization, local atomic shard publication, root manifest commit, and online conservation publication together so all ranks follow one checkpoint state machine; post-processing consumes the explicit shard contract without duplicating the simulation loop."
     },
     {
-      "path": "src/io/postprocess/PostProcessInput.cpp",
-      "signals": ["branching"],
+      "path": "src/io/post/input/PostProcessInput.cpp",
+      "signals": [
+        "branching"
+      ],
       "issue": 648,
       "status": "accepted",
       "decision": "Input validation keeps manifest compatibility, deterministic step checks, exact state-directory inventory, and snapshot-frame preflight in one persistence boundary; it rejects invalid runs before post-processing output is created."
     },
     {
-      "path": "tests/io/IoCliPostProcessTest.cpp",
-      "signals": ["function_length"],
+      "path": "tests/io/cli/CliPostTest.cpp",
+      "signals": [
+        "function_length"
+      ],
       "issue": 648,
       "status": "accepted",
       "decision": "The end-to-end test keeps artifact preparation and rejection cases in one fixture boundary so the production CLI, direct API path, atomic output behavior, and online byte-parity contract are verified together."
     },
     {
       "path": "tools/audit/audit_contract.py",
-      "signals": ["branching"],
+      "signals": [
+        "branching"
+      ],
       "issue": 613,
       "status": "accepted",
       "decision": "The contract validator keeps ownership, lane, and historical issue schema checks together so the final audit cannot run against a partial plan; its branching is policy validation and is covered by audit_test.py."
     },
     {
       "path": "tools/evidence/layout_contract.py",
-      "signals": ["allocation", "branching"],
+      "signals": [
+        "allocation",
+        "branching"
+      ],
       "issue": 672,
       "status": "accepted",
       "decision": "The layout contract validator keeps the frozen candidate matrix, typed record parsing, and cross-representation hash invariants together; its allocations and branches construct validation diagnostics only and are covered by layout_evidence_test.py."
     },
     {
       "path": "tools/evidence/layout_evidence.py",
-      "signals": ["branching"],
+      "signals": [
+        "branching"
+      ],
       "issue": 672,
       "status": "accepted",
       "decision": "The layout evidence runner keeps executable discovery, external artifact publication, and strict matrix qualification in one evidence boundary; its branches distinguish contract, process, and record failures and are covered by layout_evidence_test.py."
     },
     {
-      "path": "tests/reduction/ReductionBenchmark.cpp",
-      "signals": ["function_count", "function_length"],
+      "path": "tests/reduction/bench/ReductionBenchmark.cpp",
+      "signals": [
+        "function_count",
+        "function_length"
+      ],
       "issue": 673,
       "status": "accepted",
       "decision": "The reduction benchmark keeps deterministic cancellation construction, policy timing, and the long-run KDK probe in one qualification boundary; the production reduction and conservation contracts remain separate, and the runner validates the complete result matrix."
     },
     {
       "path": "tools/evidence/reduction_contract.py",
-      "signals": ["allocation", "branching"],
+      "signals": [
+        "allocation",
+        "branching"
+      ],
       "issue": 673,
       "status": "accepted",
       "decision": "The reduction contract validator keeps candidate selection, typed record parsing, and cross-policy invariants together; its allocations and branches only build validation diagnostics and are covered by reduction_evidence_test.py."
     },
     {
       "path": "tools/evidence/reduction_evidence.py",
-      "signals": ["branching"],
+      "signals": [
+        "branching"
+      ],
       "issue": 673,
       "status": "accepted",
       "decision": "The reduction evidence runner keeps executable discovery, external artifact publication, and strict matrix qualification in one evidence boundary; its branches distinguish contract, process, and record failures and are covered by reduction_evidence_test.py."
     },
     {
-      "path": "tests/neighborhood/NeighborGridQuery.cpp",
-      "signals": ["branching"],
+      "path": "tests/neighborhood/grid/NeighborGridQuery.cpp",
+      "signals": [
+        "branching"
+      ],
       "issue": 674,
       "status": "accepted",
       "decision": "The grid query boundary keeps the bounded 27-cell traversal, hash-collision lookup, radius filtering, and deterministic per-target ordering together while grid construction remains in NeighborGrid.cpp."
     },
     {
       "path": "tools/evidence/neighborhood_contract.py",
-      "signals": ["allocation", "branching"],
+      "signals": [
+        "allocation",
+        "branching"
+      ],
       "issue": 674,
       "status": "accepted",
       "decision": "The neighborhood contract validator keeps candidate selection, typed record parsing, rebuild policy, and cross-scenario invariants together; its allocations and branches only construct validation diagnostics and are covered by neighborhood_evidence_test.py."
     },
     {
       "path": "tools/evidence/neighborhood_evidence.py",
-      "signals": ["branching"],
+      "signals": [
+        "branching"
+      ],
       "issue": 674,
       "status": "accepted",
       "decision": "The neighborhood evidence runner keeps executable discovery, external artifact publication, and strict matrix qualification in one evidence boundary; its branches distinguish contract, process, and record failures and are covered by neighborhood_evidence_test.py."
     },
     {
-      "path": "src/io/snapshot/SnapshotDelta.cpp",
-      "signals": ["branching"],
+      "path": "src/io/snap/delta/SnapshotDelta.cpp",
+      "signals": [
+        "branching"
+      ],
       "issue": 675,
       "status": "accepted",
       "decision": "The delta facade keeps payload-shape, bounded-buffer, stream, checksum, and transactional commit checks at one snapshot boundary; payload serialization and run parsing remain isolated in SnapshotDeltaPayload and SnapshotDeltaStream."
     },
     {
       "path": "tools/evidence/delta_evidence.py",
-      "signals": ["branching"],
+      "signals": [
+        "branching"
+      ],
       "issue": 675,
       "status": "accepted",
       "decision": "The delta evidence runner keeps versioned contract validation, typed record checks, and external runtime publication together so compression and latency claims cannot bypass fallback, determinism, or transactional checks."
     },
     {
-      "path": "tests/scaling/ScaleBlock.cpp",
-      "signals": ["branching"],
+      "path": "tests/scaling/block/ScaleBlockTest.cpp",
+      "signals": [
+        "branching"
+      ],
       "issue": 676,
       "status": "accepted",
       "decision": "The block-time test entrypoint owns the three-workload matrix and rejects candidate promotion from one visible qualification boundary; schedule mechanics and record validation remain in separate units."
     },
     {
-      "path": "tests/scaling/ScaleBlockQualification.cpp",
-      "signals": ["branching"],
+      "path": "tests/scaling/block/ScaleBlockQualifTest.cpp",
+      "signals": [
+        "branching"
+      ],
       "issue": 676,
       "status": "accepted",
       "decision": "The qualification unit keeps fixed-versus-block event ledgers, migration-boundary checks, restart replay, rollback replay, and input non-mutation together because they form one bounded scheduler contract; it does not implement production forces."
     },
     {
       "path": "tools/evidence/block_time_contract.py",
-      "signals": ["allocation", "branching"],
+      "signals": [
+        "allocation",
+        "branching"
+      ],
       "issue": 676,
       "status": "accepted",
       "decision": "The validator keeps the versioned block-time schema, typed record parsing, and cross-workload invariants at one evidence boundary; allocations are limited to validation diagnostics and no runtime simulation state is owned here."
     },
     {
-      "path": "tests/bvh/BvhIndex.cpp",
-      "signals": ["allocation", "branching", "function_count"],
+      "path": "tests/bvh/index/BvhIndex.cpp",
+      "signals": [
+        "allocation",
+        "branching",
+        "function_count"
+      ],
       "issue": 677,
       "status": "accepted",
       "decision": "The test-only BVH index keeps deterministic AABB construction, bottom-up refit, iterative traversal, and topology hashing together because they form one bounded candidate implementation; allocations belong to qualification storage and no production gravity ownership is introduced."
     },
     {
-      "path": "tests/bvh/BvhBenchmark.cpp",
-      "signals": ["branching", "function_count"],
+      "path": "tests/bvh/bench/BvhBenchmark.cpp",
+      "signals": [
+        "branching",
+        "function_count"
+      ],
       "issue": 677,
       "status": "accepted",
       "decision": "The BVH benchmark keeps refit/rebuild scheduling, exact-reference comparison, selected cell-linked comparison, and separate Octree metrics in one qualification boundary so the promotion decision is based on one coherent workload matrix."
     },
     {
-      "path": "tests/bvh/BvhRunner.cpp",
-      "signals": ["branching"],
+      "path": "tests/bvh/run/BvhTest.cpp",
+      "signals": [
+        "branching"
+      ],
       "issue": 677,
       "status": "accepted",
       "decision": "The BVH runner owns the visible record schema and rejects any result that is non-deterministic, non-parity, or selected; it prints only bounded local-query evidence and does not expose a production solver path."
     },
     {
       "path": "tools/evidence/bvh_contract.py",
-      "signals": ["allocation", "branching"],
+      "signals": [
+        "allocation",
+        "branching"
+      ],
       "issue": 677,
       "status": "accepted",
       "decision": "The BVH contract validator keeps typed record parsing, rebuild/refit invariants, exact-neighbor hashes, and the non-promotion policy together at one evidence boundary; allocations only construct diagnostics and parsed records."
     },
     {
-      "path": "src/grid/GridLayout.cpp",
-      "signals": ["branching", "function_count"],
+      "path": "src/grid/layout/GridLayout.cpp",
+      "signals": [
+        "branching",
+        "function_count"
+      ],
       "issue": 683,
       "status": "accepted",
       "decision": "The grid layout unit keeps bounded dimension validation, z-major indexing, clamped cell location, and interpolation coordinates together because they are one immutable coordinate contract consumed by deposition and field interpolation."
     },
     {
-      "path": "src/grid/GridResource.cpp",
-      "signals": ["branching", "function_count"],
+      "path": "src/grid/resource/GridResource.cpp",
+      "signals": [
+        "branching",
+        "function_count"
+      ],
       "issue": 683,
       "status": "accepted",
       "decision": "The grid resource unit keeps view generation, bounded source preparation, CIC deposition, Green convolution, and trilinear interpolation together as one owned storage lifecycle; solver composition and public configuration remain outside the resource."
     },
     {
       "path": "src/solvers/treepm/TreePmSolver.cpp",
-      "signals": ["function_count"],
+      "signals": [
+        "function_count"
+      ],
       "issue": 683,
       "status": "accepted",
       "decision": "The TreePM composition root keeps construction, resource rebinding, capacity preparation, and component access together because it owns the lifecycle of the injected PM and Barnes-Hut solvers without duplicating either algorithm."
     },
     {
       "path": "src/solvers/treepm/TreePmSolverForce.cpp",
-      "signals": ["branching"],
+      "signals": [
+        "branching"
+      ],
       "issue": 683,
       "status": "accepted",
       "decision": "The TreePM force unit keeps request validation, typed PM and tree evaluation, weighted staging, and transactional force commit together because they form one bounded composition operation with no steady-state allocation."
     },
     {
-      "path": "tests/pm/PmSolverTest.cpp",
-      "signals": ["parameter_count"],
+      "path": "tests/solvers/pm/PmTest.cpp",
+      "signals": [
+        "parameter_count"
+      ],
       "issue": 683,
       "status": "accepted",
       "decision": "The PM fixture passes state, execution policy, solver, and three output spans explicitly so the Direct comparison and allocation-free repeatability assertions remain one visible acceptance boundary."
     },
     {
-      "path": "tests/treepm/TreePmTest.cpp",
-      "signals": ["parameter_count"],
+      "path": "tests/solvers/treepm/TreePmTest.cpp",
+      "signals": [
+        "parameter_count"
+      ],
       "issue": 683,
       "status": "accepted",
       "decision": "The TreePM fixture passes state, execution policy, solver, and three output spans explicitly so resource ownership, composition repeatability, and Direct comparison remain one visible acceptance boundary."
     },
     {
       "path": "tools/evidence/pm_evidence.py",
-      "signals": ["parameter_count"],
+      "signals": [
+        "parameter_count"
+      ],
       "issue": 683,
       "status": "accepted",
       "decision": "The PM evidence runner receives output, source root, contract, records, and errors explicitly at the artifact boundary so generated qualification remains external and deterministic."
     },
     {
       "path": "apps/blitzar/BlitzarRestart.cpp",
-      "signals": ["branching", "function_count", "function_length", "parameter_count"],
+      "signals": [
+        "branching",
+        "function_count",
+        "function_length",
+        "parameter_count"
+      ],
       "issue": 685,
       "status": "accepted",
       "decision": "The restart boundary keeps root-only manifest validation, explicit shard reconstruction, rank-count compatibility, broadcast of restart time, and transactional destination commit together because they form one distributed persistence operation; snapshot codec validation and MPI transport remain delegated."
     },
     {
-      "path": "src/io/metadata/MetadataFields.cpp",
-      "signals": ["branching", "function_count"],
+      "path": "src/io/md/fields/MetadataFields.cpp",
+      "signals": [
+        "branching",
+        "function_count"
+      ],
       "issue": 685,
       "status": "accepted",
       "decision": "The metadata parser keeps the fixed-order execution policy, single-path, and ordered-rank-shard grammars at the manifest boundary so malformed or reordered reproducibility and output state cannot enter post-process or restart; filesystem and payload validation remain outside the parser."
     },
     {
-      "path": "src/io/postprocess/PostProcessState.cpp",
-      "signals": ["allocation", "branching", "function_length"],
+      "path": "src/io/post/state/PostProcessState.cpp",
+      "signals": [
+        "allocation",
+        "branching",
+        "function_length"
+      ],
       "issue": 685,
       "status": "accepted",
       "decision": "The post-process state boundary owns explicit shard reads, stable-ID reconstruction, coverage validation, and metric evaluation as one bounded persistence consumer; allocations are pre-sized for reconstruction and no simulation gather is introduced."
     },
     {
       "path": "src/simulation/state/SimParticleGet.cpp",
-      "signals": ["branching"],
+      "signals": [
+        "branching"
+      ],
       "issue": 685,
       "status": "accepted",
       "decision": "The state-access unit keeps global gather and non-collective local capture beside their shared packet/state validation while preserving separate call contracts; local output is sorted by stable ID and never invokes the distributed gather."
     },
     {
       "path": "src/solvers/fmm/kifmm/KifmmOperator.cpp",
-      "signals": ["branching", "function_length"],
+      "signals": [
+        "branching",
+        "function_length"
+      ],
       "issue": 683,
       "status": "accepted",
       "decision": "The KIFMM operator unit owns deterministic surface-operator inversion and equivalent-weight construction because those operations share the private workspace and must complete before any force commit; the long numerical kernels are bounded by the fixed surface order."
     },
     {
       "path": "src/solvers/fmm/kifmm/KifmmSolver.cpp",
-      "signals": ["function_count"],
+      "signals": [
+        "function_count"
+      ],
       "issue": 683,
       "status": "accepted",
       "decision": "The KIFMM composition unit keeps settings, resource binding, capacity replacement, request validation, and transactional entrypoint behavior together as the solver lifecycle boundary; surface algebra and traversal are delegated to dedicated units."
     },
     {
       "path": "src/solvers/fmm/kifmm/KifmmTraverse.cpp",
-      "signals": ["branching"],
+      "signals": [
+        "branching"
+      ],
       "issue": 683,
       "status": "accepted",
       "decision": "The KIFMM traversal unit keeps interaction-list construction, near-field Direct accumulation, far-field equivalent evaluation, and staged target commits together because they form one deterministic tree walk; explicit request objects preserve source and ownership context."
     },
     {
       "path": "src/solvers/fmm/kifmm/KifmmWorkspace.cpp",
-      "signals": ["function_count"],
+      "signals": [
+        "function_count"
+      ],
       "issue": 683,
       "status": "accepted",
       "decision": "The KIFMM workspace unit owns checked capacity products, fixed surface-node initialization, span access, and transactional growth because these methods define one allocation boundary for all solver-private storage."
     },
     {
-      "path": "tests/fmm/FmmKifmmQualificationTest.cpp",
-      "signals": ["branching", "function_count"],
+      "path": "tests/solvers/fmm/kifmm/KifmmQualifTest.cpp",
+      "signals": [
+        "branching",
+        "function_count"
+      ],
       "issue": 684,
       "status": "accepted",
       "decision": "The qualification executable keeps the independent Direct/FMM oracle, conservation, repeatability, capacity, singularity, and rollback cases together so one deterministic runtime boundary can qualify KIFMM before public promotion."
     },
     {
       "path": "src/simulation/SimConfig.cpp",
-      "signals": ["branching"],
+      "signals": [
+        "branching"
+      ],
       "issue": 684,
       "status": "accepted",
       "decision": "The simulation configuration boundary keeps solver construction, candidate rebuild, and resource-setting transactionality together so the newly public KIFMM variant follows the same commit policy as the existing solver families."
     },
     {
-      "path": "src/io/metadata/MetadataManifestJson.cpp",
-      "signals": ["function_count"],
+      "path": "src/io/md/manifest/MetadataManifestJson.cpp",
+      "signals": [
+        "function_count"
+      ],
       "issue": 685,
       "status": "accepted",
       "decision": "The manifest writer keeps the fixed-order execution policy block beside the existing configuration writers so reproducibility metadata remains deterministic and serialization ownership stays at the metadata boundary."
+    },
+    {
+      "path": "src/core/CoreExecution.hpp",
+      "signals": [
+        "function_count"
+      ],
+      "issue": 685,
+      "status": "accepted",
+      "decision": "The execution value contract keeps mode parsing, backend policy naming, validation, and accelerator eligibility together because these operations define one bounded policy boundary without owning simulation state."
+    },
+    {
+      "path": "tools/evidence/reproducibility_contract.py",
+      "signals": [
+        "function_length"
+      ],
+      "issue": 685,
+      "status": "accepted",
+      "decision": "The reproducibility evidence validator keeps the frozen policy projection and exact contract comparison together so the executable evidence gate cannot silently drift from the plan contract."
+    },
+    {
+      "path": "tools/gates/repository_tree_gate.py",
+      "signals": [
+        "allocation",
+        "branching"
+      ],
+      "issue": 686,
+      "status": "accepted",
+      "decision": "The repository tree gate keeps policy validation, promotion checks, and recursive source/test symmetry in one deterministic boundary so the frozen taxonomy cannot drift between its plan and materialized forms. Its tool-local complexity is exposed, covered by fixtures, and does not waive production thresholds."
     }
   ]
 }

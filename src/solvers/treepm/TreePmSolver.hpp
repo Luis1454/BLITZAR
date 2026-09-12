@@ -3,10 +3,10 @@
 
 #include "solvers/SolverContract.hpp"
 #include "solvers/SolverForceRequest.hpp"
-#include "solvers/barnes_hut/BhSolver.hpp"
+#include "solvers/bh/BhSolver.hpp"
 #include "solvers/pm/PmSolver.hpp"
 
-#include <blitzar/blitzar.h>
+#include <blitzar/c/blitzar.h>
 #include <cstddef>
 #include <functional>
 #include <vector>

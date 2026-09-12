@@ -4,7 +4,7 @@
 #include "mpi/collectives/MpiCollectives.hpp"
 #include "mpi/packets/MpiPacketWire.hpp"
 
-#include <blitzar/blitzar.h>
+#include <blitzar/c/blitzar.h>
 #include <cstddef>
 #include <span>
 #include <vector>

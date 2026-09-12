@@ -1,3 +1,5 @@
+#include "core/CoreArithmetic.hpp"
+#include "physics/reduction/ScalarReduction.hpp"
 #include "solvers/direct/DirectSolver.hpp"
 
 #include <cmath>
@@ -25,9 +27,10 @@ bool DirectSolver::IsValidState(blitzar_core::ParticleStateView particles) noexc
 
 blitzar_status DirectSolver::CalculateTarget(const ForceTargetRequest& request) noexcept
 {
-    blitzar_core::Scalar acceleration_x = 0.0;
-    blitzar_core::Scalar acceleration_y = 0.0;
-    blitzar_core::Scalar acceleration_z = 0.0;
+    const blitzar_core::BackendExecutionPolicy& policy = request.evaluation.settings.cpu;
+    blitzar_physics::ScalarReduction acceleration_x(policy);
+    blitzar_physics::ScalarReduction acceleration_y(policy);
+    blitzar_physics::ScalarReduction acceleration_z(policy);
 
     for (std::size_t source = request.evaluation.range.source_begin;
         source < request.evaluation.range.source_end; ++source) {
@@ -45,7 +48,11 @@ blitzar_status DirectSolver::CalculateTarget(const ForceTargetRequest& request) 
         const blitzar_core::Scalar dz =
             request.evaluation.sources.z[source] - request.evaluation.targets.z[request.target];
 
-        const blitzar_core::Scalar distance_squared = dx * dx + dy * dy + dz * dz;
+        const blitzar_core::Scalar distance_squared = blitzar_core::MultiplyAdd(dx, dx,
+            blitzar_core::MultiplyAdd(
+                dy, dy, blitzar_core::MultiplyAdd(dz, dz, 0.0, policy), policy),
+            policy);
+
         const blitzar_physics::PairStatus pair_status =
             request.gravity.ValidatePair(request.evaluation.sources.mass[source], distance_squared);
 
@@ -62,15 +69,15 @@ blitzar_status DirectSolver::CalculateTarget(const ForceTargetRequest& request) 
             return BLITZAR_STATUS_INVALID_ARGUMENT;
         }
 
-        acceleration_x += factor * dx;
-        acceleration_y += factor * dy;
-        acceleration_z += factor * dz;
+        acceleration_x.AddProduct(factor, dx);
+        acceleration_y.AddProduct(factor, dy);
+        acceleration_z.AddProduct(factor, dz);
     }
 
-    request.acceleration = {acceleration_x, acceleration_y, acceleration_z};
+    request.acceleration = {acceleration_x.Value(), acceleration_y.Value(), acceleration_z.Value()};
 
-    return std::isfinite(acceleration_x) && std::isfinite(acceleration_y) &&
-                   std::isfinite(acceleration_z)
+    return std::isfinite(request.acceleration.x) && std::isfinite(request.acceleration.y) &&
+                   std::isfinite(request.acceleration.z)
                ? BLITZAR_STATUS_OK
                : BLITZAR_STATUS_INVALID_ARGUMENT;
 }

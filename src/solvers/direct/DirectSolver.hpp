@@ -6,7 +6,7 @@
 #include "solvers/SolverContract.hpp"
 #include "solvers/SolverForceRequest.hpp"
 
-#include <blitzar/blitzar.h>
+#include <blitzar/c/blitzar.h>
 #include <cstddef>
 #include <vector>
 

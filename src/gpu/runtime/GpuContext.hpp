@@ -5,9 +5,9 @@
 #include "core/CoreTypes.hpp"
 #include "physics/gravity/GravityLaw.hpp"
 #include "solvers/SolverContract.hpp"
-#include "solvers/barnes_hut/BhSolver.hpp"
+#include "solvers/bh/BhSolver.hpp"
 
-#include <blitzar/blitzar.h>
+#include <blitzar/c/blitzar.h>
 #include <cstddef>
 #include <cstdint>
 #include <memory>

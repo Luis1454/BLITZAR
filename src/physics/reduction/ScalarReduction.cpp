@@ -6,6 +6,13 @@ namespace blitzar_physics {
 
 ScalarReduction::ScalarReduction(ReductionKind kind) noexcept : kind_(kind) {}
 
+ScalarReduction::ScalarReduction(blitzar_core::BackendExecutionPolicy policy) noexcept
+    : kind_(policy.reduction == blitzar_core::ReductionPolicy::Compensated ? ReductionKind::Neumaier
+                                                                           : ReductionKind::Plain),
+      fma_(policy.fma)
+{
+}
+
 void ScalarReduction::Add(blitzar_core::Scalar value) noexcept
 {
     switch (kind_) {
@@ -33,6 +40,20 @@ void ScalarReduction::Add(blitzar_core::Scalar value) noexcept
     }
 
     sum_ += value;
+}
+
+void ScalarReduction::AddProduct(blitzar_core::Scalar left, blitzar_core::Scalar right) noexcept
+{
+    if (kind_ == ReductionKind::Plain && fma_ == blitzar_core::FmaPolicy::Hardware) {
+        sum_ = std::fma(left, right, sum_);
+
+        return;
+    }
+
+    const blitzar_core::BackendExecutionPolicy product_policy{
+        fma_, blitzar_core::ReductionPolicy::Ordered};
+
+    Add(blitzar_core::MultiplyAdd(left, right, 0.0, product_policy));
 }
 
 blitzar_core::Scalar ScalarReduction::Value() const noexcept

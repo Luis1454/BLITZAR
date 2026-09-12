@@ -8,7 +8,8 @@
     "__pycache__/",
     "*.py[cod]"
   ],
-  "generated_path_components": ["build", "__pycache__"],
+  "generated_root_components": ["build", "build-qualification"],
+  "generated_path_components": ["__pycache__"],
   "generated_file_names": [
     "CMakeCache.txt",
     "cmake_install.cmake",

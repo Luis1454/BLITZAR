@@ -8,7 +8,7 @@
 #include "solvers/SolverTreeResources.hpp"
 #include "solvers/fmm/kifmm/KifmmWorkspace.hpp"
 
-#include <blitzar/blitzar.h>
+#include <blitzar/c/blitzar.h>
 #include <cstddef>
 #include <functional>
 #include <span>

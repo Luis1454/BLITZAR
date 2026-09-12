@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "plan_version": "1.0.55",
+  "plan_version": "1.0.60",
   "state": "capability-gated",
   "mode_values": ["AUTO", "ON", "OFF"],
   "fallback": "binary-snapshot-codec",

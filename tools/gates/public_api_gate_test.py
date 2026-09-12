@@ -41,7 +41,7 @@ class PublicApiGateTests(unittest.TestCase):
 
     def test_rejects_unregistered_internal_cpp_facade_include(self) -> None:
         path = self.root / "src" / "sdk" / "State.hpp"
-        path.write_text('#include <blitzar/blitzar.hpp>\n', encoding="utf-8")
+        path.write_text('#include <blitzar/cpp/blitzar.hpp>\n', encoding="utf-8")
         violations = scan_internal_headers(self.root, {
             "internal_cpp_facade_exceptions": [],
         })

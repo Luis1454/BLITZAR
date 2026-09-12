@@ -1,7 +1,7 @@
 #ifndef BLITZAR_MPI_EXCHANGE_MPI_EXCHANGE_TRACE_HPP
 #define BLITZAR_MPI_EXCHANGE_MPI_EXCHANGE_TRACE_HPP
 
-#include <blitzar/blitzar.h>
+#include <blitzar/c/blitzar.h>
 #include <cstddef>
 #include <cstdint>
 

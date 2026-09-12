@@ -58,6 +58,9 @@ def policy_violations(root: pathlib.Path, policy: dict[str, object]) -> list[str
 
 def generated_path(path: str, policy: dict[str, object]) -> bool:
     parts = pathlib.PurePosixPath(path.replace("\\", "/")).parts
+    generated_root_components = policy.get("generated_root_components", [])
+    if parts and parts[0] in generated_root_components:
+        return True
     generated_components = policy.get("generated_path_components", [])
     if any(part in generated_components for part in parts):
         return True

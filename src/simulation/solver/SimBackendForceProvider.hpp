@@ -5,7 +5,7 @@
 #include "solvers/SolverCpuForceProvider.hpp"
 
 #include <atomic>
-#include <blitzar/blitzar.h>
+#include <blitzar/c/blitzar.h>
 
 namespace blitzar_sim {
 
@@ -84,7 +84,10 @@ public:
     [[nodiscard]] blitzar_status Evaluate(
         const blitzar_solvers::SolverForceEvaluation& request) noexcept
     {
-        const blitzar_status gpu_status = SimBackendForceTraits<Solver>::TryGpu(context_, request);
+        const blitzar_status gpu_status =
+            request.settings.AllowsAccelerator()
+                ? SimBackendForceTraits<Solver>::TryGpu(context_, request)
+                : BLITZAR_STATUS_UNSUPPORTED;
 
         if (gpu_status == BLITZAR_STATUS_OK) {
             return gpu_status;

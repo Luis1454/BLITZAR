@@ -4,7 +4,7 @@
 #include "core/CoreTypes.hpp"
 
 #include <array>
-#include <blitzar/blitzar.h>
+#include <blitzar/c/blitzar.h>
 #include <cstddef>
 #include <span>
 #include <vector>

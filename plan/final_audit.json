@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "plan_version": "1.0.55",
+  "plan_version": "1.0.60",
   "runner": "tools/audit/audit_final.py",
   "artifact_files": [
     "audit.json",
@@ -157,7 +157,7 @@
       "review_gate": "TST-P0-003"
     },
     {
-      "prefix": "src/solvers/barnes_hut/",
+      "prefix": "src/solvers/bh/",
       "owner": "solver-maintainers",
       "category": "barnes-hut-solver",
       "review_gate": "TST-P3-001"
@@ -199,7 +199,7 @@
       "review_gate": "TST-P4-001"
     },
     {
-      "prefix": "src/gpu/barnes_hut/",
+      "prefix": "src/gpu/bh/",
       "owner": "gpu-maintainers",
       "category": "gpu-barnes-hut-solver",
       "review_gate": "TST-P4-001"
@@ -327,105 +327,151 @@
       "title": "Freeze repository realignment contract",
       "commit": "e16e28012d0c730e05b3fa0732135351dcfb1034",
       "pull_request": "https://github.com/Luis1454/BLITZAR/pull/614",
-      "evidence": ["CHK-P0-001", "plan/manifest.json"]
+      "evidence": [
+        "CHK-P0-001",
+        "plan/manifest.json"
+      ]
     },
     {
       "issue": 599,
       "title": "Qualify architecture across the repository",
       "commit": "e1163f0ca5cf82f5f6bf3a5fd2cbb7de2cb35286",
       "pull_request": "https://github.com/Luis1454/BLITZAR/pull/615",
-      "evidence": ["CHK-P0-006", "plan/architecture_reviews.json"]
+      "evidence": [
+        "CHK-P0-006",
+        "plan/architecture_reviews.json"
+      ]
     },
     {
       "issue": 600,
       "title": "Enforce repository naming contract",
       "commit": "032713f0dccc4f7d56fd01cc50694a048fcb05bf",
       "pull_request": "https://github.com/Luis1454/BLITZAR/pull/616",
-      "evidence": ["CHK-P0-007", "plan/quality.json"]
+      "evidence": [
+        "CHK-P0-007",
+        "plan/quality.json"
+      ]
     },
     {
       "issue": 601,
       "title": "Enforce clang-format and newline policy",
       "commit": "00765cdb080782e6bc8419b54447f7c4ceabe546",
       "pull_request": "https://github.com/Luis1454/BLITZAR/pull/617",
-      "evidence": ["CHK-P0-009", "CHK-P0-023"]
+      "evidence": [
+        "CHK-P0-009",
+        "CHK-P0-023"
+      ]
     },
     {
       "issue": 602,
       "title": "Enforce public ABI and internal include boundaries",
       "commit": "1487d5a71e5f7cb9970a0818af9546303fe53675",
       "pull_request": "https://github.com/Luis1454/BLITZAR/pull/618",
-      "evidence": ["CHK-P0-011", "CHK-P0-014"]
+      "evidence": [
+        "CHK-P0-011",
+        "CHK-P0-014"
+      ]
     },
     {
       "issue": 603,
       "title": "Complete MPI internal boundary encapsulation",
       "commit": "0b27d08c5ef0246d6df08aeab2269ab2ce5dd050",
       "pull_request": "https://github.com/Luis1454/BLITZAR/pull/619",
-      "evidence": ["CHK-P0-014", "TST-P7-001"]
+      "evidence": [
+        "CHK-P0-014",
+        "TST-P7-001"
+      ]
     },
     {
       "issue": 604,
       "title": "Split SDK state contracts",
       "commit": "16128c96e998cd8224f70eadcd548436b308c00c",
       "pull_request": "https://github.com/Luis1454/BLITZAR/pull/620",
-      "evidence": ["CHK-P0-006", "TST-P0-001"]
+      "evidence": [
+        "CHK-P0-006",
+        "TST-P0-001"
+      ]
     },
     {
       "issue": 605,
       "title": "Separate particle and acceleration buffer contracts",
       "commit": "54994fb9e68dfcd0fc8ae2919b53d49bf7b43deb",
       "pull_request": "https://github.com/Luis1454/BLITZAR/pull/621",
-      "evidence": ["TST-P1-001", "TST-P1-003"]
+      "evidence": [
+        "TST-P1-001",
+        "TST-P1-003"
+      ]
     },
     {
       "issue": 606,
       "title": "Requalify Simulation composition roots",
       "commit": "08ea496c245165c385ff881b0512f8f641a8aab2",
       "pull_request": "https://github.com/Luis1454/BLITZAR/pull/622",
-      "evidence": ["TST-P8-003", "plan/SimulationComposition.md"]
+      "evidence": [
+        "TST-P8-003",
+        "plan/SimulationComposition.md"
+      ]
     },
     {
       "issue": 607,
       "title": "Prove allocation-free steady state",
       "commit": "81355e26dee0c2a10ddf0c251f7b89964b7de357",
       "pull_request": "https://github.com/Luis1454/BLITZAR/pull/623",
-      "evidence": ["TST-P1-003", "plan/AllocationLifecycle.md"]
+      "evidence": [
+        "TST-P1-003",
+        "plan/AllocationLifecycle.md"
+      ]
     },
     {
       "issue": 608,
       "title": "Audit raw pointers, spans, and ownership",
       "commit": "23e2ba6b510d323cbc065f27d6af2f47c20a7520",
       "pull_request": "https://github.com/Luis1454/BLITZAR/pull/624",
-      "evidence": ["CHK-P0-016", "plan/PointerOwnership.md"]
+      "evidence": [
+        "CHK-P0-016",
+        "plan/PointerOwnership.md"
+      ]
     },
     {
       "issue": 609,
       "title": "Decompose and qualify test suite",
       "commit": "bf26d0d3582cf8f7549db0b7488f42132786716a",
       "pull_request": "https://github.com/Luis1454/BLITZAR/pull/625",
-      "evidence": ["CHK-P0-018", "plan/test_map.json"]
+      "evidence": [
+        "CHK-P0-018",
+        "plan/test_map.json"
+      ]
     },
     {
       "issue": 610,
       "title": "Realign build, package, CI, and workspace composition",
       "commit": "2790d55ee1c80e0865e7daee84da6e071f0ea73f",
       "pull_request": "https://github.com/Luis1454/BLITZAR/pull/626",
-      "evidence": ["TST-P2-004", "CHK-P0-020"]
+      "evidence": [
+        "TST-P2-004",
+        "CHK-P0-020"
+      ]
     },
     {
       "issue": 611,
       "title": "Freeze capability and unsupported-feature contracts",
       "commit": "4844ab611672cbb32ae2f45ad5b8cd3286e05dd6",
       "pull_request": "https://github.com/Luis1454/BLITZAR/pull/627",
-      "evidence": ["CHK-P0-026", "plan/capabilities.json"]
+      "evidence": [
+        "CHK-P0-026",
+        "plan/capabilities.json"
+      ]
     },
     {
       "issue": 612,
       "title": "Produce reproducible scaling and release evidence",
       "commit": "84feeabf4825baa6b1520456308b55e50df1d32c",
       "pull_request": "https://github.com/Luis1454/BLITZAR/pull/628",
-      "evidence": ["CHK-P0-028", "TST-P0-007", "blitzar-reproducible-evidence"]
+      "evidence": [
+        "CHK-P0-028",
+        "TST-P0-007",
+        "blitzar-reproducible-evidence"
+      ]
     },
     {
       "issue": 541,
@@ -825,6 +871,22 @@
       ]
     }
   ],
+  "planned_milestones": [
+    {
+      "id": "OPS-002",
+      "phase": "P9",
+      "title": "Portable restart state and resolved runtime identity",
+      "status": "planned",
+      "contract": "plan/ops002.json",
+      "acceptance_cases": [
+        "P9-AC-001",
+        "P9-AC-002",
+        "P9-AC-003",
+        "P9-AC-004",
+        "P9-AC-005"
+      ]
+    }
+  ],
   "non_claims": [
     "real multi-node MPI and RDMA qualification",
     "physical NVIDIA CUDA execution when no CUDA device is exposed",
@@ -834,7 +896,9 @@
     "block time stepping as the production integrator",
     "block-time scheduler timing as an end-to-end physics speedup",
     "BVH as a production long-range gravity replacement",
-    "BVH query timing as a physical-force or end-to-end simulation speedup"
+    "BVH query timing as a physical-force or end-to-end simulation speedup",
+    "complete backend-neutral V2 restart state before P9/OPS-002 qualification",
+    "resolved backend identity in completed fast manifests before P9/OPS-002 qualification"
   ],
   "findings_policy": {
     "unresolved_allowed": [],

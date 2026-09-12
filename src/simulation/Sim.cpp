@@ -11,7 +11,7 @@ Sim::Sim(std::size_t particle_count)
       barnes_hut_{
           0.5, particle_count == 0 ? 1 : particle_count, DefaultMaxCells(particle_count), 8, 32},
       solver_kind_(BLITZAR_SOLVER_DIRECT), integrator_kind_(BLITZAR_INTEGRATOR_LEAPFROG_KDK),
-      timestep_(1.0), particles_ready_(false), execution_settings_{}, snapshot_header_{},
+      timestep_(1.0), seed_{}, particles_ready_(false), execution_settings_{}, snapshot_header_{},
       last_status_(runtime_.Mpi().Status()), last_backend_(BLITZAR_BACKEND_CPU),
       solver_(std::in_place_type<DirectSolverBundle>, gravity_, particle_count), integrator_{},
       particle_ids_(particle_count), output_order_(particle_count), local_particle_count_(0),
@@ -150,7 +150,8 @@ std::size_t Sim::LocalParticleCount() const noexcept
 
 bool Sim::IsSnapshotBoundaryReady() const noexcept
 {
-    return !runtime_.Mpi().IsGhostExchangeActive(runtime_.Exchange().PersistentGhostExchange());
+    return blitzar_core::IsSnapshotBoundaryReady(
+        runtime_.Mpi().IsCommunicationActive(runtime_.Exchange().PersistentGhostExchange()));
 }
 
 const blitzar_parallel::MpiMigrationTrace& Sim::LastMpiMigrationTrace() const noexcept

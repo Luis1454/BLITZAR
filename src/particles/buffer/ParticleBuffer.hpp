@@ -3,7 +3,7 @@
 
 #include "particles/arena/ParticleArena.hpp"
 
-#include <blitzar/blitzar.h>
+#include <blitzar/c/blitzar.h>
 #include <cstddef>
 #include <functional>
 #include <memory>

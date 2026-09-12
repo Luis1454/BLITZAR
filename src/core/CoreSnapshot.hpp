@@ -31,6 +31,11 @@ enum class SnapshotEndianness : std::uint8_t { Little = 0, Big = 1 };
 enum class SnapshotDistribution : std::uint8_t { SingleRank = 0, Sharded = 1 };
 enum class SnapshotIdPolicy : std::uint8_t { GlobalContiguous = 0, GlobalStable = 1 };
 
+[[nodiscard]] constexpr bool IsSnapshotBoundaryReady(bool communication_active) noexcept
+{
+    return !communication_active;
+}
+
 enum class SnapshotHeaderField : std::uint8_t {
     Magic = 0,
     Version = 1,

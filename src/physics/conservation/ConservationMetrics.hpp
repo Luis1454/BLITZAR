@@ -5,7 +5,7 @@
 #include "physics/gravity/GravityLaw.hpp"
 #include "physics/reduction/ScalarReduction.hpp"
 
-#include <blitzar/blitzar.h>
+#include <blitzar/c/blitzar.h>
 
 namespace blitzar_physics {
 

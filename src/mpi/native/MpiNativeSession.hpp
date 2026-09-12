@@ -3,7 +3,7 @@
 
 #include "mpi/native/MpiNative.hpp"
 
-#include <blitzar/blitzar.h>
+#include <blitzar/c/blitzar.h>
 #include <memory>
 
 namespace blitzar_parallel {

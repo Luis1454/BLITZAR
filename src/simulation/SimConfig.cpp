@@ -233,7 +233,7 @@ blitzar_status Sim::SetTimestep(blitzar_core::Scalar timestep) noexcept
 
 blitzar_status Sim::SetSeed(std::uint64_t seed) noexcept
 {
-    execution_settings_.seed = seed;
+    seed_ = seed;
 
     return Remember(BLITZAR_STATUS_OK);
 }

@@ -1,7 +1,7 @@
 #include "mpi/native/MpiNativeStatus.hpp"
 #include "simulation/Sim.hpp"
-#include "simulation/step/SimDistributedStep.hpp"
-#include "simulation/step/SimLocalStep.hpp"
+#include "simulation/step/distributed/SimStepDistributed.hpp"
+#include "simulation/step/local/SimStepLocal.hpp"
 
 #include <cmath>
 #include <type_traits>

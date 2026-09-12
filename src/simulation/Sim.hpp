@@ -12,7 +12,7 @@
 #include "simulation/state/SimParticleState.hpp"
 
 #include <atomic>
-#include <blitzar/blitzar.h>
+#include <blitzar/c/blitzar.h>
 #include <cstddef>
 #include <cstdint>
 #include <vector>
@@ -102,6 +102,7 @@ private:
     blitzar_solver_kind solver_kind_;
     blitzar_integrator_kind integrator_kind_;
     blitzar_core::Scalar timestep_;
+    std::uint64_t seed_{};
     bool particles_ready_;
     blitzar_core::ExecutionSettings execution_settings_;
     blitzar_core::SnapshotHeader snapshot_header_;

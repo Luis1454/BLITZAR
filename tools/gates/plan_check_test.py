@@ -20,6 +20,7 @@ class PlanCheckTests(unittest.TestCase):
         (self.root / "src").mkdir()
         (self.root / "plan").mkdir()
         (self.root / "cmake").mkdir()
+        (self.root / ".github" / "workflows").mkdir(parents=True)
         (self.root / "PLAN.md").write_text(
             "Product/API version: **1.0.0**\n"
             "Plan version: **1.0.6**\n\n"
@@ -49,8 +50,18 @@ class PlanCheckTests(unittest.TestCase):
             'set(BLITZAR_PLAN_VERSION "@BLITZAR_PLAN_VERSION@")\n',
             encoding="utf-8",
         )
+        (self.root / ".github" / "workflows" / "plan.yml").write_text(
+            "changed=$(git diff --name-only)\n"
+            "if grep -Eq '^(PLAN.md|plan/.*\\.(json|md))$' <<< \"$changed\"; then\n"
+            "  git log --format=%s\n"
+            "  grep -q '^plan-change:'\n"
+            "  grep -Eq '^plan/decisions/[^/]+\\.md$'\n"
+            "fi\n",
+            encoding="utf-8",
+        )
         self.write_manifest()
         self.write_output_contract()
+        self.write_repository_tree()
         (self.root / "plan" / "architecture_reviews.json").write_text(
             json.dumps({"schema_version": 1, "reviews": []}), encoding="utf-8"
         )
@@ -64,6 +75,7 @@ class PlanCheckTests(unittest.TestCase):
             "product_version": "1.0.0",
             "plan_version": "1.0.6",
             "status": "frozen",
+            "source_of_truth": ["plan/repository_tree.json"],
             "roots": roots if roots is not None else ["src"],
             "deferred_roots": [],
             "forbidden_references": ["never-present-token"],
@@ -84,9 +96,54 @@ class PlanCheckTests(unittest.TestCase):
             json.dumps(contract), encoding="utf-8"
         )
 
+    def write_repository_tree(self) -> None:
+        (self.root / "plan" / "repository_tree.json").write_text(
+            json.dumps(
+                {
+                    "schema_version": 1,
+                    "plan_version": "1.0.6",
+                    "status": "frozen",
+                    "materialization": "planned",
+                    "aliases": {"metadata": "md", "config": "cfg"},
+                    "language_separation": [
+                        {"root": "include/blitzar", "children": ["c", "cpp"]}
+                    ],
+                    "source_test_pairs": [
+                        {
+                            "source": "src",
+                            "tests": "tests",
+                            "responsibility": "fixture",
+                        }
+                    ],
+                    "allowed_missing": [],
+                    "test_suffix": {
+                        "suffix": "Test",
+                        "extensions": [".c", ".cpp", ".cmake"],
+                        "entrypoint_policy": "registered tests end in Test",
+                        "non_test_entrypoints": ["examples/c/Example.c"],
+                    },
+                    "target_test_entrypoints": ["tests/FixtureTest.cpp"],
+                    "python": {
+                        "root": "tools",
+                        "domains": ["gates"],
+                        "test_suffix": "_test.py",
+                        "domain_policy": "group by responsibility",
+                    },
+                    "forbidden_paths": [".keep"],
+                    "migration": {
+                        "state": "planned",
+                        "rule": "migrate in one reviewed change",
+                        "directory_moves": [["src/old", "src/new"]],
+                    },
+                }
+            ),
+            encoding="utf-8",
+        )
+
     def write_quality(self, evidence_policy: str = "registration-only") -> None:
         quality = {
             "evidence_policy": evidence_policy,
+            "repository_tree": "plan/repository_tree.json",
             "tests": [
                 {
                     "id": "TST-P0-001",
@@ -115,8 +172,36 @@ class PlanCheckTests(unittest.TestCase):
                     "name": "fixture-check",
                     "command": "python -B -m tools.gates.plan_check_test",
                     "phase": "P0",
-                }
+                },
+                {
+                    "id": "CHK-P0-050",
+                    "name": "directory-symmetry",
+                    "command": "python -m tools.gates.directory_symmetry_gate --root . --check",
+                    "phase": "P0",
+                },
+                {
+                    "id": "CHK-P0-051",
+                    "name": "directory-symmetry-fixtures",
+                    "command": "python -m tools.gates.directory_symmetry_gate_test",
+                    "phase": "P0",
+                },
+                {
+                    "id": "CHK-P0-052",
+                    "name": "repository-tree-contract",
+                    "command": "python -m tools.gates.repository_tree_gate --root . --plan",
+                    "phase": "P0",
+                },
+                {
+                    "id": "CHK-P0-053",
+                    "name": "repository-tree-contract-fixtures",
+                    "command": "python -m tools.gates.repository_tree_gate_test",
+                    "phase": "P0",
+                },
             ],
+        }
+        quality["directory_symmetry"] = {
+            "pairs": [{"source": "src", "tests": "tests"}],
+            "allowed_missing": [],
         }
         (self.root / "plan" / "quality.json").write_text(
             json.dumps(quality), encoding="utf-8"
@@ -158,6 +243,38 @@ class PlanCheckTests(unittest.TestCase):
         result = self.run_checker()
         self.assertNotEqual(result.returncode, 0)
         self.assertIn("deferred root is materialized", result.stderr)
+
+    def test_rejects_missing_directory_symmetry_policy(self) -> None:
+        quality_path = self.root / "plan" / "quality.json"
+        quality = json.loads(quality_path.read_text(encoding="utf-8"))
+        del quality["directory_symmetry"]
+        quality_path.write_text(json.dumps(quality), encoding="utf-8")
+
+        result = self.run_checker()
+
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("directory_symmetry policy", result.stderr)
+
+    def test_rejects_missing_repository_tree_policy(self) -> None:
+        (self.root / "plan" / "repository_tree.json").unlink()
+
+        result = self.run_checker()
+
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("repository_tree.json is missing", result.stderr)
+
+    def test_rejects_unprotected_plan_workflow(self) -> None:
+        workflow_path = self.root / ".github" / "workflows" / "plan.yml"
+        workflow = workflow_path.read_text(encoding="utf-8")
+        workflow_path.write_text(
+            workflow.replace("plan/.*\\.(json|md)", "PLAN.md"),
+            encoding="utf-8",
+        )
+
+        result = self.run_checker()
+
+        self.assertNotEqual(result.returncode, 0)
+        self.assertIn("plan workflow must guard", result.stderr)
 
     def test_rejects_uncovered_repository_shape_path(self) -> None:
         known = self.root / "src" / "known"

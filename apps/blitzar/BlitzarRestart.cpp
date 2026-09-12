@@ -1,13 +1,13 @@
 #include "BlitzarRestart.hpp"
 
 #include "io/hdf5/Hdf5Reader.hpp"
-#include "io/metadata/MetadataReader.hpp"
-#include "io/snapshot/SnapshotReader.hpp"
+#include "io/md/reader/MetadataReader.hpp"
+#include "io/snap/codec/SnapshotReader.hpp"
 #include "mpi/runtime/MpiContext.hpp"
 
 #include <algorithm>
 #include <array>
-#include <blitzar/blitzar.hpp>
+#include <blitzar/cpp/blitzar.hpp>
 #include <cmath>
 #include <cstddef>
 #include <cstdint>
@@ -87,12 +87,21 @@ namespace {
            execution.hip.reduction == config.execution.hip.reduction &&
            execution.mpi.fma == config.execution.mpi.fma &&
            execution.mpi.reduction == config.execution.mpi.reduction &&
+           execution.backend == (config.execution.mode == blitzar_core::ExecutionMode::Strict
+                                        ? "cpu"
+                                        : "runtime-selected") &&
            execution.precision == "float64" &&
            execution.compiler == blitzar_io::CurrentCompilerIdentity() &&
-           execution.device == "host-cpu" && execution.rng == "seeded-jitter-v1" &&
-           execution.compensator == "direct-plain;diagnostics-neumaier-v1" &&
+           execution.device == (config.execution.mode == blitzar_core::ExecutionMode::Strict
+                                       ? "host-cpu"
+                                       : "runtime-selected") &&
+           execution.rng == "seeded-jitter-v1" &&
+           execution.compensator == (config.execution.mode == blitzar_core::ExecutionMode::Strict
+                                            ? "direct-plain;diagnostics-neumaier-v1"
+                                            : "backend-defined;diagnostics-neumaier-v1") &&
            execution.ordering == "stable-particle-id-v1" &&
-           execution.bitwise_reproducible == config.execution.IsBitwiseReproducible();
+           execution.bitwise_reproducible ==
+               (config.solver == BLITZAR_SOLVER_DIRECT && config.execution.IsBitwiseReproducible());
 }
 
 [[nodiscard]] bool IsCompatible(

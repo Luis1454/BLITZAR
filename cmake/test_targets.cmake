@@ -1,6 +1,6 @@
 add_library(blitzar_public_header_compile OBJECT
-    tests/contracts/ContractCPublicTest.c
-    tests/contracts/ContractCppPublicTest.cpp
+    tests/contracts/c/PublicTest.c
+    tests/contracts/cpp/CppPublicTest.cpp
 )
 target_include_directories(blitzar_public_header_compile PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/include)
@@ -16,7 +16,7 @@ target_compile_features(blitzar_lifecycle_test PRIVATE cxx_std_20)
 blitzar_enable_warnings(blitzar_lifecycle_test)
 
 add_executable(blitzar_config_test
-    tests/simulation/SimConfigFileTest.cpp
+    tests/simulation/cfg/SimConfigFileTest.cpp
 )
 target_link_libraries(blitzar_config_test PRIVATE blitzar)
 target_compile_features(blitzar_config_test PRIVATE cxx_std_20)
@@ -24,7 +24,7 @@ target_include_directories(blitzar_config_test PRIVATE ${CMAKE_CURRENT_SOURCE_DI
 blitzar_enable_warnings(blitzar_config_test)
 
 add_executable(blitzar_config_run_test
-    tests/simulation/SimConfigRunTest.cpp
+    tests/simulation/cfg/SimConfigRunTest.cpp
 )
 target_link_libraries(blitzar_config_run_test PRIVATE blitzar)
 target_compile_features(blitzar_config_run_test PRIVATE cxx_std_20)
@@ -32,14 +32,14 @@ target_include_directories(blitzar_config_run_test PRIVATE ${CMAKE_CURRENT_SOURC
 blitzar_enable_warnings(blitzar_config_run_test)
 
 add_executable(blitzar_c_api_test
-    tests/contracts/ContractCApiTest.c
+    tests/contracts/c/ApiTest.c
 )
 target_link_libraries(blitzar_c_api_test PRIVATE blitzar)
 set_property(TARGET blitzar_c_api_test PROPERTY LINKER_LANGUAGE CXX)
 blitzar_enable_warnings(blitzar_c_api_test)
 
 add_executable(blitzar_contract_test
-    tests/contracts/ContractTest.cpp
+    tests/contracts/cpp/ContractTest.cpp
 )
 target_link_libraries(blitzar_contract_test PRIVATE blitzar)
 target_compile_features(blitzar_contract_test PRIVATE cxx_std_20)
@@ -47,7 +47,7 @@ target_include_directories(blitzar_contract_test PRIVATE ${CMAKE_CURRENT_SOURCE_
 blitzar_enable_warnings(blitzar_contract_test)
 
 add_executable(blitzar_snapshot_contract_test
-    tests/contracts/ContractSnapshotTest.cpp
+    tests/contracts/cpp/SnapshotTest.cpp
 )
 target_link_libraries(blitzar_snapshot_contract_test PRIVATE blitzar)
 target_compile_features(blitzar_snapshot_contract_test PRIVATE cxx_std_20)
@@ -55,7 +55,7 @@ target_include_directories(blitzar_snapshot_contract_test PRIVATE ${CMAKE_CURREN
 blitzar_enable_warnings(blitzar_snapshot_contract_test)
 
 add_executable(blitzar_snapshot_io_test
-    tests/io/IoSnapshotTest.cpp
+    tests/io/snap/SnapTest.cpp
 )
 target_link_libraries(blitzar_snapshot_io_test PRIVATE blitzar)
 target_compile_features(blitzar_snapshot_io_test PRIVATE cxx_std_20)
@@ -63,7 +63,7 @@ target_include_directories(blitzar_snapshot_io_test PRIVATE ${CMAKE_CURRENT_SOUR
 blitzar_enable_warnings(blitzar_snapshot_io_test)
 
 add_executable(blitzar_snapshot_delta_test
-    tests/io/IoSnapshotDeltaTest.cpp
+    tests/io/snap/SnapDeltaTest.cpp
 )
 target_link_libraries(blitzar_snapshot_delta_test PRIVATE blitzar)
 target_compile_features(blitzar_snapshot_delta_test PRIVATE cxx_std_20)
@@ -71,8 +71,8 @@ target_include_directories(blitzar_snapshot_delta_test PRIVATE ${CMAKE_CURRENT_S
 blitzar_enable_warnings(blitzar_snapshot_delta_test)
 
 add_executable(blitzar_hdf5_test
-    tests/fixtures/FixtureRestart.cpp
-    tests/io/IoHdf5Test.cpp
+    tests/fixtures/FixtureRestartTest.cpp
+    tests/io/hdf5/Hdf5Test.cpp
 )
 target_link_libraries(blitzar_hdf5_test PRIVATE blitzar)
 target_compile_features(blitzar_hdf5_test PRIVATE cxx_std_20)
@@ -81,7 +81,7 @@ blitzar_enable_warnings(blitzar_hdf5_test)
 blitzar_enable_hdf5(blitzar_hdf5_test)
 
 add_executable(blitzar_metadata_io_test
-    tests/io/IoMetadataTest.cpp
+    tests/io/md/MdTest.cpp
 )
 target_link_libraries(blitzar_metadata_io_test PRIVATE blitzar)
 target_compile_features(blitzar_metadata_io_test PRIVATE cxx_std_20)
@@ -89,7 +89,7 @@ target_include_directories(blitzar_metadata_io_test PRIVATE ${CMAKE_CURRENT_SOUR
 blitzar_enable_warnings(blitzar_metadata_io_test)
 
 add_executable(blitzar_reproducibility_test
-    tests/contracts/ContractReproducibilityTest.cpp
+    tests/contracts/cpp/ReproTest.cpp
 )
 target_link_libraries(blitzar_reproducibility_test PRIVATE blitzar)
 target_compile_features(blitzar_reproducibility_test PRIVATE cxx_std_20)
@@ -101,7 +101,7 @@ add_executable(blitzar_cli_output_test
     apps/blitzar/BlitzarRestart.cpp
     apps/blitzar/BlitzarSummary.cpp
     apps/blitzar/BlitzarRun.cpp
-    tests/io/IoCliOutputTest.cpp
+    tests/io/cli/CliOutputTest.cpp
 )
 target_link_libraries(blitzar_cli_output_test PRIVATE blitzar)
 target_compile_features(blitzar_cli_output_test PRIVATE cxx_std_20)
@@ -115,8 +115,8 @@ add_executable(blitzar_cli_hdf5_test
     apps/blitzar/BlitzarRestart.cpp
     apps/blitzar/BlitzarSummary.cpp
     apps/blitzar/BlitzarRun.cpp
-    tests/fixtures/FixtureRestart.cpp
-    tests/io/IoCliHdf5Test.cpp
+    tests/fixtures/FixtureRestartTest.cpp
+    tests/io/cli/CliHdf5Test.cpp
 )
 target_link_libraries(blitzar_cli_hdf5_test PRIVATE blitzar)
 target_compile_features(blitzar_cli_hdf5_test PRIVATE cxx_std_20)
@@ -132,7 +132,7 @@ add_executable(blitzar_cli_summary_test
     apps/blitzar/BlitzarRestart.cpp
     apps/blitzar/BlitzarSummary.cpp
     apps/blitzar/BlitzarRun.cpp
-    tests/io/IoCliSummaryTest.cpp
+    tests/io/cli/CliSummaryTest.cpp
 )
 target_link_libraries(blitzar_cli_summary_test PRIVATE blitzar)
 target_compile_features(blitzar_cli_summary_test PRIVATE cxx_std_20)
@@ -146,8 +146,8 @@ add_executable(blitzar_cli_restart_test
     apps/blitzar/BlitzarRestart.cpp
     apps/blitzar/BlitzarSummary.cpp
     apps/blitzar/BlitzarRun.cpp
-    tests/fixtures/FixtureRestart.cpp
-    tests/io/IoCliRestartTest.cpp
+    tests/fixtures/FixtureRestartTest.cpp
+    tests/io/cli/CliRestartTest.cpp
 )
 target_link_libraries(blitzar_cli_restart_test PRIVATE blitzar)
 target_compile_features(blitzar_cli_restart_test PRIVATE cxx_std_20)
@@ -158,9 +158,9 @@ blitzar_enable_warnings(blitzar_cli_restart_test)
 
 if(BLITZAR_BUILD_CLI)
     add_executable(blitzar_cli_process_restart_test
-        tests/fixtures/FixtureProcess.cpp
-        tests/fixtures/FixtureRestart.cpp
-        tests/io/IoCliProcessRestartTest.cpp
+        tests/fixtures/FixtureProcessTest.cpp
+        tests/fixtures/FixtureRestartTest.cpp
+        tests/io/cli/CliProcessRestartTest.cpp
     )
     target_link_libraries(blitzar_cli_process_restart_test PRIVATE blitzar)
     target_compile_features(blitzar_cli_process_restart_test PRIVATE cxx_std_20)
@@ -174,9 +174,9 @@ if(BLITZAR_BUILD_CLI)
         apps/blitzar/BlitzarRestart.cpp
         apps/blitzar/BlitzarRun.cpp
         apps/blitzar/BlitzarSummary.cpp
-        tests/fixtures/FixtureProcess.cpp
-        tests/fixtures/FixtureRestart.cpp
-        tests/io/IoCliPostProcessTest.cpp
+        tests/fixtures/FixtureProcessTest.cpp
+        tests/fixtures/FixtureRestartTest.cpp
+        tests/io/cli/CliPostTest.cpp
     )
     target_link_libraries(blitzar_cli_postprocess_test PRIVATE blitzar)
     target_compile_features(blitzar_cli_postprocess_test PRIVATE cxx_std_20)
@@ -187,7 +187,7 @@ if(BLITZAR_BUILD_CLI)
 endif()
 
 add_executable(blitzar_bounded_contract_test
-    tests/contracts/ContractBoundedTest.cpp
+    tests/contracts/cpp/BoundedTest.cpp
 )
 target_link_libraries(blitzar_bounded_contract_test PRIVATE blitzar)
 target_compile_features(blitzar_bounded_contract_test PRIVATE cxx_std_20)
@@ -195,7 +195,7 @@ target_include_directories(blitzar_bounded_contract_test PRIVATE ${CMAKE_CURRENT
 blitzar_enable_warnings(blitzar_bounded_contract_test)
 
 add_executable(blitzar_solver_resource_contract_test
-    tests/contracts/ContractSolverResourceTest.cpp
+    tests/contracts/cpp/SolverResourceTest.cpp
 )
 target_link_libraries(blitzar_solver_resource_contract_test PRIVATE blitzar)
 target_compile_features(blitzar_solver_resource_contract_test PRIVATE cxx_std_20)
@@ -203,7 +203,7 @@ target_include_directories(blitzar_solver_resource_contract_test PRIVATE
     ${CMAKE_CURRENT_SOURCE_DIR}/src)
 
 add_executable(blitzar_spatial_resource_test
-    tests/contracts/ContractSpatialResourceTest.cpp
+    tests/contracts/cpp/SpatialResourceTest.cpp
 )
 target_link_libraries(blitzar_spatial_resource_test PRIVATE blitzar)
 target_compile_features(blitzar_spatial_resource_test PRIVATE cxx_std_20)
@@ -213,7 +213,7 @@ blitzar_enable_warnings(blitzar_spatial_resource_test)
 blitzar_enable_warnings(blitzar_solver_resource_contract_test)
 
 add_executable(blitzar_force_provider_test
-    tests/contracts/ContractForceProviderTest.cpp
+    tests/contracts/cpp/ForceProviderTest.cpp
 )
 target_link_libraries(blitzar_force_provider_test PRIVATE blitzar)
 target_compile_features(blitzar_force_provider_test PRIVATE cxx_std_20)
@@ -223,21 +223,21 @@ target_include_directories(blitzar_force_provider_test PRIVATE
 blitzar_enable_warnings(blitzar_force_provider_test)
 
 add_executable(blitzar_abi_test
-    tests/contracts/ContractAbiTest.c
+    tests/contracts/c/AbiTest.c
 )
 target_link_libraries(blitzar_abi_test PRIVATE blitzar)
 set_property(TARGET blitzar_abi_test PROPERTY LINKER_LANGUAGE CXX)
 blitzar_enable_warnings(blitzar_abi_test)
 
 add_executable(blitzar_capability_test
-    tests/contracts/ContractCapabilitiesTest.c
+    tests/contracts/c/CapabilitiesTest.c
 )
 target_link_libraries(blitzar_capability_test PRIVATE blitzar)
 set_property(TARGET blitzar_capability_test PROPERTY LINKER_LANGUAGE CXX)
 blitzar_enable_warnings(blitzar_capability_test)
 
 add_executable(blitzar_dynamics_test
-    tests/integration/KdkDynamicsTest.cpp
+    tests/integration/kdk/KdkDynamicsTest.cpp
 )
 target_link_libraries(blitzar_dynamics_test PRIVATE blitzar)
 target_compile_features(blitzar_dynamics_test PRIVATE cxx_std_20)
@@ -245,8 +245,8 @@ target_include_directories(blitzar_dynamics_test PRIVATE ${CMAKE_CURRENT_SOURCE_
 blitzar_enable_warnings(blitzar_dynamics_test)
 
 add_executable(blitzar_allocation_test
-    tests/fixtures/FixtureAllocationMonitor.cpp
-    tests/simulation/SimAllocationsTest.cpp
+    tests/fixtures/FixtureAllocationMonitorTest.cpp
+    tests/simulation/alloc/SimAllocationsTest.cpp
 )
 target_link_libraries(blitzar_allocation_test PRIVATE blitzar)
 target_compile_features(blitzar_allocation_test PRIVATE cxx_std_20)
@@ -255,16 +255,32 @@ target_include_directories(blitzar_allocation_test PRIVATE
 blitzar_enable_warnings(blitzar_allocation_test)
 
 add_executable(blitzar_hierarchy_test
-    tests/octree/OctreeHierarchyTest.cpp
+    tests/trees/octree/build/OctreeBuildTest.cpp
 )
 target_link_libraries(blitzar_hierarchy_test PRIVATE blitzar)
 target_compile_features(blitzar_hierarchy_test PRIVATE cxx_std_20)
 target_include_directories(blitzar_hierarchy_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
 blitzar_enable_warnings(blitzar_hierarchy_test)
 
+add_executable(blitzar_octree_resource_test
+    tests/trees/octree/resource/OctreeResourceTest.cpp
+)
+target_link_libraries(blitzar_octree_resource_test PRIVATE blitzar)
+target_compile_features(blitzar_octree_resource_test PRIVATE cxx_std_20)
+target_include_directories(blitzar_octree_resource_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
+blitzar_enable_warnings(blitzar_octree_resource_test)
+
+add_executable(blitzar_octree_view_test
+    tests/trees/octree/view/OctreeViewTest.cpp
+)
+target_link_libraries(blitzar_octree_view_test PRIVATE blitzar)
+target_compile_features(blitzar_octree_view_test PRIVATE cxx_std_20)
+target_include_directories(blitzar_octree_view_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
+blitzar_enable_warnings(blitzar_octree_view_test)
+
 add_executable(blitzar_fmm_test
-    tests/fixtures/FixtureAllocationMonitor.cpp
-    tests/fmm/FmmTest.cpp
+    tests/fixtures/FixtureAllocationMonitorTest.cpp
+    tests/solvers/fmm/FmmTest.cpp
 )
 target_link_libraries(blitzar_fmm_test PRIVATE blitzar)
 target_compile_features(blitzar_fmm_test PRIVATE cxx_std_20)
@@ -272,8 +288,8 @@ target_include_directories(blitzar_fmm_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/
 blitzar_enable_warnings(blitzar_fmm_test)
 
 add_executable(blitzar_kifmm_test
-    tests/fixtures/FixtureAllocationMonitor.cpp
-    tests/fmm/FmmKifmmTest.cpp
+    tests/fixtures/FixtureAllocationMonitorTest.cpp
+    tests/solvers/fmm/kifmm/KifmmTest.cpp
 )
 target_link_libraries(blitzar_kifmm_test PRIVATE blitzar)
 target_compile_features(blitzar_kifmm_test PRIVATE cxx_std_20)
@@ -281,8 +297,8 @@ target_include_directories(blitzar_kifmm_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR
 blitzar_enable_warnings(blitzar_kifmm_test)
 
 add_executable(blitzar_kifmm_qualification_test
-    tests/fixtures/FixtureAllocationMonitor.cpp
-    tests/fmm/FmmKifmmQualificationTest.cpp
+    tests/fixtures/FixtureAllocationMonitorTest.cpp
+    tests/solvers/fmm/kifmm/KifmmQualifTest.cpp
 )
 target_link_libraries(blitzar_kifmm_qualification_test PRIVATE blitzar)
 target_compile_features(blitzar_kifmm_qualification_test PRIVATE cxx_std_20)
@@ -290,16 +306,24 @@ target_include_directories(blitzar_kifmm_qualification_test PRIVATE ${CMAKE_CURR
 blitzar_enable_warnings(blitzar_kifmm_qualification_test)
 
 add_executable(blitzar_pm_grid_test
-    tests/pm/PmGridTest.cpp
+    tests/grid/resource/GridResourceTest.cpp
 )
 target_link_libraries(blitzar_pm_grid_test PRIVATE blitzar)
 target_compile_features(blitzar_pm_grid_test PRIVATE cxx_std_20)
 target_include_directories(blitzar_pm_grid_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
 blitzar_enable_warnings(blitzar_pm_grid_test)
 
+add_executable(blitzar_grid_layout_test
+    tests/grid/layout/GridLayoutTest.cpp
+)
+target_link_libraries(blitzar_grid_layout_test PRIVATE blitzar)
+target_compile_features(blitzar_grid_layout_test PRIVATE cxx_std_20)
+target_include_directories(blitzar_grid_layout_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
+blitzar_enable_warnings(blitzar_grid_layout_test)
+
 add_executable(blitzar_pm_test
-    tests/fixtures/FixtureAllocationMonitor.cpp
-    tests/pm/PmSolverTest.cpp
+    tests/fixtures/FixtureAllocationMonitorTest.cpp
+    tests/solvers/pm/PmTest.cpp
 )
 target_link_libraries(blitzar_pm_test PRIVATE blitzar)
 target_compile_features(blitzar_pm_test PRIVATE cxx_std_20)
@@ -307,8 +331,8 @@ target_include_directories(blitzar_pm_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/s
 blitzar_enable_warnings(blitzar_pm_test)
 
 add_executable(blitzar_treepm_test
-    tests/fixtures/FixtureAllocationMonitor.cpp
-    tests/treepm/TreePmTest.cpp
+    tests/fixtures/FixtureAllocationMonitorTest.cpp
+    tests/solvers/treepm/TreePmTest.cpp
 )
 target_link_libraries(blitzar_treepm_test PRIVATE blitzar)
 target_compile_features(blitzar_treepm_test PRIVATE cxx_std_20)
@@ -316,7 +340,7 @@ target_include_directories(blitzar_treepm_test PRIVATE ${CMAKE_CURRENT_SOURCE_DI
 blitzar_enable_warnings(blitzar_treepm_test)
 
 add_executable(blitzar_numerical_test
-    tests/integration/KdkNumericalTest.cpp
+    tests/integration/kdk/KdkNumericalTest.cpp
 )
 target_link_libraries(blitzar_numerical_test PRIVATE blitzar)
 target_compile_features(blitzar_numerical_test PRIVATE cxx_std_20)
@@ -324,7 +348,7 @@ target_include_directories(blitzar_numerical_test PRIVATE ${CMAKE_CURRENT_SOURCE
 blitzar_enable_warnings(blitzar_numerical_test)
 
 add_executable(blitzar_conservation_test
-    tests/physics/ConservationMetricsTest.cpp
+    tests/physics/conservation/ConservationTest.cpp
 )
 target_link_libraries(blitzar_conservation_test PRIVATE blitzar)
 target_compile_features(blitzar_conservation_test PRIVATE cxx_std_20)
@@ -332,14 +356,14 @@ target_include_directories(blitzar_conservation_test PRIVATE ${CMAKE_CURRENT_SOU
 blitzar_enable_warnings(blitzar_conservation_test)
 
 add_executable(blitzar_debug_status_probe
-    tests/contracts/ContractDebugStatusTest.cpp
+    tests/contracts/cpp/DebugStatusTest.cpp
 )
 target_link_libraries(blitzar_debug_status_probe PRIVATE blitzar)
 target_compile_features(blitzar_debug_status_probe PRIVATE cxx_std_20)
 blitzar_enable_warnings(blitzar_debug_status_probe)
 
 add_executable(blitzar_accelerator_test
-    tests/gpu/GpuHipTest.cpp
+    tests/gpu/GpuRuntimeTest.cpp
 )
 target_link_libraries(blitzar_accelerator_test PRIVATE blitzar)
 target_compile_features(blitzar_accelerator_test PRIVATE cxx_std_20)
@@ -347,10 +371,10 @@ target_include_directories(blitzar_accelerator_test PRIVATE ${CMAKE_CURRENT_SOUR
 blitzar_enable_warnings(blitzar_accelerator_test)
 
 add_executable(blitzar_scaling_test
-    tests/fixtures/FixtureAllocationMonitor.cpp
-    tests/scaling/ScaleTest.cpp
-    tests/scaling/ScaleRunTest.cpp
-    tests/scaling/ScaleWorkloadTest.cpp
+    tests/fixtures/FixtureAllocationMonitorTest.cpp
+    tests/scaling/workload/ScaleTest.cpp
+    tests/scaling/run/ScaleRunTest.cpp
+    tests/scaling/workload/ScaleWorkloadTest.cpp
 )
 target_link_libraries(blitzar_scaling_test PRIVATE blitzar)
 target_compile_features(blitzar_scaling_test PRIVATE cxx_std_20)
@@ -362,9 +386,9 @@ if(WIN32)
 endif()
 
 add_executable(blitzar_block_time_test
-    tests/scaling/ScaleBlock.cpp
-    tests/scaling/ScaleBlockSchedule.cpp
-    tests/scaling/ScaleBlockQualification.cpp
+    tests/scaling/block/ScaleBlockTest.cpp
+    tests/scaling/block/ScaleBlockScheduleTest.cpp
+    tests/scaling/block/ScaleBlockQualifTest.cpp
 )
 target_link_libraries(blitzar_block_time_test PRIVATE blitzar)
 target_compile_features(blitzar_block_time_test PRIVATE cxx_std_20)
@@ -372,11 +396,11 @@ target_include_directories(blitzar_block_time_test PRIVATE ${CMAKE_CURRENT_SOURC
 blitzar_enable_warnings(blitzar_block_time_test)
 
 add_executable(blitzar_layout_test
-    tests/layout/LayoutRunner.cpp
-    tests/layout/LayoutState.cpp
-    tests/layout/LayoutOrder.cpp
-    tests/layout/LayoutStorage.cpp
-    tests/layout/LayoutBenchmark.cpp
+    tests/layout/LayoutTest.cpp
+    tests/layout/state/LayoutState.cpp
+    tests/layout/order/LayoutOrder.cpp
+    tests/layout/storage/LayoutStorage.cpp
+    tests/layout/bench/LayoutBenchmark.cpp
 )
 target_link_libraries(blitzar_layout_test PRIVATE blitzar)
 target_compile_features(blitzar_layout_test PRIVATE cxx_std_20)
@@ -384,8 +408,8 @@ target_include_directories(blitzar_layout_test PRIVATE ${CMAKE_CURRENT_SOURCE_DI
 blitzar_enable_warnings(blitzar_layout_test)
 
 add_executable(blitzar_reduction_test
-    tests/reduction/ReductionRunner.cpp
-    tests/reduction/ReductionBenchmark.cpp
+    tests/reduction/ReductionTest.cpp
+    tests/reduction/bench/ReductionBenchmark.cpp
 )
 target_link_libraries(blitzar_reduction_test PRIVATE blitzar)
 target_compile_features(blitzar_reduction_test PRIVATE cxx_std_20)
@@ -393,19 +417,19 @@ target_include_directories(blitzar_reduction_test PRIVATE ${CMAKE_CURRENT_SOURCE
 blitzar_enable_warnings(blitzar_reduction_test)
 
 add_executable(blitzar_neighborhood_test
-    tests/neighborhood/NeighborRunner.cpp
-    tests/neighborhood/NeighborBoundary.cpp
-    tests/neighborhood/NeighborModel.cpp
-    tests/neighborhood/NeighborCase.cpp
-    tests/neighborhood/NeighborReference.cpp
-    tests/neighborhood/NeighborGrid.cpp
-    tests/neighborhood/NeighborGridQuery.cpp
-    tests/neighborhood/NeighborCandidate.cpp
-    tests/neighborhood/NeighborHilbert.cpp
-    tests/neighborhood/NeighborVerlet.cpp
-    tests/neighborhood/NeighborTree.cpp
-    tests/neighborhood/NeighborRun.cpp
-    tests/neighborhood/NeighborBenchmark.cpp
+    tests/neighborhood/run/NeighborTest.cpp
+    tests/neighborhood/case/NeighborBoundary.cpp
+    tests/neighborhood/case/NeighborModel.cpp
+    tests/neighborhood/case/NeighborCase.cpp
+    tests/neighborhood/ref/NeighborReference.cpp
+    tests/neighborhood/grid/NeighborGrid.cpp
+    tests/neighborhood/grid/NeighborGridQuery.cpp
+    tests/neighborhood/candidate/NeighborCandidate.cpp
+    tests/neighborhood/hilbert/NeighborHilbert.cpp
+    tests/neighborhood/verlet/NeighborVerlet.cpp
+    tests/neighborhood/tree/NeighborTree.cpp
+    tests/neighborhood/run/NeighborRun.cpp
+    tests/neighborhood/bench/NeighborBenchmark.cpp
 )
 target_link_libraries(blitzar_neighborhood_test PRIVATE blitzar)
 target_compile_features(blitzar_neighborhood_test PRIVATE cxx_std_20)
@@ -413,15 +437,15 @@ target_include_directories(blitzar_neighborhood_test PRIVATE ${CMAKE_CURRENT_SOU
 blitzar_enable_warnings(blitzar_neighborhood_test)
 
 add_executable(blitzar_bvh_test
-    tests/bvh/BvhRunner.cpp
-    tests/bvh/BvhIndex.cpp
-    tests/bvh/BvhBenchmark.cpp
-    tests/neighborhood/NeighborModel.cpp
-    tests/neighborhood/NeighborCase.cpp
-    tests/neighborhood/NeighborReference.cpp
-    tests/neighborhood/NeighborGrid.cpp
-    tests/neighborhood/NeighborGridQuery.cpp
-    tests/neighborhood/NeighborTree.cpp
+    tests/bvh/run/BvhTest.cpp
+    tests/bvh/index/BvhIndex.cpp
+    tests/bvh/bench/BvhBenchmark.cpp
+    tests/neighborhood/case/NeighborModel.cpp
+    tests/neighborhood/case/NeighborCase.cpp
+    tests/neighborhood/ref/NeighborReference.cpp
+    tests/neighborhood/grid/NeighborGrid.cpp
+    tests/neighborhood/grid/NeighborGridQuery.cpp
+    tests/neighborhood/tree/NeighborTree.cpp
 )
 target_link_libraries(blitzar_bvh_test PRIVATE blitzar)
 target_compile_features(blitzar_bvh_test PRIVATE cxx_std_20)
@@ -430,17 +454,17 @@ blitzar_enable_warnings(blitzar_bvh_test)
 
 if(BLITZAR_MPI_ENABLED)
     add_executable(blitzar_mpi_test
-        tests/fixtures/FixtureAllocationMonitor.cpp
-        tests/mpi/MpiAllocationTest.cpp
+        tests/fixtures/FixtureAllocationMonitorTest.cpp
+        tests/mpi/fixture/MpiAllocationTest.cpp
         tests/mpi/MpiTest.cpp
-        tests/mpi/MpiDomainTest.cpp
-        tests/mpi/MpiExchangeTest.cpp
-        tests/mpi/MpiFixture.cpp
-        tests/mpi/MpiInvalidTest.cpp
-        tests/mpi/MpiOverlapTest.cpp
-        tests/mpi/MpiRollbackTest.cpp
-        tests/mpi/MpiValidationTest.cpp
-        tests/mpi/MpiWireTest.cpp
+        tests/mpi/domain/MpiDomainTest.cpp
+        tests/mpi/exchange/MpiExchangeTest.cpp
+        tests/mpi/fixture/MpiFixtureTest.cpp
+        tests/mpi/domain/MpiInvalidTest.cpp
+        tests/mpi/overlap/MpiOverlapTest.cpp
+        tests/mpi/rollback/MpiRollbackTest.cpp
+        tests/mpi/domain/MpiValidationTest.cpp
+        tests/mpi/wire/MpiWireTest.cpp
     )
     target_link_libraries(blitzar_mpi_test PRIVATE blitzar)
     target_compile_features(blitzar_mpi_test PRIVATE cxx_std_20)
@@ -476,10 +500,13 @@ set(BLITZAR_TEST_TARGETS
     blitzar_dynamics_test
     blitzar_allocation_test
     blitzar_hierarchy_test
+    blitzar_octree_resource_test
+    blitzar_octree_view_test
     blitzar_fmm_test
     blitzar_kifmm_test
     blitzar_kifmm_qualification_test
     blitzar_pm_grid_test
+    blitzar_grid_layout_test
     blitzar_pm_test
     blitzar_treepm_test
     blitzar_numerical_test

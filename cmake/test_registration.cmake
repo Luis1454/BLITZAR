@@ -44,7 +44,7 @@ if(BLITZAR_BUILD_CLI)
         NAME TST-P6-007
         COMMAND cmake
             -DBLITZAR_CLI=$<TARGET_FILE:blitzar_cli>
-            -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/io/IoCliUsageTest.cmake
+            -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/io/cli/CliUsageTest.cmake
     )
 endif()
 add_test(NAME TST-P0-004 COMMAND blitzar_bounded_contract_test)
@@ -70,10 +70,13 @@ add_test(NAME TST-P1-007 COMMAND blitzar_neighborhood_test)
 add_test(NAME TST-P1-008 COMMAND blitzar_block_time_test)
 add_test(NAME TST-P1-009 COMMAND blitzar_bvh_test)
 add_test(NAME TST-P3-001 COMMAND blitzar_hierarchy_test)
+add_test(NAME TST-P3-008 COMMAND blitzar_octree_resource_test)
+add_test(NAME TST-P3-009 COMMAND blitzar_octree_view_test)
 add_test(NAME TST-P3-002 COMMAND blitzar_fmm_test)
 add_test(NAME TST-P3-006 COMMAND blitzar_kifmm_test)
 add_test(NAME TST-P3-007 COMMAND blitzar_kifmm_qualification_test)
 add_test(NAME TST-P5-001 COMMAND blitzar_pm_grid_test)
+add_test(NAME TST-P5-004 COMMAND blitzar_grid_layout_test)
 add_test(NAME TST-P5-002 COMMAND blitzar_pm_test)
 add_test(NAME TST-P5-003 COMMAND blitzar_treepm_test)
 add_test(NAME TST-P3-003 COMMAND blitzar_solver_resource_contract_test)
@@ -96,7 +99,7 @@ if(BLITZAR_MPI_ENABLED)
                 -DMPIEXEC_EXECUTABLE=${MPIEXEC_EXECUTABLE}
                 -DMPIEXEC_NUMPROC_FLAG=${MPIEXEC_NUMPROC_FLAG}
                 -DBLITZAR_TEST_ROOT=${CMAKE_CURRENT_BINARY_DIR}/blitzar-output-boundary-649
-                -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/io/IoMpiOutputTest.cmake
+                -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/io/mpi/MpiOutputTest.cmake
         )
         set_tests_properties(TST-P6-011 PROPERTIES TIMEOUT 120)
         add_test(
@@ -106,7 +109,7 @@ if(BLITZAR_MPI_ENABLED)
                 -DMPIEXEC_EXECUTABLE=${MPIEXEC_EXECUTABLE}
                 -DMPIEXEC_NUMPROC_FLAG=${MPIEXEC_NUMPROC_FLAG}
                 -DBLITZAR_TEST_ROOT=${CMAKE_CURRENT_BINARY_DIR}/blitzar-shard-output-685
-                -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/io/IoMpiShardOutputTest.cmake
+                -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/io/mpi/MpiShardOutputTest.cmake
         )
         set_tests_properties(TST-P7-006 PROPERTIES TIMEOUT 120)
     endif()
@@ -183,12 +186,12 @@ add_test(
     NAME TST-P2-004
     COMMAND cmake
         -DBLITZAR_BUILD_DIR=${CMAKE_BINARY_DIR}
-        -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/package/package_consumer.cmake
+        -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/package/ConsumerTest.cmake
 )
 add_test(
     NAME TST-P0-008
     COMMAND cmake
         -DBLITZAR_SOURCE_DIR=${CMAKE_CURRENT_SOURCE_DIR}
         -DBLITZAR_BUILD_DIR=${CMAKE_BINARY_DIR}
-        -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/package/shared_cli_contract.cmake
+        -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/package/CliContractTest.cmake
 )

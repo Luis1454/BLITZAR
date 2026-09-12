@@ -1,7 +1,7 @@
 #ifndef BLITZAR_APPS_BLITZAR_BLITZAR_SUMMARY_HPP
 #define BLITZAR_APPS_BLITZAR_BLITZAR_SUMMARY_HPP
 
-#include <blitzar/blitzar.h>
+#include <blitzar/c/blitzar.h>
 #include <cstdint>
 #include <filesystem>
 #include <iosfwd>

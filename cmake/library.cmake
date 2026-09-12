@@ -68,53 +68,53 @@ set(BLITZAR_LIBRARY_SOURCES
     src/sdk/cpp/CppSimulationConfig.cpp
     src/sdk/cpp/CppSimulationData.cpp
     src/sdk/cpp/CppSimulationAccess.cpp
-    src/io/snapshot/SnapshotWire.cpp
-    src/io/snapshot/SnapshotChecksum.cpp
-    src/io/snapshot/SnapshotDelta.cpp
-    src/io/snapshot/SnapshotDeltaPayload.cpp
-    src/io/snapshot/SnapshotDeltaStream.cpp
-    src/io/snapshot/SnapshotWriter.cpp
-    src/io/snapshot/SnapshotReader.cpp
+    src/io/snap/codec/SnapshotWire.cpp
+    src/io/snap/codec/SnapshotChecksum.cpp
+    src/io/snap/delta/SnapshotDelta.cpp
+    src/io/snap/delta/SnapshotDeltaPayload.cpp
+    src/io/snap/delta/SnapshotDeltaStream.cpp
+    src/io/snap/codec/SnapshotWriter.cpp
+    src/io/snap/codec/SnapshotReader.cpp
     src/io/hdf5/Hdf5Writer.cpp
     src/io/hdf5/Hdf5Reader.cpp
-    src/io/metadata/MetadataManifest.cpp
-    src/io/metadata/MetadataManifestJson.cpp
-    src/io/metadata/MetadataCursor.cpp
-    src/io/metadata/MetadataFields.cpp
-    src/io/metadata/MetadataReader.cpp
-    src/io/metadata/MetadataReaderJson.cpp
-    src/io/metadata/MetadataRun.cpp
-    src/io/metadata/MetadataText.cpp
-    src/io/diagnostics/ConservationCsv.cpp
-    src/io/postprocess/PostProcess.cpp
-    src/io/postprocess/PostProcessOutput.cpp
-    src/io/postprocess/PostProcessState.cpp
-    src/io/postprocess/PostProcessInput.cpp
+    src/io/md/manifest/MetadataManifest.cpp
+    src/io/md/manifest/MetadataManifestJson.cpp
+    src/io/md/cursor/MetadataCursor.cpp
+    src/io/md/fields/MetadataFields.cpp
+    src/io/md/reader/MetadataReader.cpp
+    src/io/md/reader/MetadataReaderJson.cpp
+    src/io/md/run/MetadataRun.cpp
+    src/io/md/text/MetadataText.cpp
+    src/io/diag/ConservationCsv.cpp
+    src/io/post/PostProcess.cpp
+    src/io/post/output/PostProcessOutput.cpp
+    src/io/post/state/PostProcessState.cpp
+    src/io/post/input/PostProcessInput.cpp
     src/simulation/Sim.cpp
     src/simulation/runtime/SimRuntime.cpp
     src/simulation/state/SimParticleState.cpp
     src/simulation/SimConfig.cpp
-    src/simulation/config/SimConfigFile.cpp
-    src/simulation/config/SimConfigValue.cpp
-    src/simulation/config/SimConfigSimulation.cpp
-    src/simulation/config/SimConfigPhysics.cpp
-    src/simulation/config/SimConfigOutput.cpp
-    src/simulation/config/SimConfigDiagnostics.cpp
-    src/simulation/config/SimConfigRestart.cpp
-    src/simulation/config/SimConfigExecution.cpp
-    src/simulation/config/SimConfigRun.cpp
-    src/simulation/initialization/SimConfigState.cpp
+    src/simulation/cfg/SimConfigFile.cpp
+    src/simulation/cfg/SimConfigValue.cpp
+    src/simulation/cfg/simulation/SimConfigSimulation.cpp
+    src/simulation/cfg/physics/SimConfigPhysics.cpp
+    src/simulation/cfg/output/SimConfigOutput.cpp
+    src/simulation/cfg/diagnostics/SimConfigDiagnostics.cpp
+    src/simulation/cfg/restart/SimConfigRestart.cpp
+    src/simulation/cfg/execution/SimConfigExecution.cpp
+    src/simulation/cfg/run/SimConfigRun.cpp
+    src/simulation/init/SimConfigState.cpp
     src/simulation/state/SimParticleSet.cpp
     src/simulation/state/SimParticleGet.cpp
-    src/simulation/staging/SimParticleStage.cpp
-    src/simulation/step/SimPackets.cpp
-    src/simulation/transaction/SimSnapshots.cpp
+    src/simulation/stage/SimParticleStage.cpp
+    src/simulation/step/packets/SimStepPackets.cpp
+    src/simulation/tx/SimSnapshots.cpp
     src/simulation/step/SimStep.cpp
-    src/simulation/step/SimPrepare.cpp
-    src/simulation/step/SimMigration.cpp
-    src/simulation/transaction/SimTransaction.cpp
-    src/solvers/barnes_hut/BhSolver.cpp
-    src/solvers/barnes_hut/BhTree.cpp
+    src/simulation/step/prepare/SimStepPrepare.cpp
+    src/simulation/step/migration/SimStepMigration.cpp
+    src/simulation/tx/SimTransaction.cpp
+    src/solvers/bh/BhSolver.cpp
+    src/solvers/bh/BhTree.cpp
     src/solvers/threading/ThreadStackPool.cpp
     src/solvers/direct/DirectSolver.cpp
     src/solvers/direct/DirectCompute.cpp
@@ -127,15 +127,15 @@ set(BLITZAR_LIBRARY_SOURCES
     src/solvers/fmm/kifmm/KifmmOperator.cpp
     src/solvers/fmm/kifmm/KifmmTraverse.cpp
     src/trees/octree/Octree.cpp
-    src/trees/octree/OctreeAccess.cpp
-    src/trees/octree/OctreeConstruction.cpp
-    src/trees/octree/OctreeMorton.cpp
-    src/trees/octree/OctreeProperties.cpp
-    src/trees/octree/OctreeResource.cpp
-    src/trees/octree/OctreeView.cpp
+    src/trees/octree/view/OctreeAccess.cpp
+    src/trees/octree/build/OctreeConstruction.cpp
+    src/trees/octree/build/OctreeMorton.cpp
+    src/trees/octree/view/OctreeProperties.cpp
+    src/trees/octree/resource/OctreeResource.cpp
+    src/trees/octree/view/OctreeView.cpp
     src/solvers/SolverTreeResources.cpp
-    src/grid/GridLayout.cpp
-    src/grid/GridResource.cpp
+    src/grid/layout/GridLayout.cpp
+    src/grid/resource/GridResource.cpp
     src/solvers/pm/PmSolver.cpp
     src/solvers/pm/PmSolverForce.cpp
     src/solvers/treepm/TreePmSolver.cpp
@@ -148,7 +148,7 @@ if(BLITZAR_HIP_ENABLED)
         src/gpu/memory/GpuBuffers.hip
         src/gpu/runtime/GpuContext.hip
         src/gpu/direct/GpuDirectKernel.hip
-        src/gpu/barnes_hut/GpuBhKernel.hip
+        src/gpu/bh/GpuBhKernel.hip
     )
     if(BLITZAR_HIP_LANGUAGE STREQUAL "CUDA")
         set_source_files_properties(${BLITZAR_HIP_SOURCES} PROPERTIES

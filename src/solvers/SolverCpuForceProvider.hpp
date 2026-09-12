@@ -3,7 +3,7 @@
 
 #include "solvers/SolverForceEvaluation.hpp"
 #include "solvers/SolverForceRequest.hpp"
-#include "solvers/barnes_hut/BhSolver.hpp"
+#include "solvers/bh/BhSolver.hpp"
 #include "solvers/direct/DirectSolver.hpp"
 #include "solvers/fmm/FmmSolver.hpp"
 #include "solvers/fmm/kifmm/KifmmSolver.hpp"

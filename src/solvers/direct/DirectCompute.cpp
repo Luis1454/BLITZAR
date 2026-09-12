@@ -1,3 +1,4 @@
+#include "core/CoreArithmetic.hpp"
 #include "solvers/direct/DirectSolver.hpp"
 
 #include <atomic>
@@ -60,9 +61,14 @@ blitzar_status DirectSolver::Commit(
         const std::size_t target = static_cast<std::size_t>(target_index);
 
         if (request.range.accumulate) {
-            request.forces.x[target] += staging_[target].x;
-            request.forces.y[target] += staging_[target].y;
-            request.forces.z[target] += staging_[target].z;
+            request.forces.x[target] = blitzar_core::MultiplyAdd(
+                1.0, staging_[target].x, request.forces.x[target], request.settings.cpu);
+
+            request.forces.y[target] = blitzar_core::MultiplyAdd(
+                1.0, staging_[target].y, request.forces.y[target], request.settings.cpu);
+
+            request.forces.z[target] = blitzar_core::MultiplyAdd(
+                1.0, staging_[target].z, request.forces.z[target], request.settings.cpu);
         }
         else {
             request.forces.x[target] = staging_[target].x;

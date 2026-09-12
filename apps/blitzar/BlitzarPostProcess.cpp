@@ -1,9 +1,9 @@
 #include "BlitzarPostProcess.hpp"
 
 #include "BlitzarSummary.hpp"
-#include "io/postprocess/PostProcess.hpp"
+#include "io/post/PostProcess.hpp"
 
-#include <blitzar/blitzar.h>
+#include <blitzar/c/blitzar.h>
 #include <filesystem>
 #include <iostream>
 #include <new>

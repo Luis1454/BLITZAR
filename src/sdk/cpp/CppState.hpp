@@ -1,7 +1,7 @@
 #ifndef BLITZAR_SDK_CPP_CPP_STATE_HPP
 #define BLITZAR_SDK_CPP_CPP_STATE_HPP
 
-#include <blitzar/blitzar.hpp>
+#include <blitzar/cpp/blitzar.hpp>
 
 namespace blitzar {
 

@@ -1,7 +1,22 @@
 {
   "schema_version": 1,
-  "scan_roots": ["include", "src", "apps", "tests", "examples"],
-  "suffixes": [".c", ".cc", ".cpp", ".cu", ".h", ".hip", ".hpp", ".inl"],
+  "scan_roots": [
+    "include",
+    "src",
+    "apps",
+    "tests",
+    "examples"
+  ],
+  "suffixes": [
+    ".c",
+    ".cc",
+    ".cpp",
+    ".cu",
+    ".h",
+    ".hip",
+    ".hpp",
+    ".inl"
+  ],
   "raw_pointer_policy": {
     "internal_cpp": "forbidden_without_registered_boundary",
     "pointer_count_pairs": "forbidden_without_registered_boundary",
@@ -11,7 +26,7 @@
   },
   "allowlist": [
     {
-      "path": "include/blitzar/blitzar.h",
+      "path": "include/blitzar/c/blitzar.h",
       "category": "public_c_abi",
       "ownership": "borrowed_abi",
       "reason": "Stable C ABI exposes SoA arrays and opaque handles with explicit counts."
@@ -107,7 +122,7 @@
       "reason": "Kernel request and tile records are non-owning device views."
     },
     {
-      "path": "src/gpu/barnes_hut/GpuBhDevice.inl",
+      "path": "src/gpu/bh/GpuBhDevice.inl",
       "category": "device_view",
       "ownership": "borrowed_device_buffer",
       "reason": "Kernel request, cell, traversal, and error records are non-owning device views."
@@ -119,7 +134,7 @@
       "reason": "Device error flag is externally allocated and bounded by the launch request."
     },
     {
-      "path": "tests/fixtures/FixtureAllocationMonitor.cpp",
+      "path": "tests/fixtures/FixtureAllocationMonitorTest.cpp",
       "category": "test_allocator",
       "ownership": "test_instrumentation",
       "reason": "Global allocation hooks are required to measure steady-state allocations."
@@ -131,25 +146,25 @@
       "reason": "MPI integration test main receives the platform process argument array."
     },
     {
-      "path": "tests/scaling/ScaleTest.cpp",
+      "path": "tests/scaling/workload/ScaleTest.cpp",
       "category": "process_entrypoint",
       "ownership": "borrowed_process_arguments",
       "reason": "Scaling harness main receives the platform process argument array."
     },
     {
-      "path": "tests/simulation/SimConfigFileTest.cpp",
+      "path": "tests/simulation/cfg/SimConfigFileTest.cpp",
       "category": "process_entrypoint",
       "ownership": "borrowed_process_arguments",
       "reason": "Configuration syntax test main receives the file path from the test runner."
     },
     {
-      "path": "tests/io/IoCliProcessRestartTest.cpp",
+      "path": "tests/io/cli/CliProcessRestartTest.cpp",
       "category": "process_entrypoint",
       "ownership": "borrowed_process_arguments",
       "reason": "CLI restart qualification main receives the executable path from the test runner."
     },
     {
-      "path": "tests/io/IoCliPostProcessTest.cpp",
+      "path": "tests/io/cli/CliPostTest.cpp",
       "category": "process_entrypoint",
       "ownership": "borrowed_process_arguments",
       "reason": "CLI post-processing qualification main receives the executable path from the test runner."
@@ -173,23 +188,25 @@
       "reason": "C ABI v2 example consumes opaque handles from the public ABI."
     },
     {
-      "path": "tests/contracts/ContractAbiTest.c",
+      "path": "tests/contracts/c/AbiTest.c",
       "category": "c_abi_consumer",
       "ownership": "borrowed_abi",
       "reason": "ABI compatibility test consumes opaque handles from the public ABI."
     },
     {
-      "path": "tests/contracts/ContractCApiTest.c",
+      "path": "tests/contracts/c/ApiTest.c",
       "category": "c_abi_consumer",
       "ownership": "borrowed_abi",
       "reason": "C API lifecycle test consumes opaque handles from the public ABI."
     },
     {
-      "path": "tests/contracts/ContractCapabilitiesTest.c",
+      "path": "tests/contracts/c/CapabilitiesTest.c",
       "category": "c_abi_consumer",
       "ownership": "borrowed_abi",
       "reason": "Capability and unsupported-feature test consumes opaque handles from the public ABI."
     }
   ],
-  "allocation_allowlist": ["src/sdk/c/CApi.cpp"]
+  "allocation_allowlist": [
+    "src/sdk/c/CApi.cpp"
+  ]
 }

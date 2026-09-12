@@ -9,9 +9,12 @@ install(TARGETS blitzar
     INCLUDES DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}
 )
 install(FILES
-    include/blitzar/blitzar.h
-    include/blitzar/blitzar.hpp
-    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/blitzar
+    include/blitzar/c/blitzar.h
+    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/blitzar/c
+)
+install(FILES
+    include/blitzar/cpp/blitzar.hpp
+    DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/blitzar/cpp
 )
 
 configure_package_config_file(

@@ -5,11 +5,11 @@
 #include "BlitzarSummary.hpp"
 #include "mpi/runtime/MpiContext.hpp"
 #include "sdk/cpp/CppSimulationAccess.hpp"
-#include "simulation/config/SimConfigFile.hpp"
-#include "simulation/config/SimConfigRun.hpp"
-#include "simulation/initialization/SimConfigState.hpp"
+#include "simulation/cfg/SimConfigFile.hpp"
+#include "simulation/cfg/run/SimConfigRun.hpp"
+#include "simulation/init/SimConfigState.hpp"
 
-#include <blitzar/blitzar.hpp>
+#include <blitzar/cpp/blitzar.hpp>
 #include <chrono>
 #include <cstddef>
 #include <cstdint>

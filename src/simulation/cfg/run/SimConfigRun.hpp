@@ -1,0 +1,71 @@
+#ifndef BLITZAR_SIMULATION_CONFIG_SIM_CONFIG_RUN_HPP
+#define BLITZAR_SIMULATION_CONFIG_SIM_CONFIG_RUN_HPP
+
+#include "core/CoreExecution.hpp"
+#include "simulation/cfg/SimConfigFile.hpp"
+#include "simulation/cfg/diagnostics/SimConfigDiagnostics.hpp"
+#include "simulation/cfg/output/SimConfigOutput.hpp"
+#include "simulation/cfg/restart/SimConfigRestart.hpp"
+
+#include <blitzar/c/blitzar.h>
+#include <cstdint>
+#include <filesystem>
+
+namespace blitzar_sim {
+
+struct SimConfigBarnesHut final {
+    double opening_angle{0.5};
+    std::int64_t max_particles{};
+    std::int64_t max_cells{};
+    std::int64_t leaf_capacity{8};
+    std::int64_t max_depth{32};
+};
+
+struct SimConfigRun final {
+    static constexpr std::int64_t MaxParticleCount = 100000;
+    static constexpr std::int64_t MaxSteps = 100000;
+    static constexpr std::uint64_t MaxStateStep = 99999999;
+
+    std::int64_t particle_count{};
+    double timestep{};
+    blitzar_solver_kind solver{BLITZAR_SOLVER_DIRECT};
+    blitzar_integrator_kind integrator{BLITZAR_INTEGRATOR_LEAPFROG_KDK};
+    double gravitational_constant{};
+    double softening{};
+    double length_scale{};
+    double mass_scale{};
+    double time_scale{};
+    SimConfigBarnesHut barnes_hut{};
+    SimConfigOutput output{};
+    SimConfigDiagnostics diagnostics{};
+    std::uint64_t seed{};
+    std::int64_t steps{1};
+    bool deterministic{};
+    blitzar_core::ExecutionSettings execution{};
+    SimConfigRestart restart{};
+
+    [[nodiscard]] std::uint64_t StartStep() const noexcept
+    {
+        return restart.enabled ? restart.step : 0U;
+    }
+
+    [[nodiscard]] std::uint64_t FinalStep() const noexcept
+    {
+        return static_cast<std::uint64_t>(steps);
+    }
+
+    [[nodiscard]] double StartTime() const noexcept
+    {
+        return restart.enabled ? restart.time : 0.0;
+    }
+};
+
+[[nodiscard]] blitzar_status BuildRunConfig(
+    const SimConfigFile& source, SimConfigRun& destination) noexcept;
+
+[[nodiscard]] blitzar_status BuildRunConfig(const SimConfigFile& source,
+    const std::filesystem::path& config_directory, SimConfigRun& destination) noexcept;
+
+} // namespace blitzar_sim
+
+#endif

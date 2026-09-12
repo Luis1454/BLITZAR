@@ -1,10 +1,10 @@
 #ifndef BLITZAR_APPS_BLITZAR_BLITZAR_RESTART_HPP
 #define BLITZAR_APPS_BLITZAR_BLITZAR_RESTART_HPP
 
-#include "simulation/config/SimConfigRun.hpp"
-#include "simulation/initialization/SimConfigState.hpp"
+#include "simulation/cfg/run/SimConfigRun.hpp"
+#include "simulation/init/SimConfigState.hpp"
 
-#include <blitzar/blitzar.h>
+#include <blitzar/c/blitzar.h>
 
 namespace blitzar_cli {
 

@@ -3,7 +3,7 @@
 
 #include "mpi/runtime/MpiContext.hpp"
 
-#include <blitzar/blitzar.h>
+#include <blitzar/c/blitzar.h>
 #include <string_view>
 
 namespace blitzar_parallel {

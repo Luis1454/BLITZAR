@@ -1,0 +1,272 @@
+{
+  "schema_version": 1,
+  "plan_version": "1.0.60",
+  "status": "frozen",
+  "materialization": "planned",
+  "description": "Frozen repository taxonomy, language separation, naming, and source-test layout contract.",
+  "aliases": {
+    "barnes_hut": "bh",
+    "config": "cfg",
+    "diagnostics": "diag",
+    "initialization": "init",
+    "metadata": "md",
+    "postprocess": "post",
+    "snapshot": "snap",
+    "staging": "stage",
+    "transaction": "tx"
+  },
+  "language_separation": [
+    {
+      "root": "include/blitzar",
+      "children": [
+        "c",
+        "cpp"
+      ]
+    },
+    {
+      "root": "tests/contracts",
+      "children": [
+        "c",
+        "cpp"
+      ]
+    },
+    {
+      "root": "examples",
+      "children": [
+        "c",
+        "cpp"
+      ]
+    }
+  ],
+  "source_test_pairs": [
+    {
+      "source": "src/solvers",
+      "tests": "tests/solvers",
+      "responsibility": "solver families and variants"
+    },
+    {
+      "source": "src/grid",
+      "tests": "tests/grid",
+      "responsibility": "grid layout and resource"
+    },
+    {
+      "source": "src/trees/octree",
+      "tests": "tests/trees/octree",
+      "responsibility": "Octree construction, views, and resources"
+    },
+    {
+      "source": "src/gpu",
+      "tests": "tests/gpu",
+      "responsibility": "GPU runtime and solver capabilities"
+    },
+    {
+      "source": "src/io",
+      "tests": "tests/io",
+      "responsibility": "persistence and post-processing"
+    },
+    {
+      "source": "src/mpi",
+      "tests": "tests/mpi",
+      "responsibility": "MPI ownership, exchange, and overlap"
+    },
+    {
+      "source": "src/simulation",
+      "tests": "tests/simulation",
+      "responsibility": "simulation lifecycle and configuration"
+    },
+    {
+      "source": "src/integration",
+      "tests": "tests/integration",
+      "responsibility": "integrator qualification"
+    }
+  ],
+  "allowed_missing": [
+    {
+      "source": "src/solvers/direct",
+      "tests": "tests/solvers/direct",
+      "reason": "The Direct oracle is currently exercised through contract and cross-solver tests."
+    },
+    {
+      "source": "src/solvers/bh",
+      "tests": "tests/solvers/bh",
+      "reason": "A dedicated Barnes-Hut responsibility test will be added when the solver test split is materialized."
+    },
+    {
+      "source": "src/solvers/threading",
+      "tests": "tests/solvers/threading",
+      "reason": "Thread traversal resources are currently covered by solver qualification boundaries."
+    },
+    {
+      "source": "src/gpu/direct",
+      "tests": "tests/gpu/direct",
+      "reason": "GPU Direct remains capability-gated and has no separate test executable yet."
+    },
+    {
+      "source": "src/gpu/bh",
+      "tests": "tests/gpu/bh",
+      "reason": "GPU Barnes-Hut remains capability-gated and has no separate test executable yet."
+    }
+  ],
+  "test_suffix": {
+    "suffix": "Test",
+    "extensions": [
+      ".c",
+      ".cpp",
+      ".cmake"
+    ],
+    "entrypoint_policy": "every registered test entrypoint below tests/ ends with Test before its extension",
+    "non_test_entrypoints": [
+      "apps/blitzar/BlitzarMain.cpp",
+      "examples/c/CExample.c",
+      "examples/c/Cv2Example.c",
+      "examples/cpp/CppExample.cpp"
+    ]
+  },
+  "target_test_entrypoints": [
+    "tests/simulation/SimLifecycleTest.cpp",
+    "tests/contracts/c/AbiTest.c",
+    "tests/contracts/c/ApiTest.c",
+    "tests/contracts/c/CapabilitiesTest.c",
+    "tests/contracts/c/PublicTest.c",
+    "tests/contracts/cpp/BoundedTest.cpp",
+    "tests/contracts/cpp/CppPublicTest.cpp",
+    "tests/contracts/cpp/DebugStatusTest.cpp",
+    "tests/contracts/cpp/ForceProviderTest.cpp",
+    "tests/contracts/cpp/ReproTest.cpp",
+    "tests/contracts/cpp/SnapshotTest.cpp",
+    "tests/contracts/cpp/SolverResourceTest.cpp",
+    "tests/contracts/cpp/SpatialResourceTest.cpp",
+    "tests/contracts/cpp/ContractTest.cpp",
+    "tests/io/snap/SnapTest.cpp",
+    "tests/io/snap/SnapDeltaTest.cpp",
+    "tests/io/md/MdTest.cpp",
+    "tests/io/hdf5/Hdf5Test.cpp",
+    "tests/io/cli/CliOutputTest.cpp",
+    "tests/io/cli/CliSummaryTest.cpp",
+    "tests/io/cli/CliUsageTest.cmake",
+    "tests/io/cli/CliRestartTest.cpp",
+    "tests/io/cli/CliProcessRestartTest.cpp",
+    "tests/io/cli/CliPostTest.cpp",
+    "tests/io/cli/CliHdf5Test.cpp",
+    "tests/io/mpi/MpiOutputTest.cmake",
+    "tests/io/mpi/MpiShardOutputTest.cmake",
+    "tests/physics/conservation/ConservationTest.cpp",
+    "tests/integration/kdk/KdkDynamicsTest.cpp",
+    "tests/integration/kdk/KdkNumericalTest.cpp",
+    "tests/simulation/alloc/SimAllocationsTest.cpp",
+    "tests/simulation/cfg/SimConfigFileTest.cpp",
+    "tests/simulation/cfg/SimConfigRunTest.cpp",
+    "tests/scaling/workload/ScaleTest.cpp",
+    "tests/scaling/run/ScaleRunTest.cpp",
+    "tests/scaling/block/ScaleBlockTest.cpp",
+    "tests/bvh/run/BvhTest.cpp",
+    "tests/neighborhood/run/NeighborTest.cpp",
+    "tests/reduction/ReductionTest.cpp",
+    "tests/grid/layout/GridLayoutTest.cpp",
+    "tests/grid/resource/GridResourceTest.cpp",
+    "tests/solvers/fmm/FmmTest.cpp",
+    "tests/solvers/fmm/kifmm/KifmmTest.cpp",
+    "tests/solvers/fmm/kifmm/KifmmQualifTest.cpp",
+    "tests/solvers/pm/PmTest.cpp",
+    "tests/solvers/treepm/TreePmTest.cpp",
+    "tests/trees/octree/build/OctreeBuildTest.cpp",
+    "tests/trees/octree/resource/OctreeResourceTest.cpp",
+    "tests/trees/octree/view/OctreeViewTest.cpp",
+    "tests/gpu/GpuRuntimeTest.cpp",
+    "tests/mpi/MpiTest.cpp",
+    "tests/package/ConsumerTest.cmake",
+    "tests/package/CliContractTest.cmake"
+  ],
+  "python": {
+    "root": "tools",
+    "domains": [
+      "architecture",
+      "audit",
+      "debug",
+      "evidence",
+      "format",
+      "gates"
+    ],
+    "test_suffix": "_test.py",
+    "domain_policy": "production modules and their tests are grouped by responsibility; flat cross-domain modules are forbidden"
+  },
+  "forbidden_paths": [
+    ".keep",
+    ".gitkeep",
+    "tests/fmm",
+    "tests/pm",
+    "tests/treepm",
+    "tests/octree",
+    "src/solvers/barnes_hut",
+    "src/gpu/barnes_hut",
+    "src/io/metadata",
+    "src/io/postprocess",
+    "src/io/snapshot",
+    "src/simulation/config",
+    "src/simulation/initialization",
+    "src/simulation/staging",
+    "src/simulation/transaction"
+  ],
+  "migration": {
+    "state": "planned",
+    "rule": "old paths remain allowed only until the corresponding materialization change; the final tree gate rejects them",
+    "directory_moves": [
+      [
+        "src/solvers/barnes_hut",
+        "src/solvers/bh"
+      ],
+      [
+        "src/gpu/barnes_hut",
+        "src/gpu/bh"
+      ],
+      [
+        "src/io/diagnostics",
+        "src/io/diag"
+      ],
+      [
+        "src/io/metadata",
+        "src/io/md"
+      ],
+      [
+        "src/io/postprocess",
+        "src/io/post"
+      ],
+      [
+        "src/io/snapshot",
+        "src/io/snap"
+      ],
+      [
+        "src/simulation/config",
+        "src/simulation/cfg"
+      ],
+      [
+        "src/simulation/initialization",
+        "src/simulation/init"
+      ],
+      [
+        "src/simulation/staging",
+        "src/simulation/stage"
+      ],
+      [
+        "src/simulation/transaction",
+        "src/simulation/tx"
+      ],
+      [
+        "tests/fmm",
+        "tests/solvers/fmm"
+      ],
+      [
+        "tests/pm",
+        "tests/solvers/pm"
+      ],
+      [
+        "tests/treepm",
+        "tests/solvers/treepm"
+      ],
+      [
+        "tests/octree",
+        "tests/trees/octree"
+      ]
+    ]
+  }
+}

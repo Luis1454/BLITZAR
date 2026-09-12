@@ -162,12 +162,21 @@ def duplicate_stems(
         for item in policy.get("allowed_stem_pairs", [])
         if isinstance(item, dict) and isinstance(item.get("extensions"), list)
     }
+    name_exceptions = configured_exception_map(policy, "name_exceptions")
     collisions: list[dict[str, object]] = []
     for stem, paths in sorted(groups.items()):
         if len(paths) < 2:
             continue
         extensions = tuple(sorted(path.suffix.lower() for path in paths))
-        allowed = len(paths) == 2 and extensions in pairs and paths[0].parent == paths[1].parent
+        same_directory = paths[0].parent == paths[1].parent
+        registered_headers = all(
+            path_key(path, root) in name_exceptions for path in paths
+        )
+        allowed = (
+            len(paths) == 2
+            and extensions in pairs
+            and (same_directory or registered_headers)
+        )
         collisions.append(
             {
                 "stem": stem,

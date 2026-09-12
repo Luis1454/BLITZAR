@@ -1,5 +1,5 @@
-#include "MpiCases.hpp"
 #include "fixtures/FixtureCheck.hpp"
+#include "mpi/fixture/MpiCases.hpp"
 
 #include <array>
 #include <cstddef>

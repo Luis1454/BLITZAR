@@ -44,23 +44,22 @@ struct BackendExecutionPolicy final {
 };
 
 struct ExecutionSettings final {
-    std::uint64_t seed{};
     ExecutionMode mode{ExecutionMode::Strict};
     BackendExecutionPolicy cpu{};
     BackendExecutionPolicy hip{};
     BackendExecutionPolicy mpi{};
 
-    [[nodiscard]] static constexpr ExecutionSettings Strict(std::uint64_t seed) noexcept
+    [[nodiscard]] static constexpr ExecutionSettings Strict() noexcept
     {
-        return {seed, ExecutionMode::Strict, {}, {}, {}};
+        return {ExecutionMode::Strict, {}, {}, {}};
     }
 
-    [[nodiscard]] static constexpr ExecutionSettings Fast(std::uint64_t seed) noexcept
+    [[nodiscard]] static constexpr ExecutionSettings Fast() noexcept
     {
         constexpr BackendExecutionPolicy policy{
             FmaPolicy::Hardware, ReductionPolicy::BackendDefined};
 
-        return {seed, ExecutionMode::Fast, policy, policy, policy};
+        return {ExecutionMode::Fast, policy, policy, policy};
     }
 
     [[nodiscard]] bool IsValid() const noexcept
@@ -77,6 +76,11 @@ struct ExecutionSettings final {
     {
         return mode == ExecutionMode::Strict && cpu.IsBitwiseReproducible() &&
                hip.IsBitwiseReproducible() && mpi.IsBitwiseReproducible();
+    }
+
+    [[nodiscard]] bool AllowsAccelerator() const noexcept
+    {
+        return mode == ExecutionMode::Fast;
     }
 };
 

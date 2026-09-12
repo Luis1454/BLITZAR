@@ -1,7 +1,7 @@
 #ifndef BLITZAR_SOLVERS_SOLVER_TREE_RESOURCES_HPP
 #define BLITZAR_SOLVERS_SOLVER_TREE_RESOURCES_HPP
 
-#include "trees/octree/OctreeResource.hpp"
+#include "trees/octree/resource/OctreeResource.hpp"
 
 namespace blitzar_solvers {
 

@@ -1,5 +1,5 @@
 #include <array>
-#include <blitzar/blitzar.hpp>
+#include <blitzar/cpp/blitzar.hpp>
 
 int main()
 {

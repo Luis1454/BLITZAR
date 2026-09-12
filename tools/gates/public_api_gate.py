@@ -125,7 +125,7 @@ def scan_internal_headers(
         relative_path = relative(root, path)
         source = path.read_text(encoding="utf-8")
         for line, include in include_lines(source):
-            if include != "blitzar/blitzar.hpp":
+            if include != "blitzar/cpp/blitzar.hpp":
                 continue
             if (relative_path, include) not in exceptions:
                 violations.append(

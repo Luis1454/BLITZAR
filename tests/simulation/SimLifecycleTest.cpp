@@ -2,7 +2,7 @@
 
 #include <array>
 #include <atomic>
-#include <blitzar/blitzar.hpp>
+#include <blitzar/cpp/blitzar.hpp>
 #include <thread>
 #include <utility>
 

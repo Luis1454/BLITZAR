@@ -2,7 +2,7 @@
 
 Status: **FROZEN**  
 Product/API version: **1.0.0**
-Plan version: **1.0.55**
+Plan version: **1.0.60**
 
 This repository is a clean-room rewrite. The old repository, its source tree,
 its issues, and its documentation are not implementation inputs. Requirements
@@ -12,8 +12,9 @@ The authoritative planning state is the combination of this file,
 `plan/manifest.json`, `plan/quality.json`, `plan/decision-index.json`, and
 `plan/scaling.json`, `plan/layout.json`, `plan/reduction.json`,
 `plan/neighborhood.json`, `plan/output_contract.json`, `plan/delta.json`, and
-`plan/block_time.json`, `plan/bvh.json`, `plan/grid.json`, and
-`plan/final_audit.json`, and `plan/reproducibility.json`.
+`plan/block_time.json`, `plan/bvh.json`, `plan/grid.json`,
+`plan/final_audit.json`, `plan/reproducibility.json`, `plan/ops002.json`,
+and `plan/repository_tree.json`.
 Decision records under `plan/decisions/` preserve the rationale and migration
 history for that state.
 
@@ -22,8 +23,8 @@ history for that state.
 BLITZAR is a deterministic particle-simulation library with an optional CUDA
 backend. The public product has three layers:
 
-1. A small C ABI in `include/blitzar/blitzar.h` for FFI consumers.
-2. A C++20 RAII wrapper in `include/blitzar/blitzar.hpp`.
+1. A small C ABI in `include/blitzar/c/blitzar.h` for FFI consumers.
+2. A C++20 RAII wrapper in `include/blitzar/cpp/blitzar.hpp`.
 3. A standalone CLI in `apps/blitzar` using the same SDK as external users.
 
 The simulation core owns particle state, integration, spatial data structures,
@@ -58,12 +59,17 @@ optional dependency is absent, and multi-node/RDMA qualification remains
 unverified.
 
 The execution-policy and restart-state contract is frozen in
-`plan/reproducibility.json`. Strict mode records ordered reductions and
-disabled deliberate FMA use for each backend and permits byte-identical
-restart only within the recorded backend, compiler, device, and plan identity.
-Fast mode records backend-defined arithmetic and is never advertised as
-bitwise reproducible. Snapshot publication checks that no MPI ghost exchange
-is active at the capture boundary.
+`plan/reproducibility.json`. Strict mode uses the Direct CPU reference path,
+consumes the disabled-FMA and ordered-reduction policy, and permits byte-
+identical restart only within the recorded compiler, precision, and plan
+identity. Fast mode is the only mode that may select HIP; its initial manifest
+records `runtime-selected` until the actual execution backend is known and it
+is never advertised as bitwise reproducible. Snapshot publication checks that
+no MPI communication is active at the capture boundary. The V1 payload remains
+particle state only; complete backend-neutral restart state and rank-count
+change support belong to the planned P9/OPS-002 contract. P9 also requires a
+completed fast manifest to replace `runtime-selected` with the resolved backend
+and device identity before persistent output is complete.
 
 The block-time qualification contract is frozen in `plan/block_time.json`.
 Its bounded scheduler model is evidence only: fixed-step KDK remains the
@@ -266,6 +272,10 @@ The phases are ordered dependencies, not a list of parallel experiments.
 - P7 and P8 are implemented and locally qualified from the P3/P4 contracts;
   their existing distributed qualification does not promote the single-rank
   P5 mesh path into MPI.
+- P9 is planned as OPS-002. It owns the V2 backend-neutral restart state,
+  rank-count-changing repartition, and final fast-backend identity. Its
+  contract and acceptance cases are frozen in `plan/ops002.json`; no P9
+  capability is claimed until its tests are registered and qualified.
 - The block-time scheduling candidate is qualified as a P1 evidence boundary,
   but it is not promoted into production. Any physical block integrator must
   be a later plan change with force-state, MPI, restart, rollback, and
@@ -543,6 +553,26 @@ through a KDK transition hook, and the KDK checkpoint is recaptured for
 the new local prefix before the second force evaluation. `TST-P8-001` forces
 inter-rank movement and compares the result with the direct single-rank oracle.
 
+### P9: Portable Restart State and Runtime Identity (planned)
+
+OPS-002 extends the current P6/P7/P8 boundaries with a versioned V2 restart
+state. The V2 contract carries particle, integrator, RNG, units, execution
+math, resolved backend, global-domain, and source-ownership state. Stable IDs
+remain authoritative; derived trees, ghost state, and other execution caches
+are rebuilt after decode.
+
+The restart transaction validates source metadata, global bounds, source
+domains, ownership coverage, and checksums before repartitioning to the current
+destination rank count. It commits only after every destination state is valid,
+and it preserves the Direct CPU strict run as the numerical oracle. V1 remains
+readable only under its current particle-state and same-rank contract and must
+reject a portable rank-count-changing restart.
+
+Fast output may use `runtime-selected` provisionally, but a completed persistent
+manifest must record the resolved `cpu` or `hip` backend and device boundary.
+The planned acceptance cases are defined in `plan/ops002.json` and become
+registered `TST-P9-*` tests when implementation begins.
+
 ## Non-Goals for the Initial Rewrite
 
 - Reusing or mechanically translating old implementation files.
@@ -553,6 +583,38 @@ inter-rank movement and compares the result with the direct single-rank oracle.
 
 Deferred features may be proposed only as a new plan change with a contract,
 an owner, an oracle, and an acceptance test.
+
+## Frozen Repository Tree
+
+The exact destination taxonomy is the machine-readable contract in
+`plan/repository_tree.json`, frozen at plan version 1.0.60 and linked from
+`plan/manifest.json`. It is the only authoritative source for the repository
+tree migration; the shape block below remains the as-built inventory until the
+migration is promoted.
+
+The destination keeps broad responsibility in directories and local
+responsibility in filenames. Solver families are grouped under
+`src/solvers/{direct,bh,fmm,pm,treepm,threading}` and mirrored below
+`tests/solvers`; FMM variants use `src/solvers/fmm/{kifmm,...}` and the same
+variant path below `tests/solvers/fmm`. IO and simulation use the approved
+aliases `diag`, `md`, `post`, `snap`, `cfg`, `init`, `stage`, and `tx`.
+Neighborhood, Octree, MPI, grid, and CLI tests are further segmented by
+responsibility in the target policy, so a single directory does not become a
+collection of unrelated runners, fixtures, and qualification cases.
+
+The target separates C and C++ below `include/blitzar/{c,cpp}`,
+`tests/contracts/{c,cpp}`, and `examples/{c,cpp}`. C, C++, and CMake test
+entrypoints end in `Test` before their extension; Python tests use `_test.py`
+and Python modules remain below the declared responsibility domains. `.keep`
+and `.gitkeep` are forbidden. A missing counterpart is accepted only through
+an exact, reasoned `allowed_missing` entry, and that allowance becomes invalid
+once both directories exist.
+
+`CHK-P0-052` validates the frozen destination policy without pretending that
+the migration has happened. `repository_tree_gate --check` is reserved for
+the promotion change and then validates the physical directories, target test
+files, language separation, Python placement, stale allowances, and forbidden
+paths together.
 
 ## Architecture Gates
 
@@ -571,6 +633,19 @@ tolerance. Every public behavior must be testable without the CLI. Every
 automated test must have a stable identifier in the quality manifest once that
 manifest is introduced in P0.
 
+Source responsibility roots with variant subdirectories are mirrored under the
+corresponding test responsibility root. The `directory_symmetry` policy in
+`plan/quality.json` compares both directory sets recursively; a missing or extra
+variant directory fails the static gate unless the exact source/test paths are
+listed in `allowed_missing` with a non-empty reason. The FMM family therefore
+uses `src/solvers/fmm/{kifmm,...}` and `tests/solvers/fmm/{kifmm,...}` with the
+same variant names. Every C/C++/CMake test entrypoint ends in `Test` before its
+extension, for example `KifmmQualifTest.cpp`; Python tests use `_test.py`.
+The C/C++ language roots are explicit, and no placeholder file or empty
+directory is required for an explicitly allowed missing counterpart. The
+complete destination policy, including the planned directory moves and
+explicit exceptions, is checked by `CHK-P0-052` and its fixture test.
+
 ## Change Protocol
 
 This plan is frozen. A pull request changing `PLAN.md` or `plan/manifest.json`
@@ -580,6 +655,8 @@ must:
 2. Add or update a decision record under `plan/decisions/` and its lifecycle
    entry in `plan/decision-index.json`.
 3. Update the plan version and affected phase identifiers.
-4. Explain migration impact and add acceptance tests.
+4. If the repository taxonomy changes, update `plan/repository_tree.json` in
+   the same change and keep its manifest source-of-truth entry.
+5. Explain migration impact and add acceptance tests.
 
 The GitHub Actions plan gate rejects all other plan changes.

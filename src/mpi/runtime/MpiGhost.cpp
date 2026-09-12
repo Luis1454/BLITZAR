@@ -29,6 +29,11 @@ bool MpiContext::IsGhostExchangeActive(const GhostExchange& exchange) const noex
     return impl_ != nullptr && impl_->ghosts.IsActive(exchange);
 }
 
+bool MpiContext::IsCommunicationActive(const GhostExchange& exchange) const noexcept
+{
+    return IsGhostExchangeActive(exchange);
+}
+
 void MpiContext::AbortGhostExchange(GhostExchange& exchange) const noexcept
 {
     if (impl_ != nullptr) {

@@ -2,12 +2,12 @@
 #define BLITZAR_APPS_BLITZAR_BLITZAR_OUTPUT_HPP
 
 #include "core/CoreTypes.hpp"
-#include "io/diagnostics/ConservationCsv.hpp"
-#include "io/metadata/MetadataRun.hpp"
+#include "io/diag/ConservationCsv.hpp"
+#include "io/md/run/MetadataRun.hpp"
 #include "mpi/runtime/MpiContext.hpp"
-#include "simulation/config/SimConfigRun.hpp"
+#include "simulation/cfg/run/SimConfigRun.hpp"
 
-#include <blitzar/blitzar.h>
+#include <blitzar/c/blitzar.h>
 #include <cstddef>
 #include <cstdint>
 #include <filesystem>

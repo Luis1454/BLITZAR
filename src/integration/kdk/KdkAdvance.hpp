@@ -1,6 +1,7 @@
 #ifndef BLITZAR_INTEGRATION_KDK_KDK_ADVANCE_HPP
 #define BLITZAR_INTEGRATION_KDK_KDK_ADVANCE_HPP
 
+#include "core/CoreArithmetic.hpp"
 #include "integration/kdk/KdkLeapfrog.hpp"
 
 namespace blitzar_integration_kdk {
@@ -68,12 +69,23 @@ void KickAndDrift(AdvanceState<ForceProvider>& state, blitzar_core::ForceView fo
         ++raw_index) {
         const std::size_t index = static_cast<std::size_t>(raw_index);
 
-        mutable_state.velocity_x[index] += half_step * force.x[index];
-        mutable_state.velocity_y[index] += half_step * force.y[index];
-        mutable_state.velocity_z[index] += half_step * force.z[index];
-        mutable_state.x[index] += state.timestep * mutable_state.velocity_x[index];
-        mutable_state.y[index] += state.timestep * mutable_state.velocity_y[index];
-        mutable_state.z[index] += state.timestep * mutable_state.velocity_z[index];
+        mutable_state.velocity_x[index] = blitzar_core::MultiplyAdd(
+            half_step, force.x[index], mutable_state.velocity_x[index], state.settings.cpu);
+
+        mutable_state.velocity_y[index] = blitzar_core::MultiplyAdd(
+            half_step, force.y[index], mutable_state.velocity_y[index], state.settings.cpu);
+
+        mutable_state.velocity_z[index] = blitzar_core::MultiplyAdd(
+            half_step, force.z[index], mutable_state.velocity_z[index], state.settings.cpu);
+
+        mutable_state.x[index] = blitzar_core::MultiplyAdd(state.timestep,
+            mutable_state.velocity_x[index], mutable_state.x[index], state.settings.cpu);
+
+        mutable_state.y[index] = blitzar_core::MultiplyAdd(state.timestep,
+            mutable_state.velocity_y[index], mutable_state.y[index], state.settings.cpu);
+
+        mutable_state.z[index] = blitzar_core::MultiplyAdd(state.timestep,
+            mutable_state.velocity_z[index], mutable_state.z[index], state.settings.cpu);
     }
 }
 
@@ -124,9 +136,14 @@ void Kick(AdvanceState<ForceProvider>& state, blitzar_core::ForceView force,
         ++raw_index) {
         const std::size_t index = static_cast<std::size_t>(raw_index);
 
-        mutable_state.velocity_x[index] += half_step * force.x[index];
-        mutable_state.velocity_y[index] += half_step * force.y[index];
-        mutable_state.velocity_z[index] += half_step * force.z[index];
+        mutable_state.velocity_x[index] = blitzar_core::MultiplyAdd(
+            half_step, force.x[index], mutable_state.velocity_x[index], state.settings.cpu);
+
+        mutable_state.velocity_y[index] = blitzar_core::MultiplyAdd(
+            half_step, force.y[index], mutable_state.velocity_y[index], state.settings.cpu);
+
+        mutable_state.velocity_z[index] = blitzar_core::MultiplyAdd(
+            half_step, force.z[index], mutable_state.velocity_z[index], state.settings.cpu);
     }
 }
 

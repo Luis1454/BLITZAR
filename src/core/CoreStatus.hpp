@@ -1,7 +1,7 @@
 #ifndef BLITZAR_CORE_CORE_STATUS_HPP
 #define BLITZAR_CORE_CORE_STATUS_HPP
 
-#include <blitzar/blitzar.h>
+#include <blitzar/c/blitzar.h>
 
 namespace blitzar_core {
 

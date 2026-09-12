@@ -2,7 +2,7 @@
 #define BLITZAR_IO_HDF5_HDF5_SCHEMA_HPP
 
 #include "core/CoreSnapshot.hpp"
-#include "io/snapshot/SnapshotChecksum.hpp"
+#include "io/snap/codec/SnapshotChecksum.hpp"
 
 #include <cstdint>
 #include <span>

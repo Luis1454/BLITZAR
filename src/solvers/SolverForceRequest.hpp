@@ -1,10 +1,10 @@
 #ifndef BLITZAR_SOLVERS_SOLVER_FORCE_REQUEST_HPP
 #define BLITZAR_SOLVERS_SOLVER_FORCE_REQUEST_HPP
 
-#include "grid/GridResource.hpp"
+#include "grid/resource/GridResource.hpp"
 #include "solvers/SolverContract.hpp"
 #include "solvers/SolverForceEvaluation.hpp"
-#include "trees/octree/OctreeResource.hpp"
+#include "trees/octree/resource/OctreeResource.hpp"
 
 namespace blitzar_solvers {
 

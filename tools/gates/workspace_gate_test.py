@@ -27,7 +27,8 @@ class WorkspaceGateTests(unittest.TestCase):
                 "__pycache__/",
                 "*.py[cod]",
             ],
-            "generated_path_components": ["build", "__pycache__"],
+            "generated_root_components": ["build"],
+            "generated_path_components": ["__pycache__"],
             "generated_file_names": ["CMakeCache.txt"],
             "generated_file_suffixes": [".ninja_log"],
         }

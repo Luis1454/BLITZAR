@@ -3,7 +3,7 @@
 
 #include "core/CoreTypes.hpp"
 
-#include <blitzar/blitzar.h>
+#include <blitzar/c/blitzar.h>
 #include <cstddef>
 #include <span>
 #include <vector>

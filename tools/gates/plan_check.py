@@ -9,6 +9,7 @@ import re
 import sys
 
 from tools.gates.naming_gate import validate as validate_naming_contract
+from tools.gates.repository_tree_gate import validate_plan as validate_repository_tree_plan
 from tools.architecture.architecture_sources import configured_paths, load_source_completeness
 
 
@@ -17,7 +18,9 @@ ROOT = DEFAULT_ROOT
 MANIFEST = ROOT / "plan" / "manifest.json"
 QUALITY = ROOT / "plan" / "quality.json"
 OUTPUT_CONTRACT = ROOT / "plan" / "output_contract.json"
+REPOSITORY_TREE = ROOT / "plan" / "repository_tree.json"
 CMESSAGE = ROOT / "CMakeLists.txt"
+PLAN_WORKFLOW = ROOT / ".github" / "workflows" / "plan.yml"
 
 TEST_ID_PATTERN = re.compile(r"^TST-[A-Z0-9]+(?:-[A-Z0-9]+)+$")
 CHECK_ID_PATTERN = re.compile(r"^CHK-[A-Z0-9]+(?:-[A-Z0-9]+)+$")
@@ -334,7 +337,7 @@ EXPECTED_OUTPUT_CONTRACT = {
         "postprocess_directory": "postProcessing",
     },
     "manifest": {
-        "schema_version": 1,
+        "schema_version": 2,
         "field_order": [
             "schema_version",
             "product_version",
@@ -360,6 +363,7 @@ EXPECTED_OUTPUT_CONTRACT = {
             "cpu",
             "hip",
             "mpi",
+            "backend",
             "precision",
             "compiler",
             "device",
@@ -830,18 +834,137 @@ def validate_quality_tests(phase_ids: set[str]) -> None:
         check_commands.add(check_command)
 
 
+def validate_directory_symmetry_policy() -> None:
+    quality = load_json(QUALITY, "quality manifest")
+    policy = quality.get("directory_symmetry")
+    if not isinstance(policy, dict):
+        fail("quality manifest needs a directory_symmetry policy")
+    pairs = policy.get("pairs")
+    if not isinstance(pairs, list) or not pairs:
+        fail("directory_symmetry needs at least one pair")
+
+    pair_keys: set[tuple[pathlib.PurePosixPath, pathlib.PurePosixPath]] = set()
+    for index, pair in enumerate(pairs):
+        if not isinstance(pair, dict):
+            fail(f"directory_symmetry pair {index} must be an object")
+        source = normalize_manifest_path(pair.get("source"), "directory_symmetry source")
+        tests = normalize_manifest_path(pair.get("tests"), "directory_symmetry tests")
+        if source.parts[0] != "src":
+            fail(f"directory_symmetry source must be below src/: {source}")
+        if tests.parts[0] != "tests":
+            fail(f"directory_symmetry tests must be below tests/: {tests}")
+        key = (source, tests)
+        if key in pair_keys:
+            fail(f"duplicate directory_symmetry pair: {source} -> {tests}")
+        pair_keys.add(key)
+
+    allowed_missing = policy.get("allowed_missing")
+    if not isinstance(allowed_missing, list):
+        fail("directory_symmetry allowed_missing must be a list")
+    allowed_keys: set[tuple[pathlib.PurePosixPath, pathlib.PurePosixPath]] = set()
+    for index, item in enumerate(allowed_missing):
+        if not isinstance(item, dict):
+            fail(f"directory_symmetry allowed_missing {index} must be an object")
+        source = normalize_manifest_path(
+            item.get("source"), "directory_symmetry allowed_missing source"
+        )
+        tests = normalize_manifest_path(
+            item.get("tests"), "directory_symmetry allowed_missing tests"
+        )
+        reason = item.get("reason")
+        if not isinstance(reason, str) or not reason.strip():
+            fail(f"directory_symmetry allowed_missing {index} needs a reason")
+        if not any(
+            source_root in source.parents
+            and tests_root in tests.parents
+            and source.relative_to(source_root) == tests.relative_to(tests_root)
+            for source_root, tests_root in pair_keys
+        ):
+            fail(
+                "directory_symmetry allowed_missing must be below a declared pair"
+            )
+        key = (source, tests)
+        if key in allowed_keys:
+            fail(f"duplicate directory_symmetry allowed_missing: {source} -> {tests}")
+        allowed_keys.add(key)
+
+    checks = quality.get("checks")
+    if not isinstance(checks, list):
+        fail("quality manifest needs checks for directory_symmetry")
+    required = {
+        "CHK-P0-050": "python -m tools.gates.directory_symmetry_gate --root . --check",
+        "CHK-P0-051": "python -m tools.gates.directory_symmetry_gate_test",
+    }
+    configured = {
+        item.get("id"): item.get("command")
+        for item in checks
+        if isinstance(item, dict)
+    }
+    for check_id, command in required.items():
+        if configured.get(check_id) != command:
+            fail(f"directory_symmetry check is missing or changed: {check_id}")
+
+
+def validate_repository_tree_policy(manifest: dict) -> None:
+    if not REPOSITORY_TREE.is_file():
+        fail("plan/repository_tree.json is missing")
+    errors = validate_repository_tree_plan(ROOT)
+    if errors:
+        fail("repository tree contract: " + "; ".join(errors))
+
+    source_of_truth = manifest.get("source_of_truth")
+    if not isinstance(source_of_truth, list) or "plan/repository_tree.json" not in source_of_truth:
+        fail("manifest source_of_truth must include plan/repository_tree.json")
+
+    quality = load_json(QUALITY, "quality manifest")
+    if quality.get("repository_tree") != "plan/repository_tree.json":
+        fail("quality manifest repository_tree must point to plan/repository_tree.json")
+    checks = quality.get("checks")
+    if not isinstance(checks, list):
+        fail("quality manifest needs checks for repository_tree")
+    required = {
+        "CHK-P0-052": "python -m tools.gates.repository_tree_gate --root . --plan",
+        "CHK-P0-053": "python -m tools.gates.repository_tree_gate_test",
+    }
+    configured = {
+        item.get("id"): item.get("command")
+        for item in checks
+        if isinstance(item, dict)
+    }
+    for check_id, command in required.items():
+        if configured.get(check_id) != command:
+            fail(f"repository tree check is missing or changed: {check_id}")
+
+
+def validate_plan_change_workflow() -> None:
+    if not PLAN_WORKFLOW.is_file():
+        fail(".github/workflows/plan.yml is missing")
+    workflow = PLAN_WORKFLOW.read_text(encoding="utf-8")
+    required_fragments = (
+        "git diff --name-only",
+        "plan/.*\\.(json|md)",
+        "plan-change:",
+        "plan/decisions/",
+        "git log --format=%s",
+    )
+    if any(fragment not in workflow for fragment in required_fragments):
+        fail("plan workflow must guard every plan JSON/Markdown change with a plan-change commit and decision record")
+
+
 def validate_naming() -> None:
     for violation in validate_naming_contract(ROOT):
         fail(violation)
 
 
 def configure_root(root: pathlib.Path) -> None:
-    global ROOT, MANIFEST, QUALITY, OUTPUT_CONTRACT, CMESSAGE
+    global ROOT, MANIFEST, QUALITY, OUTPUT_CONTRACT, REPOSITORY_TREE, CMESSAGE, PLAN_WORKFLOW
     ROOT = root.resolve()
     MANIFEST = ROOT / "plan" / "manifest.json"
     QUALITY = ROOT / "plan" / "quality.json"
     OUTPUT_CONTRACT = ROOT / "plan" / "output_contract.json"
+    REPOSITORY_TREE = ROOT / "plan" / "repository_tree.json"
     CMESSAGE = ROOT / "CMakeLists.txt"
+    PLAN_WORKFLOW = ROOT / ".github" / "workflows" / "plan.yml"
 
 
 def main(argv: list[str] | None = None) -> None:
@@ -863,6 +986,8 @@ def main(argv: list[str] | None = None) -> None:
         fail("plan/quality.json is missing")
     if not OUTPUT_CONTRACT.is_file():
         fail("plan/output_contract.json is missing")
+    if not REPOSITORY_TREE.is_file():
+        fail("plan/repository_tree.json is missing")
     if not CMESSAGE.is_file():
         fail("CMakeLists.txt is missing")
 
@@ -871,6 +996,8 @@ def main(argv: list[str] | None = None) -> None:
         fail("manifest status must remain 'frozen'")
     if not manifest.get("plan_version"):
         fail("plan_version is required")
+    validate_plan_change_workflow()
+    validate_repository_tree_policy(manifest)
     validate_release_identity(manifest)
     validate_output_contract(
         load_json(OUTPUT_CONTRACT, "output contract"), manifest["plan_version"]
@@ -880,6 +1007,7 @@ def main(argv: list[str] | None = None) -> None:
     phase_ids = validate_phases(manifest)
     validate_forbidden_references(manifest)
     validate_quality_tests(phase_ids)
+    validate_directory_symmetry_policy()
     validate_namespace_boundaries()
     validate_arena_ownership()
     validate_naming()

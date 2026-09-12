@@ -4,7 +4,7 @@
 #include "core/CoreExecution.hpp"
 #include "core/CoreTypes.hpp"
 
-#include <blitzar/blitzar.h>
+#include <blitzar/c/blitzar.h>
 #include <concepts>
 #include <cstdint>
 

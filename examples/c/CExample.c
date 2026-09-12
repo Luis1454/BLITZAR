@@ -1,4 +1,4 @@
-#include <blitzar/blitzar.h>
+#include <blitzar/c/blitzar.h>
 #include <stddef.h>
 
 int main(void)

@@ -2,7 +2,7 @@
 #define BLITZAR_SIMULATION_SOLVER_SIM_SOLVER_VARIANT_HPP
 
 #include "solvers/SolverTreeResources.hpp"
-#include "solvers/barnes_hut/BhSolver.hpp"
+#include "solvers/bh/BhSolver.hpp"
 #include "solvers/direct/DirectSolver.hpp"
 #include "solvers/fmm/FmmSolver.hpp"
 #include "solvers/fmm/kifmm/KifmmSolver.hpp"

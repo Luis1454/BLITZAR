@@ -1,6 +1,6 @@
 #include "mpi/domain/MpiDomainPartition.hpp"
 
-#include "trees/octree/OctreeMorton.hpp"
+#include "trees/octree/build/OctreeMorton.hpp"
 
 #include <algorithm>
 #include <new>

@@ -1,12 +1,12 @@
 #ifndef BLITZAR_SOLVERS_PM_PM_SOLVER_HPP
 #define BLITZAR_SOLVERS_PM_PM_SOLVER_HPP
 
-#include "grid/GridResource.hpp"
+#include "grid/resource/GridResource.hpp"
 #include "physics/gravity/GravityLaw.hpp"
 #include "solvers/SolverContract.hpp"
 #include "solvers/SolverForceRequest.hpp"
 
-#include <blitzar/blitzar.h>
+#include <blitzar/c/blitzar.h>
 #include <cstddef>
 #include <vector>
 

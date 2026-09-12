@@ -1,18 +1,26 @@
 {
   "public_headers": {
-    "include/blitzar/blitzar.h": {
-      "allowed_includes": ["stdint.h"],
+    "include/blitzar/c/blitzar.h": {
+      "allowed_includes": [
+        "stdint.h"
+      ],
       "raw_pointer_policy": "c_abi",
       "opaque_handle_declarations": [
         "typedef struct blitzar_context blitzar_context;",
         "typedef struct blitzar_simulation blitzar_simulation;"
       ],
-      "fixed_width_forbidden_types": ["size_t", "ptrdiff_t", "long", "short", "bool"]
+      "fixed_width_forbidden_types": [
+        "size_t",
+        "ptrdiff_t",
+        "long",
+        "short",
+        "bool"
+      ]
     },
-    "include/blitzar/blitzar.hpp": {
+    "include/blitzar/cpp/blitzar.hpp": {
       "allowed_includes": [
         "atomic",
-        "blitzar/blitzar.h",
+        "blitzar/c/blitzar.h",
         "cstddef",
         "cstdint",
         "limits",
@@ -23,17 +31,22 @@
       "raw_pointer_policy": "forbidden"
     }
   },
-  "forbidden_public_tokens": ["MPI_", "hip", "cuda", "src/"],
+  "forbidden_public_tokens": [
+    "MPI_",
+    "hip",
+    "cuda",
+    "src/"
+  ],
   "internal_cpp_facade_exceptions": [
     {
       "path": "src/sdk/cpp/CppState.hpp",
-      "include": "blitzar/blitzar.hpp",
+      "include": "blitzar/cpp/blitzar.hpp",
       "reason": "defines the private C++ facade PImpl"
     }
   ],
   "raw_pointer_exceptions": [
     {
-      "path": "include/blitzar/blitzar.h",
+      "path": "include/blitzar/c/blitzar.h",
       "reason": "stable C ABI handles and non-owning SoA views"
     }
   ],

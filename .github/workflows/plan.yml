@@ -42,7 +42,7 @@ jobs:
         shell: bash
         run: |
           changed=$(git diff --name-only "${{ github.event.pull_request.base.sha }}" "${{ github.event.pull_request.head.sha }}")
-          if grep -Eq '^(PLAN\.md|plan/manifest\.json)$' <<< "$changed"; then
+          if grep -Eq '^(PLAN\.md|plan/.*\.(json|md))$' <<< "$changed"; then
             messages=$(git log --format=%s "${{ github.event.pull_request.base.sha }}..${{ github.event.pull_request.head.sha }}")
             if ! grep -q '^plan-change:' <<< "$messages"; then
               echo "Plan files changed without a plan-change commit."

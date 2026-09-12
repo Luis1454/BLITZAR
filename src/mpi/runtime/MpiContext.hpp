@@ -4,7 +4,7 @@
 #include "mpi/ghost/MpiGhostExchange.hpp"
 #include "mpi/packets/MpiPacketWire.hpp"
 
-#include <blitzar/blitzar.h>
+#include <blitzar/c/blitzar.h>
 #include <cstddef>
 #include <cstdint>
 #include <memory>
@@ -56,6 +56,7 @@ public:
     [[nodiscard]] blitzar_status CompleteGhostExchange(
         GhostExchange& exchange, PacketBuffer& ghosts) const noexcept;
     [[nodiscard]] bool IsGhostExchangeActive(const GhostExchange& exchange) const noexcept;
+    [[nodiscard]] bool IsCommunicationActive(const GhostExchange& exchange) const noexcept;
     void AbortGhostExchange(GhostExchange& exchange) const noexcept;
 
     [[nodiscard]] blitzar_status AllToAllCounts(

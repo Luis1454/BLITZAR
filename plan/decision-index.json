@@ -92,6 +92,23 @@
       "notes": "Qualification and public promotion boundary refined by Decision 070."
     },
     {"path": "plan/decisions/070-kifmm-qualification-policy.md", "lifecycle": "active"},
-    {"path": "plan/decisions/071-reproducibility-and-restart-state.md", "lifecycle": "active"}
+    {
+      "path": "plan/decisions/071-reproducibility-and-restart-state.md",
+      "lifecycle": "superseded",
+      "notes": "Refined by Decision 072 after the execution policy and V1 snapshot boundary audit."
+    },
+    {
+      "path": "plan/decisions/072-execution-contract-hardening.md",
+      "lifecycle": "superseded",
+      "notes": "Current boundaries and the P9 follow-on are formalized by Decision 073."
+    },
+    {"path": "plan/decisions/073-ops002-portable-restart-plan.md", "lifecycle": "active"},
+    {
+      "path": "plan/decisions/074-source-test-directory-symmetry.md",
+      "lifecycle": "superseded",
+      "notes": "The .keep marker convention was replaced by explicit allowed_missing entries in Decision 075."
+    },
+    {"path": "plan/decisions/075-explicit-missing-directory-policy.md", "lifecycle": "active"},
+    {"path": "plan/decisions/076-frozen-repository-tree-contract.md", "lifecycle": "active"}
   ]
 }

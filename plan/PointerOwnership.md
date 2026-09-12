@@ -9,7 +9,7 @@ registered ABI or execution boundary.
 
 | Boundary | Allowed representation | Ownership rule |
 | --- | --- | --- |
-| `include/blitzar/blitzar.h` and its adapters | C pointers plus explicit counts | Borrowed for the duration of the call; adapters immediately create bounded `std::span` views. |
+| `include/blitzar/c/blitzar.h` and its adapters | C pointers plus explicit counts | Borrowed for the duration of the call; adapters immediately create bounded `std::span` views. |
 | CUDA/HIP runtime bridge | `void*`, `void**`, and address records | Runtime addresses are owned by `Buffers` and are never destroyed by request records. |
 | HDF5 error callback bridge | opaque callback data pointer | Borrowed by HDF5 while the internal error scope is active; it is restored and never owned by the adapter. |
 | GPU kernel records | device pointers | Borrowed views; counts and capacities live in the launch request and are validated before dispatch. |

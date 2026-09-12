@@ -1,6 +1,6 @@
 #include "BlitzarOutput.hpp"
 
-#include <blitzar/blitzar.hpp>
+#include <blitzar/cpp/blitzar.hpp>
 #include <cstddef>
 #include <filesystem>
 #include <limits>
@@ -35,11 +35,19 @@ namespace {
         static_cast<std::uint64_t>(config.barnes_hut.max_depth)};
 
     info.configuration.generation = {config.seed, config.deterministic};
+
+    const bool direct_cpu_reference = config.solver == BLITZAR_SOLVER_DIRECT;
+    const bool strict = config.execution.mode == blitzar_core::ExecutionMode::Strict;
+    const std::string execution_backend = strict ? "cpu" : "runtime-selected";
+    const std::string execution_device = strict ? "host-cpu" : "runtime-selected";
+    const std::string execution_compensator =
+        strict ? "direct-plain;diagnostics-neumaier-v1" : "backend-defined;diagnostics-neumaier-v1";
+
     info.configuration.execution = {config.execution.mode, config.execution.cpu,
-        config.execution.hip, config.execution.mpi, "float64",
-        blitzar_io::CurrentCompilerIdentity(), "host-cpu", "seeded-jitter-v1",
-        "direct-plain;diagnostics-neumaier-v1", "stable-particle-id-v1",
-        config.execution.IsBitwiseReproducible()};
+        config.execution.hip, config.execution.mpi, execution_backend, "float64",
+        blitzar_io::CurrentCompilerIdentity(), execution_device, "seeded-jitter-v1",
+        execution_compensator, "stable-particle-id-v1",
+        direct_cpu_reference && config.execution.IsBitwiseReproducible()};
 
     const blitzar_io::MetadataOutputFormat output_format =
         config.output.format == blitzar_sim::SimConfigOutputFormat::Hdf5

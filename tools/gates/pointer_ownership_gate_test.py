@@ -14,7 +14,7 @@ class PointerOwnershipGateTests(unittest.TestCase):
     def setUp(self) -> None:
         self.directory = pathlib.Path(tempfile.mkdtemp())
         (self.directory / "plan").mkdir()
-        (self.directory / "include" / "blitzar").mkdir(parents=True)
+        (self.directory / "include" / "blitzar" / "c").mkdir(parents=True)
         (self.directory / "src" / "sdk").mkdir(parents=True)
         (self.directory / "src" / "gpu" / "direct").mkdir(
             parents=True
@@ -43,10 +43,10 @@ class PointerOwnershipGateTests(unittest.TestCase):
 
     def test_accepts_registered_abi_and_device_views(self) -> None:
         self.write_contract([
-            self.boundary("include/blitzar/blitzar.h", "public_c_abi"),
+            self.boundary("include/blitzar/c/blitzar.h", "public_c_abi"),
             self.boundary("src/gpu/direct/GpuDirectDevice.inl"),
         ])
-        (self.directory / "include" / "blitzar" / "blitzar.h").write_text(
+        (self.directory / "include" / "blitzar" / "c" / "blitzar.h").write_text(
             "const double* values;\n", encoding="utf-8"
         )
         (self.directory / "src" / "gpu" / "direct" / "GpuDirectDevice.inl").write_text(

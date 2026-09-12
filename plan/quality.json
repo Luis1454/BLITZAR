@@ -1,5 +1,16 @@
 {
   "evidence_policy": "registration-only",
+  "repository_tree": "plan/repository_tree.json",
+  "directory_symmetry": {
+    "pairs": [
+      {
+        "source": "src/solvers/fmm",
+        "tests": "tests/solvers/fmm",
+        "responsibility": "FMM family and variant hierarchy"
+      }
+    ],
+    "allowed_missing": []
+  },
   "tests": [
     {
       "id": "TST-P0-001",
@@ -58,7 +69,7 @@
     {
       "id": "TST-P6-007",
       "name": "cli-usage-error-stream-and-exit-contract",
-      "command": "cmake -DBLITZAR_CLI=blitzar_cli -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/io/IoCliUsageTest.cmake",
+      "command": "cmake -DBLITZAR_CLI=blitzar_cli -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/io/cli/CliUsageTest.cmake",
       "phase": "P6"
     },
     {
@@ -82,13 +93,13 @@
     {
       "id": "TST-P6-011",
       "name": "mpi-cli-single-rank-output-parity",
-      "command": "cmake -DBLITZAR_CLI=blitzar_cli -DMPIEXEC_EXECUTABLE=mpiexec -DMPIEXEC_NUMPROC_FLAG=-np -DBLITZAR_TEST_ROOT=${CMAKE_CURRENT_BINARY_DIR}/blitzar-output-boundary-649 -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/io/IoMpiOutputTest.cmake",
+      "command": "cmake -DBLITZAR_CLI=blitzar_cli -DMPIEXEC_EXECUTABLE=mpiexec -DMPIEXEC_NUMPROC_FLAG=-np -DBLITZAR_TEST_ROOT=${CMAKE_CURRENT_BINARY_DIR}/blitzar-output-boundary-649 -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/io/mpi/MpiOutputTest.cmake",
       "phase": "P6"
     },
     {
       "id": "TST-P7-006",
       "name": "mpi-explicit-shard-output-and-restart",
-      "command": "cmake -DBLITZAR_CLI=blitzar_cli -DMPIEXEC_EXECUTABLE=mpiexec -DMPIEXEC_NUMPROC_FLAG=-np -DBLITZAR_TEST_ROOT=${CMAKE_CURRENT_BINARY_DIR}/blitzar-shard-output-685 -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/io/IoMpiShardOutputTest.cmake",
+      "command": "cmake -DBLITZAR_CLI=blitzar_cli -DMPIEXEC_EXECUTABLE=mpiexec -DMPIEXEC_NUMPROC_FLAG=-np -DBLITZAR_TEST_ROOT=${CMAKE_CURRENT_BINARY_DIR}/blitzar-shard-output-685 -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/io/mpi/MpiShardOutputTest.cmake",
       "phase": "P7"
     },
     {
@@ -111,7 +122,7 @@
     },
     {
       "id": "TST-P6-015",
-      "name": "reproducibility-policy-and-restart-state",
+      "name": "reproducibility-policy-arithmetic-and-restart-state",
       "command": "blitzar_reproducibility_test",
       "phase": "P6"
     },
@@ -200,6 +211,12 @@
       "phase": "P5"
     },
     {
+      "id": "TST-P5-004",
+      "name": "grid-layout-value-contract",
+      "command": "blitzar_grid_layout_test",
+      "phase": "P5"
+    },
+    {
       "id": "TST-P2-001",
       "name": "c-example",
       "command": "blitzar_c_example",
@@ -260,6 +277,18 @@
       "phase": "P3"
     },
     {
+      "id": "TST-P3-008",
+      "name": "octree-resource-lifetime",
+      "command": "blitzar_octree_resource_test",
+      "phase": "P3"
+    },
+    {
+      "id": "TST-P3-009",
+      "name": "octree-view-contract",
+      "command": "blitzar_octree_view_test",
+      "phase": "P3"
+    },
+    {
       "id": "TST-P4-001",
       "name": "hip-acceleration-and-fallback",
       "command": "blitzar_accelerator_test",
@@ -316,7 +345,7 @@
     {
       "id": "TST-P2-004",
       "name": "installed-cmake-package-consumer",
-      "command": "cmake -DBLITZAR_BUILD_DIR=${CMAKE_BINARY_DIR} -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/package/package_consumer.cmake",
+      "command": "cmake -DBLITZAR_BUILD_DIR=${CMAKE_BINARY_DIR} -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/package/ConsumerTest.cmake",
       "phase": "P2"
     },
     {
@@ -358,7 +387,7 @@
     {
       "id": "TST-P0-008",
       "name": "shared-library-cli-configuration-boundary",
-      "command": "cmake -DBLITZAR_SOURCE_DIR=${CMAKE_CURRENT_SOURCE_DIR} -DBLITZAR_BUILD_DIR=${CMAKE_BINARY_DIR} -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/package/shared_cli_contract.cmake",
+      "command": "cmake -DBLITZAR_SOURCE_DIR=${CMAKE_CURRENT_SOURCE_DIR} -DBLITZAR_BUILD_DIR=${CMAKE_BINARY_DIR} -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/package/CliContractTest.cmake",
       "phase": "P0"
     }
   ],
@@ -377,34 +406,99 @@
     },
     "profiles": {
       "production": {
-        "roots": ["include", "src", "apps"],
-        "suffixes": [".c", ".cc", ".cpp", ".cu", ".cuh", ".h", ".hip", ".hpp", ".inl"]
+        "roots": [
+          "include",
+          "src",
+          "apps"
+        ],
+        "suffixes": [
+          ".c",
+          ".cc",
+          ".cpp",
+          ".cu",
+          ".cuh",
+          ".h",
+          ".hip",
+          ".hpp",
+          ".inl"
+        ]
       },
       "tests": {
-      "roots": ["tests"],
-      "suffixes": [".c", ".cc", ".cpp", ".cu", ".cuh", ".cmake", ".h", ".hip", ".hpp", ".ini", ".inl"]
+        "roots": [
+          "tests"
+        ],
+        "suffixes": [
+          ".c",
+          ".cc",
+          ".cpp",
+          ".cu",
+          ".cuh",
+          ".cmake",
+          ".h",
+          ".hip",
+          ".hpp",
+          ".ini",
+          ".inl"
+        ]
       },
       "examples": {
-        "roots": ["examples"],
-        "suffixes": [".c", ".cc", ".cpp", ".cu", ".cuh", ".h", ".hip", ".hpp", ".inl"]
+        "roots": [
+          "examples"
+        ],
+        "suffixes": [
+          ".c",
+          ".cc",
+          ".cpp",
+          ".cu",
+          ".cuh",
+          ".h",
+          ".hip",
+          ".hpp",
+          ".inl"
+        ]
       },
       "tools": {
-        "roots": ["tools"],
-        "suffixes": [".py"],
+        "roots": [
+          "tools"
+        ],
+        "suffixes": [
+          ".py"
+        ],
         "thresholds": {
           "max_functions_per_file": 20,
           "max_allocation_sites": 40
         }
       },
       "build-metadata": {
-        "paths": ["CMakeLists.txt", ".clang-format", ".gitattributes", ".gitignore"],
-        "roots": ["cmake", ".github"],
-        "suffixes": [".cmake", ".in", ".yml", ".yaml"]
+        "paths": [
+          "CMakeLists.txt",
+          ".clang-format",
+          ".gitattributes",
+          ".gitignore"
+        ],
+        "roots": [
+          "cmake",
+          ".github"
+        ],
+        "suffixes": [
+          ".cmake",
+          ".in",
+          ".yml",
+          ".yaml"
+        ]
       },
       "documentation": {
-        "paths": ["PLAN.md", "AGENTS.md"],
-        "roots": ["plan"],
-        "suffixes": [".json", ".md"]
+        "paths": [
+          "PLAN.md",
+          "AGENTS.md"
+        ],
+        "roots": [
+          "plan"
+        ],
+        "suffixes": [
+          ".json",
+          ".md"
+        ]
       }
     },
     "source_completeness": {
@@ -421,8 +515,19 @@
         "cmake/test_targets.cmake",
         "cmake/tests.cmake"
       ],
-      "source_roots": ["src", "apps", "examples", "tests"],
-      "suffixes": [".c", ".cc", ".cpp", ".cu", ".hip"]
+      "source_roots": [
+        "src",
+        "apps",
+        "examples",
+        "tests"
+      ],
+      "suffixes": [
+        ".c",
+        ".cc",
+        ".cpp",
+        ".cu",
+        ".hip"
+      ]
     },
     "naming": {
       "max_filename_length": {
@@ -434,19 +539,49 @@
         "documentation": 64
       },
       "allowed_stem_pairs": [
-        {"extensions": [".cpp", ".hpp"], "reason": "implementation/header pair"},
-        {"extensions": [".cc", ".h"], "reason": "implementation/header pair"},
-        {"extensions": [".cu", ".cuh"], "reason": "CUDA implementation/header pair"},
-        {"extensions": [".hip", ".hpp"], "reason": "HIP implementation/header pair"},
-        {"extensions": [".h", ".hpp"], "reason": "public ABI header pair"}
+        {
+          "extensions": [
+            ".cpp",
+            ".hpp"
+          ],
+          "reason": "implementation/header pair"
+        },
+        {
+          "extensions": [
+            ".cc",
+            ".h"
+          ],
+          "reason": "implementation/header pair"
+        },
+        {
+          "extensions": [
+            ".cu",
+            ".cuh"
+          ],
+          "reason": "CUDA implementation/header pair"
+        },
+        {
+          "extensions": [
+            ".hip",
+            ".hpp"
+          ],
+          "reason": "HIP implementation/header pair"
+        },
+        {
+          "extensions": [
+            ".h",
+            ".hpp"
+          ],
+          "reason": "public ABI header pair"
+        }
       ],
       "name_exceptions": [
         {
-          "path": "include/blitzar/blitzar.h",
+          "path": "include/blitzar/c/blitzar.h",
           "reason": "stable public C ABI spelling"
         },
         {
-          "path": "include/blitzar/blitzar.hpp",
+          "path": "include/blitzar/cpp/blitzar.hpp",
           "reason": "stable public C++ wrapper spelling"
         },
         {
@@ -455,68 +590,250 @@
         }
       ],
       "responsibility_prefixes": [
-        {"path": "src/core", "prefix": "Core"},
-        {"path": "src/particles/arena", "prefix": "Particle"},
-        {"path": "src/particles/buffer", "prefix": "Particle"},
-        {"path": "src/particles/source", "prefix": "Particle"},
-        {"path": "src/physics/gravity", "prefix": "Gravity"},
-        {"path": "src/physics/reduction", "prefix": "ScalarReduction"},
-        {"path": "src/integration/kdk", "prefix": "Kdk"},
-        {"path": "src/trees/octree", "prefix": "Octree"},
-        {"path": "src/solvers", "prefix": "Solver"},
-        {"path": "src/solvers/threading", "prefix": "Thread"},
-        {"path": "src/solvers/direct", "prefix": "Direct"},
-        {"path": "src/solvers/barnes_hut", "prefix": "Bh"},
-        {"path": "src/solvers/fmm", "prefix": "Fmm"},
-        {"path": "src/solvers/fmm/kifmm", "prefix": "Kifmm"},
-        {"path": "src/grid", "prefix": "Grid"},
-        {"path": "src/solvers/pm", "prefix": "Pm"},
-        {"path": "src/solvers/treepm", "prefix": "TreePm"},
-        {"path": "src/gpu/runtime", "prefix": "Gpu"},
-        {"path": "src/gpu/memory", "prefix": "Gpu"},
-        {"path": "src/gpu/direct", "prefix": "GpuDirect"},
-        {"path": "src/gpu/barnes_hut", "prefix": "GpuBh"},
-        {"path": "src/mpi/runtime", "prefix": "Mpi"},
-        {"path": "src/mpi/collectives", "prefix": "Mpi"},
-        {"path": "src/mpi/domain", "prefix": "MpiDomain"},
-        {"path": "src/mpi/exchange", "prefix": "Mpi"},
-        {"path": "src/mpi/ghost", "prefix": "MpiGhost"},
-        {"path": "src/mpi/gather", "prefix": "MpiGather"},
-        {"path": "src/mpi/packets", "prefix": "MpiPacket"},
-        {"path": "src/mpi/native", "prefix": "MpiNative"},
-        {"path": "src/simulation", "prefix": "Sim"},
-        {"path": "src/simulation/config", "prefix": "Sim"},
-        {"path": "src/simulation/initialization", "prefix": "Sim"},
-        {"path": "src/simulation/staging", "prefix": "Sim"},
-        {"path": "src/simulation/runtime", "prefix": "Sim"},
-        {"path": "src/simulation/solver", "prefix": "Sim"},
-        {"path": "src/simulation/state", "prefix": "Sim"},
-        {"path": "src/simulation/step", "prefix": "Sim"},
-        {"path": "src/simulation/transaction", "prefix": "Sim"},
-        {"path": "src/io/snapshot", "prefix": "Snapshot"},
-        {"path": "src/io/hdf5", "prefix": "Hdf5"},
-        {"path": "src/io/metadata", "prefix": "Metadata"},
-        {"path": "src/sdk/c", "prefix": "CApi"},
-        {"path": "src/sdk/cpp", "prefix": "Cpp"},
-        {"path": "apps/blitzar", "prefix": "Blitzar"},
-        {"path": "tests/contracts", "prefix": "Contract"},
-        {"path": "tests/fixtures", "prefix": "Fixture"},
-        {"path": "tests/fmm", "prefix": "Fmm"},
-        {"path": "tests/gpu", "prefix": "Gpu"},
-        {"path": "tests/integration", "prefix": "Kdk"},
-        {"path": "tests/mpi", "prefix": "Mpi"},
-        {"path": "tests/octree", "prefix": "Octree"},
-        {"path": "tests/io", "prefix": "Io"},
-        {"path": "tests/scaling", "prefix": "Scale"},
-        {"path": "tests/layout", "prefix": "Layout"},
-        {"path": "tests/reduction", "prefix": "Reduction"},
-        {"path": "tests/neighborhood", "prefix": "Neighbor"},
-        {"path": "tests/bvh", "prefix": "Bvh"},
-        {"path": "tests/pm", "prefix": "Pm"},
-        {"path": "tests/treepm", "prefix": "TreePm"},
-        {"path": "tests/simulation", "prefix": "Sim"},
-        {"path": "examples/c", "prefix": "C"},
-        {"path": "examples/cpp", "prefix": "Cpp"}
+        {
+          "path": "src/core",
+          "prefix": "Core"
+        },
+        {
+          "path": "src/particles/arena",
+          "prefix": "Particle"
+        },
+        {
+          "path": "src/particles/buffer",
+          "prefix": "Particle"
+        },
+        {
+          "path": "src/particles/source",
+          "prefix": "Particle"
+        },
+        {
+          "path": "src/physics/gravity",
+          "prefix": "Gravity"
+        },
+        {
+          "path": "src/physics/reduction",
+          "prefix": "ScalarReduction"
+        },
+        {
+          "path": "src/integration/kdk",
+          "prefix": "Kdk"
+        },
+        {
+          "path": "src/trees/octree",
+          "prefix": "Octree"
+        },
+        {
+          "path": "src/solvers",
+          "prefix": "Solver"
+        },
+        {
+          "path": "src/solvers/threading",
+          "prefix": "Thread"
+        },
+        {
+          "path": "src/solvers/direct",
+          "prefix": "Direct"
+        },
+        {
+          "path": "src/solvers/bh",
+          "prefix": "Bh"
+        },
+        {
+          "path": "src/solvers/fmm",
+          "prefix": "Fmm"
+        },
+        {
+          "path": "src/solvers/fmm/kifmm",
+          "prefix": "Kifmm"
+        },
+        {
+          "path": "src/grid",
+          "prefix": "Grid"
+        },
+        {
+          "path": "src/solvers/pm",
+          "prefix": "Pm"
+        },
+        {
+          "path": "src/solvers/treepm",
+          "prefix": "TreePm"
+        },
+        {
+          "path": "src/gpu/runtime",
+          "prefix": "Gpu"
+        },
+        {
+          "path": "src/gpu/memory",
+          "prefix": "Gpu"
+        },
+        {
+          "path": "src/gpu/direct",
+          "prefix": "GpuDirect"
+        },
+        {
+          "path": "src/gpu/bh",
+          "prefix": "GpuBh"
+        },
+        {
+          "path": "src/mpi/runtime",
+          "prefix": "Mpi"
+        },
+        {
+          "path": "src/mpi/collectives",
+          "prefix": "Mpi"
+        },
+        {
+          "path": "src/mpi/domain",
+          "prefix": "MpiDomain"
+        },
+        {
+          "path": "src/mpi/exchange",
+          "prefix": "Mpi"
+        },
+        {
+          "path": "src/mpi/ghost",
+          "prefix": "MpiGhost"
+        },
+        {
+          "path": "src/mpi/gather",
+          "prefix": "MpiGather"
+        },
+        {
+          "path": "src/mpi/packets",
+          "prefix": "MpiPacket"
+        },
+        {
+          "path": "src/mpi/native",
+          "prefix": "MpiNative"
+        },
+        {
+          "path": "src/simulation",
+          "prefix": "Sim"
+        },
+        {
+          "path": "src/simulation/cfg",
+          "prefix": "Sim"
+        },
+        {
+          "path": "src/simulation/init",
+          "prefix": "Sim"
+        },
+        {
+          "path": "src/simulation/stage",
+          "prefix": "Sim"
+        },
+        {
+          "path": "src/simulation/runtime",
+          "prefix": "Sim"
+        },
+        {
+          "path": "src/simulation/solver",
+          "prefix": "Sim"
+        },
+        {
+          "path": "src/simulation/state",
+          "prefix": "Sim"
+        },
+        {
+          "path": "src/simulation/step",
+          "prefix": "Sim"
+        },
+        {
+          "path": "src/simulation/tx",
+          "prefix": "Sim"
+        },
+        {
+          "path": "src/io/snap",
+          "prefix": "Snapshot"
+        },
+        {
+          "path": "src/io/hdf5",
+          "prefix": "Hdf5"
+        },
+        {
+          "path": "src/io/md",
+          "prefix": "Metadata"
+        },
+        {
+          "path": "src/sdk/c",
+          "prefix": "CApi"
+        },
+        {
+          "path": "src/sdk/cpp",
+          "prefix": "Cpp"
+        },
+        {
+          "path": "apps/blitzar",
+          "prefix": "Blitzar"
+        },
+        {
+          "path": "tests/fixtures",
+          "prefix": "Fixture"
+        },
+        {
+          "path": "tests/solvers/fmm/kifmm",
+          "prefix": "Kifmm"
+        },
+        {
+          "path": "tests/solvers/fmm",
+          "prefix": "Fmm"
+        },
+        {
+          "path": "tests/gpu",
+          "prefix": "Gpu"
+        },
+        {
+          "path": "tests/integration",
+          "prefix": "Kdk"
+        },
+        {
+          "path": "tests/mpi",
+          "prefix": "Mpi"
+        },
+        {
+          "path": "tests/trees/octree",
+          "prefix": "Octree"
+        },
+        {
+          "path": "tests/scaling",
+          "prefix": "Scale"
+        },
+        {
+          "path": "tests/layout",
+          "prefix": "Layout"
+        },
+        {
+          "path": "tests/reduction",
+          "prefix": "Reduction"
+        },
+        {
+          "path": "tests/neighborhood",
+          "prefix": "Neighbor"
+        },
+        {
+          "path": "tests/bvh",
+          "prefix": "Bvh"
+        },
+        {
+          "path": "tests/solvers/pm",
+          "prefix": "Pm"
+        },
+        {
+          "path": "tests/solvers/treepm",
+          "prefix": "TreePm"
+        },
+        {
+          "path": "tests/simulation",
+          "prefix": "Sim"
+        },
+        {
+          "path": "examples/c",
+          "prefix": "C"
+        },
+        {
+          "path": "examples/cpp",
+          "prefix": "Cpp"
+        }
       ],
       "type_mapping_exceptions": [
         {
@@ -548,8 +865,8 @@
           "reason": "CUDA compatibility declaration header"
         },
         {
-      "path": "src/mpi/domain/MpiDomainBounds.hpp",
-      "reason": "MpiDomainBounds value contract"
+          "path": "src/mpi/domain/MpiDomainBounds.hpp",
+          "reason": "MpiDomainBounds value contract"
         },
         {
           "path": "src/mpi/runtime/MpiState.hpp",
@@ -560,7 +877,7 @@
           "reason": "MpiNative opaque state fragment"
         },
         {
-          "path": "tests/mpi/MpiCases.hpp",
+          "path": "tests/mpi/fixture/MpiCases.hpp",
           "reason": "MPI test-case facade and StateArrays value contract"
         }
       ],
@@ -578,9 +895,24 @@
           "reason": "standalone deterministic reduction evidence runner"
         }
       ],
-      "forbidden_path_components": ["utils", "common", "misc", "private", "details"],
+      "forbidden_path_components": [
+        "utils",
+        "common",
+        "misc",
+        "private",
+        "details"
+      ],
       "forbidden_name_prefixes": [
-        "Srv", "Server", "Legacy", "Old", "Temp", "Utils", "Common", "Misc", "Private", "Details"
+        "Srv",
+        "Server",
+        "Legacy",
+        "Old",
+        "Temp",
+        "Utils",
+        "Common",
+        "Misc",
+        "Private",
+        "Details"
       ]
     }
   },
@@ -601,9 +933,24 @@
       "src/mpi/native/MpiNativePackets.cpp",
       "src/mpi/native/MpiNativeState.hpp"
     ],
-    "test_native_units": ["tests/mpi/MpiTest.cpp", "tests/mpi/MpiFixture.cpp"],
-    "scan_roots": ["src", "tests"],
-    "suffixes": [".c", ".cc", ".cpp", ".cu", ".h", ".hip", ".hpp", ".inl"]
+    "test_native_units": [
+      "tests/mpi/MpiTest.cpp",
+      "tests/mpi/fixture/MpiFixtureTest.cpp"
+    ],
+    "scan_roots": [
+      "src",
+      "tests"
+    ],
+    "suffixes": [
+      ".c",
+      ".cc",
+      ".cpp",
+      ".cu",
+      ".h",
+      ".hip",
+      ".hpp",
+      ".inl"
+    ]
   },
   "checks": [
     {
@@ -899,6 +1246,30 @@
       "id": "CHK-P0-049",
       "name": "reproducibility-policy-fixtures",
       "command": "python -m tools.evidence.reproducibility_contract_test",
+      "phase": "P0"
+    },
+    {
+      "id": "CHK-P0-050",
+      "name": "source-test-directory-symmetry",
+      "command": "python -m tools.gates.directory_symmetry_gate --root . --check",
+      "phase": "P0"
+    },
+    {
+      "id": "CHK-P0-051",
+      "name": "source-test-directory-symmetry-fixtures",
+      "command": "python -m tools.gates.directory_symmetry_gate_test",
+      "phase": "P0"
+    },
+    {
+      "id": "CHK-P0-052",
+      "name": "repository-tree-contract",
+      "command": "python -m tools.gates.repository_tree_gate --root . --plan",
+      "phase": "P0"
+    },
+    {
+      "id": "CHK-P0-053",
+      "name": "repository-tree-contract-fixtures",
+      "command": "python -m tools.gates.repository_tree_gate_test",
       "phase": "P0"
     }
   ]

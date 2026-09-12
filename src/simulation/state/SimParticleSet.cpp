@@ -1,7 +1,7 @@
 #include "mpi/native/MpiNativeStatus.hpp"
 #include "simulation/Sim.hpp"
-#include "simulation/staging/SimParticleStage.hpp"
-#include "simulation/step/SimPacketStoreRequest.hpp"
+#include "simulation/stage/SimParticleStage.hpp"
+#include "simulation/step/packets/SimPacketStoreRequest.hpp"
 
 #include <new>
 #include <span>
