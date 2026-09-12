@@ -1,12 +1,17 @@
 {
   "schema_version": 1,
-  "plan_version": "1.0.60",
+  "plan_version": "1.0.61",
   "phase": "P9",
   "issue": "OPS-002",
-  "status": "planned",
+  "status": "implemented-local",
   "title": "Portable restart state and resolved runtime identity",
   "owner": "io-and-parallel-maintainers",
-  "depends_on": ["P4", "P6", "P7", "P8"],
+  "depends_on": [
+    "P4",
+    "P6",
+    "P7",
+    "P8"
+  ],
   "numerical_oracle": "Direct CPU strict reference with exact stable-ID coverage and declared finite-state tolerances",
   "scope": {
     "snapshot_schema": {

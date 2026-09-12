@@ -522,6 +522,51 @@
       "ranks": 1,
       "phase": "P0",
       "contract": "shared library public-consumer boundary rejects internal CLI composition"
+    },
+    {
+      "id": "TST-P9-001",
+      "entrypoint": "tests/io/snap/SnapV2Test.cpp",
+      "responsibility": "tests/io/snap/SnapV2Test.cpp",
+      "mode": "v2-round-trip",
+      "ranks": 1,
+      "phase": "P9",
+      "contract": "V2 backend-neutral round-trip preserves particle, integrator, RNG, units, execution math, backend identity, global domain, and source ownership state"
+    },
+    {
+      "id": "TST-P9-002",
+      "entrypoint": "tests/io/snap/SnapV2Test.cpp",
+      "responsibility": "tests/io/snap/SnapV2Test.cpp",
+      "mode": "v2-byte-parity",
+      "ranks": 1,
+      "phase": "P9",
+      "contract": "uninterrupted and V2 save/reload/resume strict CPU runs produce byte-identical final state"
+    },
+    {
+      "id": "TST-P9-003",
+      "entrypoint": "tests/io/snap/SnapV2Test.cpp",
+      "responsibility": "tests/io/snap/SnapV2Test.cpp",
+      "mode": "v2-repartition",
+      "ranks": 1,
+      "phase": "P9",
+      "contract": "deterministic V2 repartition assigns every stable particle ID to exactly one destination rank for a changed rank count"
+    },
+    {
+      "id": "TST-P9-004",
+      "entrypoint": "tests/io/snap/SnapV2Test.cpp",
+      "responsibility": "tests/io/snap/SnapV2Test.cpp",
+      "mode": "v2-backend-identity",
+      "ranks": 1,
+      "phase": "P9",
+      "contract": "completed fast manifests record cpu or hip and the resolved device; runtime-selected is rejected in completed persistent output"
+    },
+    {
+      "id": "TST-P9-005",
+      "entrypoint": "tests/io/snap/SnapV2Test.cpp",
+      "responsibility": "tests/io/snap/SnapV2Test.cpp",
+      "mode": "v2-rejection",
+      "ranks": 1,
+      "phase": "P9",
+      "contract": "checksum errors, truncation, unknown sections, and incompatible versions leave destination state unchanged"
     }
   ]
 }

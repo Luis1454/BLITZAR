@@ -113,6 +113,8 @@ public:
     [[nodiscard]] bool AtEnd() const noexcept;
     [[nodiscard]] std::uint64_t Checksum() const noexcept;
 
+    [[nodiscard]] bool SkipHashed(std::size_t byte_count) noexcept;
+
 private:
     [[nodiscard]] bool ReadBytes(std::span<std::byte> destination, bool hash) noexcept;
 

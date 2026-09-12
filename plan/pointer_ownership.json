@@ -204,6 +204,12 @@
       "category": "c_abi_consumer",
       "ownership": "borrowed_abi",
       "reason": "Capability and unsupported-feature test consumes opaque handles from the public ABI."
+    },
+    {
+      "path": "tests/io/snap/SnapV2Test.cpp",
+      "category": "process_entrypoint",
+      "ownership": "borrowed_process_arguments",
+      "reason": "V2 snapshot qualification main receives the mode selector from the test runner."
     }
   ],
   "allocation_allowlist": [

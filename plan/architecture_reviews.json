@@ -697,6 +697,42 @@
       "issue": 686,
       "status": "accepted",
       "decision": "The repository tree gate keeps policy validation, promotion checks, and recursive source/test symmetry in one deterministic boundary so the frozen taxonomy cannot drift between its plan and materialized forms. Its tool-local complexity is exposed, covered by fixtures, and does not waive production thresholds."
+    },
+    {
+      "path": "src/io/snap/codec/SnapshotV2Reader.cpp",
+      "signals": [
+        "function_count"
+      ],
+      "issue": 686,
+      "status": "accepted",
+      "decision": "The V2 snapshot decoder keeps the structural validator, the section decoders, and the transactional two-pass frame walk together because they share one wire contract; the per-file function count is registered while the reader stays a single IO responsibility boundary."
+    },
+    {
+      "path": "src/io/snap/codec/SnapshotV2Reader.hpp",
+      "signals": [
+        "branching"
+      ],
+      "issue": 686,
+      "status": "accepted",
+      "decision": "The V2 restart target keeps the capacity and decoded-state predicates beside the destination views they validate; the branching is the explicit complete-state compatibility check required by OPS-002 and is covered by TST-P9."
+    },
+    {
+      "path": "src/io/snap/codec/SnapshotV2Writer.cpp",
+      "signals": [
+        "function_count"
+      ],
+      "issue": 686,
+      "status": "accepted",
+      "decision": "The V2 snapshot writer keeps the per-section encoders beside the atomic publication path because every section shares the same wire framing and checksum contract; its bounded function count is registered and fixture-covered."
+    },
+    {
+      "path": "src/io/snap/codec/SnapshotWire.cpp",
+      "signals": [
+        "function_count"
+      ],
+      "issue": 686,
+      "status": "accepted",
+      "decision": "The wire reader gained a hashed skip used by the V2 two-pass validator so unknown or truncated sections are rejected without touching destination state; the bounded helper count stays in one wire utility."
     }
   ]
 }

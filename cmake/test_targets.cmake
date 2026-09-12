@@ -70,6 +70,16 @@ target_compile_features(blitzar_snapshot_delta_test PRIVATE cxx_std_20)
 target_include_directories(blitzar_snapshot_delta_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
 blitzar_enable_warnings(blitzar_snapshot_delta_test)
 
+add_executable(blitzar_snapshot_v2_test
+    tests/io/snap/SnapV2Test.cpp
+)
+target_link_libraries(blitzar_snapshot_v2_test PRIVATE blitzar)
+target_compile_features(blitzar_snapshot_v2_test PRIVATE cxx_std_20)
+target_include_directories(blitzar_snapshot_v2_test PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/tests
+    ${CMAKE_CURRENT_SOURCE_DIR}/src)
+blitzar_enable_warnings(blitzar_snapshot_v2_test)
+
 add_executable(blitzar_hdf5_test
     tests/fixtures/FixtureRestartTest.cpp
     tests/io/hdf5/Hdf5Test.cpp

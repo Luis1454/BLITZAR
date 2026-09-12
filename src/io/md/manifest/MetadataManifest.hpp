@@ -66,6 +66,10 @@ struct MetadataExecution final {
     bool bitwise_reproducible{true};
 
     [[nodiscard]] blitzar_status Validate() const noexcept;
+    [[nodiscard]] bool IsResolvedIdentity() const noexcept;
+    [[nodiscard]] blitzar_status ResolveIdentity(
+        std::string_view resolved_backend, std::string_view resolved_device) noexcept;
+    [[nodiscard]] blitzar_status ValidateCompleted() const noexcept;
 };
 
 enum class MetadataOutputFormat : std::uint8_t {

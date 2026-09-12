@@ -389,6 +389,36 @@
       "name": "shared-library-cli-configuration-boundary",
       "command": "cmake -DBLITZAR_SOURCE_DIR=${CMAKE_CURRENT_SOURCE_DIR} -DBLITZAR_BUILD_DIR=${CMAKE_BINARY_DIR} -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/package/CliContractTest.cmake",
       "phase": "P0"
+    },
+    {
+      "id": "TST-P9-001",
+      "name": "v2-complete-state-round-trip",
+      "command": "blitzar_snapshot_v2_test roundtrip",
+      "phase": "P9"
+    },
+    {
+      "id": "TST-P9-002",
+      "name": "v2-same-rank-byte-parity",
+      "command": "blitzar_snapshot_v2_test parity",
+      "phase": "P9"
+    },
+    {
+      "id": "TST-P9-003",
+      "name": "v2-rank-count-changing-repartition",
+      "command": "blitzar_snapshot_v2_test repartition",
+      "phase": "P9"
+    },
+    {
+      "id": "TST-P9-004",
+      "name": "v2-resolved-fast-backend-identity",
+      "command": "blitzar_snapshot_v2_test identity",
+      "phase": "P9"
+    },
+    {
+      "id": "TST-P9-005",
+      "name": "v2-transactional-restart-rejection",
+      "command": "blitzar_snapshot_v2_test reject",
+      "phase": "P9"
     }
   ],
   "architecture": {

@@ -79,7 +79,7 @@ namespace {
 blitzar_status MetadataExecution::Validate() const noexcept
 {
     const bool strict_identity = backend == "cpu" && device == "host-cpu";
-    const bool fast_identity = backend == "runtime-selected" && device == "runtime-selected";
+    const bool fast_provisional = backend == "runtime-selected" && device == "runtime-selected";
     const bool compensator_valid =
         compensator == (mode == blitzar_core::ExecutionMode::Strict
                                ? "direct-plain;diagnostics-neumaier-v1"
@@ -89,12 +89,46 @@ blitzar_status MetadataExecution::Validate() const noexcept
         precision != "float64" || compiler.empty() || device.empty() || backend.empty() ||
         rng.empty() || !compensator_valid || ordering.empty() ||
         (mode == blitzar_core::ExecutionMode::Strict && !strict_identity) ||
-        (mode == blitzar_core::ExecutionMode::Fast && !fast_identity) ||
+        (mode == blitzar_core::ExecutionMode::Fast && !fast_provisional && !IsResolvedIdentity()) ||
         (mode == blitzar_core::ExecutionMode::Fast && bitwise_reproducible)) {
         return BLITZAR_STATUS_INVALID_ARGUMENT;
     }
 
     return BLITZAR_STATUS_OK;
+}
+
+bool MetadataExecution::IsResolvedIdentity() const noexcept
+{
+    if (backend == "cpu" && device == "host-cpu") {
+        return true;
+    }
+
+    return backend == "hip" && device != "host-cpu" && device != "runtime-selected" &&
+           !device.empty();
+}
+
+blitzar_status MetadataExecution::ResolveIdentity(
+    std::string_view resolved_backend, std::string_view resolved_device) noexcept
+{
+    if (mode != blitzar_core::ExecutionMode::Fast) {
+        return BLITZAR_STATUS_INVALID_ARGUMENT;
+    }
+
+    backend.assign(resolved_backend);
+    device.assign(resolved_device);
+
+    return IsResolvedIdentity() ? BLITZAR_STATUS_OK : BLITZAR_STATUS_INVALID_ARGUMENT;
+}
+
+blitzar_status MetadataExecution::ValidateCompleted() const noexcept
+{
+    const blitzar_status status = Validate();
+
+    if (status != BLITZAR_STATUS_OK) {
+        return status;
+    }
+
+    return IsResolvedIdentity() ? BLITZAR_STATUS_OK : BLITZAR_STATUS_INVALID_ARGUMENT;
 }
 
 blitzar_status MetadataRunInfo::Validate() const noexcept

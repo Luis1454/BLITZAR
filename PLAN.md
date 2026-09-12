@@ -2,7 +2,7 @@
 
 Status: **FROZEN**  
 Product/API version: **1.0.0**
-Plan version: **1.0.60**
+Plan version: **1.0.61**
 
 This repository is a clean-room rewrite. The old repository, its source tree,
 its issues, and its documentation are not implementation inputs. Requirements
@@ -67,9 +67,9 @@ records `runtime-selected` until the actual execution backend is known and it
 is never advertised as bitwise reproducible. Snapshot publication checks that
 no MPI communication is active at the capture boundary. The V1 payload remains
 particle state only; complete backend-neutral restart state and rank-count
-change support belong to the planned P9/OPS-002 contract. P9 also requires a
-completed fast manifest to replace `runtime-selected` with the resolved backend
-and device identity before persistent output is complete.
+change support are implemented-local under the P9/OPS-002 contract. P9 also
+requires a completed fast manifest to replace `runtime-selected` with the
+resolved backend and device identity before persistent output is complete.
 
 The block-time qualification contract is frozen in `plan/block_time.json`.
 Its bounded scheduler model is evidence only: fixed-step KDK remains the
@@ -272,10 +272,11 @@ The phases are ordered dependencies, not a list of parallel experiments.
 - P7 and P8 are implemented and locally qualified from the P3/P4 contracts;
   their existing distributed qualification does not promote the single-rank
   P5 mesh path into MPI.
-- P9 is planned as OPS-002. It owns the V2 backend-neutral restart state,
-  rank-count-changing repartition, and final fast-backend identity. Its
-  contract and acceptance cases are frozen in `plan/ops002.json`; no P9
-  capability is claimed until its tests are registered and qualified.
+- P9 is implemented-local as OPS-002. It owns the V2 backend-neutral restart
+  state, rank-count-changing repartition, and final fast-backend identity. Its
+  contract and acceptance cases are frozen in `plan/ops002.json` and are
+  registered as `TST-P9-001` through `TST-P9-005` on the CPU strict lane;
+  physical MPI rank-change and HIP device identity remain capability-gated.
 - The block-time scheduling candidate is qualified as a P1 evidence boundary,
   but it is not promoted into production. Any physical block integrator must
   be a later plan change with force-state, MPI, restart, rollback, and
@@ -553,7 +554,7 @@ through a KDK transition hook, and the KDK checkpoint is recaptured for
 the new local prefix before the second force evaluation. `TST-P8-001` forces
 inter-rank movement and compares the result with the direct single-rank oracle.
 
-### P9: Portable Restart State and Runtime Identity (planned)
+### P9: Portable Restart State and Runtime Identity (implemented-local)
 
 OPS-002 extends the current P6/P7/P8 boundaries with a versioned V2 restart
 state. The V2 contract carries particle, integrator, RNG, units, execution
@@ -570,8 +571,8 @@ reject a portable rank-count-changing restart.
 
 Fast output may use `runtime-selected` provisionally, but a completed persistent
 manifest must record the resolved `cpu` or `hip` backend and device boundary.
-The planned acceptance cases are defined in `plan/ops002.json` and become
-registered `TST-P9-*` tests when implementation begins.
+The acceptance cases are defined in `plan/ops002.json` and are registered as
+`TST-P9-001` through `TST-P9-005` on the CPU strict lane.
 
 ## Non-Goals for the Initial Rewrite
 
@@ -587,7 +588,7 @@ an owner, an oracle, and an acceptance test.
 ## Frozen Repository Tree
 
 The exact destination taxonomy is the machine-readable contract in
-`plan/repository_tree.json`, frozen at plan version 1.0.60 and linked from
+`plan/repository_tree.json`, frozen at plan version 1.0.61 and linked from
 `plan/manifest.json`. It is the only authoritative source for the repository
 tree migration; the shape block below remains the as-built inventory until the
 migration is promoted.

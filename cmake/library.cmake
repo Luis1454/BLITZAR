@@ -75,6 +75,10 @@ set(BLITZAR_LIBRARY_SOURCES
     src/io/snap/delta/SnapshotDeltaStream.cpp
     src/io/snap/codec/SnapshotWriter.cpp
     src/io/snap/codec/SnapshotReader.cpp
+    src/io/snap/codec/SnapshotV2State.cpp
+    src/io/snap/codec/SnapshotV2Writer.cpp
+    src/io/snap/codec/SnapshotV2Reader.cpp
+    src/io/snap/codec/SnapshotRepartition.cpp
     src/io/hdf5/Hdf5Writer.cpp
     src/io/hdf5/Hdf5Reader.cpp
     src/io/md/manifest/MetadataManifest.cpp

@@ -80,6 +80,19 @@ std::uint64_t SnapshotWireReader::Checksum() const noexcept
     return checksum_.Value();
 }
 
+bool SnapshotWireReader::SkipHashed(std::size_t byte_count) noexcept
+{
+    if (position_ > bytes_.size() || byte_count > bytes_.size() - position_) {
+        return false;
+    }
+
+    checksum_.Add(bytes_.subspan(position_, byte_count));
+
+    position_ += byte_count;
+
+    return true;
+}
+
 bool SnapshotWireReader::ReadBytes(std::span<std::byte> destination, bool hash) noexcept
 {
     if (position_ > bytes_.size() || destination.size() > bytes_.size() - position_) {

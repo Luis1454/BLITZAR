@@ -6,92 +6,292 @@
     "historical"
   ],
   "decisions": [
-    {"path": "plan/decisions/001-initial-freeze.md", "lifecycle": "active"},
-    {"path": "plan/decisions/002-gate-path-scope.md", "lifecycle": "active"},
-    {"path": "plan/decisions/003-quality-root-scope.md", "lifecycle": "active"},
-    {"path": "plan/decisions/004-hip-optional-backend.md", "lifecycle": "active"},
-    {"path": "plan/decisions/005-native-cuda-compatibility.md", "lifecycle": "active"},
-    {"path": "plan/decisions/006-mpi-domain-decomposition.md", "lifecycle": "active"},
-    {"path": "plan/decisions/007-mpi-kdk-overlap.md", "lifecycle": "active"},
-    {"path": "plan/decisions/008-mpi-context-boundaries.md", "lifecycle": "active"},
-    {"path": "plan/decisions/009-mpi-packet-wire-format.md", "lifecycle": "active"},
-    {"path": "plan/decisions/010-context-ownership-thread-safety.md", "lifecycle": "active"},
-    {"path": "plan/decisions/011-public-status-normalization.md", "lifecycle": "active"},
-    {"path": "plan/decisions/012-installed-package-dependencies.md", "lifecycle": "active"},
-    {"path": "plan/decisions/013-capability-gated-ci.md", "lifecycle": "active"},
-    {"path": "plan/decisions/014-plan-gate-scope.md", "lifecycle": "active"},
-    {"path": "plan/decisions/015-validation-gaps-and-waivers.md", "lifecycle": "active"},
-    {"path": "plan/decisions/016-kdk-namespace-boundary.md", "lifecycle": "active"},
-    {"path": "plan/decisions/017-version-identity.md", "lifecycle": "active"},
+    {
+      "path": "plan/decisions/001-initial-freeze.md",
+      "lifecycle": "active"
+    },
+    {
+      "path": "plan/decisions/002-gate-path-scope.md",
+      "lifecycle": "active"
+    },
+    {
+      "path": "plan/decisions/003-quality-root-scope.md",
+      "lifecycle": "active"
+    },
+    {
+      "path": "plan/decisions/004-hip-optional-backend.md",
+      "lifecycle": "active"
+    },
+    {
+      "path": "plan/decisions/005-native-cuda-compatibility.md",
+      "lifecycle": "active"
+    },
+    {
+      "path": "plan/decisions/006-mpi-domain-decomposition.md",
+      "lifecycle": "active"
+    },
+    {
+      "path": "plan/decisions/007-mpi-kdk-overlap.md",
+      "lifecycle": "active"
+    },
+    {
+      "path": "plan/decisions/008-mpi-context-boundaries.md",
+      "lifecycle": "active"
+    },
+    {
+      "path": "plan/decisions/009-mpi-packet-wire-format.md",
+      "lifecycle": "active"
+    },
+    {
+      "path": "plan/decisions/010-context-ownership-thread-safety.md",
+      "lifecycle": "active"
+    },
+    {
+      "path": "plan/decisions/011-public-status-normalization.md",
+      "lifecycle": "active"
+    },
+    {
+      "path": "plan/decisions/012-installed-package-dependencies.md",
+      "lifecycle": "active"
+    },
+    {
+      "path": "plan/decisions/013-capability-gated-ci.md",
+      "lifecycle": "active"
+    },
+    {
+      "path": "plan/decisions/014-plan-gate-scope.md",
+      "lifecycle": "active"
+    },
+    {
+      "path": "plan/decisions/015-validation-gaps-and-waivers.md",
+      "lifecycle": "active"
+    },
+    {
+      "path": "plan/decisions/016-kdk-namespace-boundary.md",
+      "lifecycle": "active"
+    },
+    {
+      "path": "plan/decisions/017-version-identity.md",
+      "lifecycle": "active"
+    },
     {
       "path": "plan/decisions/018-repository-root-ownership.md",
       "lifecycle": "superseded",
       "notes": "Replaced by Decision 035 after the responsibility-owned accelerator layout was materialized."
     },
-    {"path": "plan/decisions/019-particle-arena-ownership.md", "lifecycle": "active"},
-    {"path": "plan/decisions/020-direct-staging-transaction.md", "lifecycle": "active"},
-    {"path": "plan/decisions/021-bounded-hot-path-capacity.md", "lifecycle": "active"},
-    {"path": "plan/decisions/022-bounded-architecture-qualification.md", "lifecycle": "active"},
+    {
+      "path": "plan/decisions/019-particle-arena-ownership.md",
+      "lifecycle": "active"
+    },
+    {
+      "path": "plan/decisions/020-direct-staging-transaction.md",
+      "lifecycle": "active"
+    },
+    {
+      "path": "plan/decisions/021-bounded-hot-path-capacity.md",
+      "lifecycle": "active"
+    },
+    {
+      "path": "plan/decisions/022-bounded-architecture-qualification.md",
+      "lifecycle": "active"
+    },
     {
       "path": "plan/decisions/023-simulation-responsibility-boundary.md",
       "lifecycle": "active",
       "notes": "Implementation mapping is SimConfig.cpp, SimParticleSet.cpp, SimParticleGet.cpp, SimStep.cpp, and Sim.cpp."
     },
-    {"path": "plan/decisions/024-mpi-process-lifetime.md", "lifecycle": "active"},
-    {"path": "plan/decisions/025-distributed-input-ownership.md", "lifecycle": "active"},
-    {"path": "plan/decisions/026-mpi-overlap-qualification.md", "lifecycle": "active"},
-    {"path": "plan/decisions/027-fmm-multipole-contract.md", "lifecycle": "active"},
-    {"path": "plan/decisions/028-hierarchical-acceptance-criterion.md", "lifecycle": "active"},
-    {"path": "plan/decisions/029-repository-realignment-contract.md", "lifecycle": "active"},
-    {"path": "plan/decisions/030-build-workspace-contract.md", "lifecycle": "active"},
-    {"path": "plan/decisions/031-capability-contract.md", "lifecycle": "active"},
-    {"path": "plan/decisions/032-reproducible-evidence.md", "lifecycle": "active"},
-    {"path": "plan/decisions/033-reproducible-evidence-gates.md", "lifecycle": "active"},
-    {"path": "plan/decisions/034-final-repository-qualification.md", "lifecycle": "active"},
-    {"path": "plan/decisions/035-source-tree-responsibility-realignment.md", "lifecycle": "superseded", "notes": "Replaced by Decision 036 after the module boundaries were refined by responsibility."},
-    {"path": "plan/decisions/036-module-boundaries-and-backend-ownership.md", "lifecycle": "active"},
-    {"path": "plan/decisions/037-cross-platform-p4-qualification.md", "lifecycle": "active"},
-    {"path": "plan/decisions/038-directive-config-format.md", "lifecycle": "active"},
-    {"path": "plan/decisions/039-config-execution-contract.md", "lifecycle": "active"},
-    {"path": "plan/decisions/040-output-contract-and-persistence.md", "lifecycle": "active"},
-    {"path": "plan/decisions/041-simulation-module-layout.md", "lifecycle": "superseded", "notes": "Refined by Decision 044 to isolate transient particle staging from configuration-generated initialization state."},
-    {"path": "plan/decisions/042-versioned-snapshot-frame.md", "lifecycle": "active"},
-    {"path": "plan/decisions/043-binary-snapshot-codec.md", "lifecycle": "active"},
-    {"path": "plan/decisions/044-simulation-staging-boundary.md", "lifecycle": "active"},
-    {"path": "plan/decisions/045-run-manifest-atomic-output.md", "lifecycle": "active"},
-    {"path": "plan/decisions/046-cli-output-integration.md", "lifecycle": "active"},
-    {"path": "plan/decisions/047-cross-platform-qualification.md", "lifecycle": "active"},
-    {"path": "plan/decisions/048-conservation-metrics-contract.md", "lifecycle": "active"},
+    {
+      "path": "plan/decisions/024-mpi-process-lifetime.md",
+      "lifecycle": "active"
+    },
+    {
+      "path": "plan/decisions/025-distributed-input-ownership.md",
+      "lifecycle": "active"
+    },
+    {
+      "path": "plan/decisions/026-mpi-overlap-qualification.md",
+      "lifecycle": "active"
+    },
+    {
+      "path": "plan/decisions/027-fmm-multipole-contract.md",
+      "lifecycle": "active"
+    },
+    {
+      "path": "plan/decisions/028-hierarchical-acceptance-criterion.md",
+      "lifecycle": "active"
+    },
+    {
+      "path": "plan/decisions/029-repository-realignment-contract.md",
+      "lifecycle": "active"
+    },
+    {
+      "path": "plan/decisions/030-build-workspace-contract.md",
+      "lifecycle": "active"
+    },
+    {
+      "path": "plan/decisions/031-capability-contract.md",
+      "lifecycle": "active"
+    },
+    {
+      "path": "plan/decisions/032-reproducible-evidence.md",
+      "lifecycle": "active"
+    },
+    {
+      "path": "plan/decisions/033-reproducible-evidence-gates.md",
+      "lifecycle": "active"
+    },
+    {
+      "path": "plan/decisions/034-final-repository-qualification.md",
+      "lifecycle": "active"
+    },
+    {
+      "path": "plan/decisions/035-source-tree-responsibility-realignment.md",
+      "lifecycle": "superseded",
+      "notes": "Replaced by Decision 036 after the module boundaries were refined by responsibility."
+    },
+    {
+      "path": "plan/decisions/036-module-boundaries-and-backend-ownership.md",
+      "lifecycle": "active"
+    },
+    {
+      "path": "plan/decisions/037-cross-platform-p4-qualification.md",
+      "lifecycle": "active"
+    },
+    {
+      "path": "plan/decisions/038-directive-config-format.md",
+      "lifecycle": "active"
+    },
+    {
+      "path": "plan/decisions/039-config-execution-contract.md",
+      "lifecycle": "active"
+    },
+    {
+      "path": "plan/decisions/040-output-contract-and-persistence.md",
+      "lifecycle": "active"
+    },
+    {
+      "path": "plan/decisions/041-simulation-module-layout.md",
+      "lifecycle": "superseded",
+      "notes": "Refined by Decision 044 to isolate transient particle staging from configuration-generated initialization state."
+    },
+    {
+      "path": "plan/decisions/042-versioned-snapshot-frame.md",
+      "lifecycle": "active"
+    },
+    {
+      "path": "plan/decisions/043-binary-snapshot-codec.md",
+      "lifecycle": "active"
+    },
+    {
+      "path": "plan/decisions/044-simulation-staging-boundary.md",
+      "lifecycle": "active"
+    },
+    {
+      "path": "plan/decisions/045-run-manifest-atomic-output.md",
+      "lifecycle": "active"
+    },
+    {
+      "path": "plan/decisions/046-cli-output-integration.md",
+      "lifecycle": "active"
+    },
+    {
+      "path": "plan/decisions/047-cross-platform-qualification.md",
+      "lifecycle": "active"
+    },
+    {
+      "path": "plan/decisions/048-conservation-metrics-contract.md",
+      "lifecycle": "active"
+    },
     {
       "path": "plan/decisions/049-cli-production-summary.md",
       "lifecycle": "superseded",
       "notes": "JSON schema retained; default presentation superseded by Decision 054."
     },
-    {"path": "plan/decisions/050-deterministic-snapshot-restart.md", "lifecycle": "active"},
-    {"path": "plan/decisions/051-restart-boundary-hardening.md", "lifecycle": "active"},
-    {"path": "plan/decisions/052-snapshot-postprocessing.md", "lifecycle": "active"},
-    {"path": "plan/decisions/053-mpi-hip-output-qualification.md", "lifecycle": "active"},
-    {"path": "plan/decisions/054-cli-human-summary.md", "lifecycle": "active"},
-    {"path": "plan/decisions/055-solver-resource-contract.md", "lifecycle": "active"},
-    {"path": "plan/decisions/056-spatial-resource-bundles.md", "lifecycle": "active"},
-    {"path": "plan/decisions/057-typed-force-evaluation.md", "lifecycle": "active"},
-    {"path": "plan/decisions/058-performance-benchmark-contract.md", "lifecycle": "active"},
-    {"path": "plan/decisions/059-morton-layout-qualification.md", "lifecycle": "active"},
-    {"path": "plan/decisions/060-compensated-accumulation-policy.md", "lifecycle": "active"},
-    {"path": "plan/decisions/061-local-neighbor-index-policy.md", "lifecycle": "active"},
-    {"path": "plan/decisions/062-hdf5-adapter-policy.md", "lifecycle": "active"},
-    {"path": "plan/decisions/063-snapshot-delta-policy.md", "lifecycle": "active"},
-    {"path": "plan/decisions/064-block-time-stepping-policy.md", "lifecycle": "active"},
-    {"path": "plan/decisions/065-bvh-irregular-query-policy.md", "lifecycle": "active"},
-    {"path": "plan/decisions/066-grid-pm-treepm-policy.md", "lifecycle": "active"},
-    {"path": "plan/decisions/067-hdf5-cli-output-policy.md", "lifecycle": "active"},
-    {"path": "plan/decisions/068-mpi-shard-persistence-policy.md", "lifecycle": "active"},
+    {
+      "path": "plan/decisions/050-deterministic-snapshot-restart.md",
+      "lifecycle": "active"
+    },
+    {
+      "path": "plan/decisions/051-restart-boundary-hardening.md",
+      "lifecycle": "active"
+    },
+    {
+      "path": "plan/decisions/052-snapshot-postprocessing.md",
+      "lifecycle": "active"
+    },
+    {
+      "path": "plan/decisions/053-mpi-hip-output-qualification.md",
+      "lifecycle": "active"
+    },
+    {
+      "path": "plan/decisions/054-cli-human-summary.md",
+      "lifecycle": "active"
+    },
+    {
+      "path": "plan/decisions/055-solver-resource-contract.md",
+      "lifecycle": "active"
+    },
+    {
+      "path": "plan/decisions/056-spatial-resource-bundles.md",
+      "lifecycle": "active"
+    },
+    {
+      "path": "plan/decisions/057-typed-force-evaluation.md",
+      "lifecycle": "active"
+    },
+    {
+      "path": "plan/decisions/058-performance-benchmark-contract.md",
+      "lifecycle": "active"
+    },
+    {
+      "path": "plan/decisions/059-morton-layout-qualification.md",
+      "lifecycle": "active"
+    },
+    {
+      "path": "plan/decisions/060-compensated-accumulation-policy.md",
+      "lifecycle": "active"
+    },
+    {
+      "path": "plan/decisions/061-local-neighbor-index-policy.md",
+      "lifecycle": "active"
+    },
+    {
+      "path": "plan/decisions/062-hdf5-adapter-policy.md",
+      "lifecycle": "active"
+    },
+    {
+      "path": "plan/decisions/063-snapshot-delta-policy.md",
+      "lifecycle": "active"
+    },
+    {
+      "path": "plan/decisions/064-block-time-stepping-policy.md",
+      "lifecycle": "active"
+    },
+    {
+      "path": "plan/decisions/065-bvh-irregular-query-policy.md",
+      "lifecycle": "active"
+    },
+    {
+      "path": "plan/decisions/066-grid-pm-treepm-policy.md",
+      "lifecycle": "active"
+    },
+    {
+      "path": "plan/decisions/067-hdf5-cli-output-policy.md",
+      "lifecycle": "active"
+    },
+    {
+      "path": "plan/decisions/068-mpi-shard-persistence-policy.md",
+      "lifecycle": "active"
+    },
     {
       "path": "plan/decisions/069-kifmm-workspace-policy.md",
       "lifecycle": "superseded",
       "notes": "Qualification and public promotion boundary refined by Decision 070."
     },
-    {"path": "plan/decisions/070-kifmm-qualification-policy.md", "lifecycle": "active"},
+    {
+      "path": "plan/decisions/070-kifmm-qualification-policy.md",
+      "lifecycle": "active"
+    },
     {
       "path": "plan/decisions/071-reproducibility-and-restart-state.md",
       "lifecycle": "superseded",
@@ -102,13 +302,26 @@
       "lifecycle": "superseded",
       "notes": "Current boundaries and the P9 follow-on are formalized by Decision 073."
     },
-    {"path": "plan/decisions/073-ops002-portable-restart-plan.md", "lifecycle": "active"},
+    {
+      "path": "plan/decisions/073-ops002-portable-restart-plan.md",
+      "lifecycle": "active"
+    },
     {
       "path": "plan/decisions/074-source-test-directory-symmetry.md",
       "lifecycle": "superseded",
       "notes": "The .keep marker convention was replaced by explicit allowed_missing entries in Decision 075."
     },
-    {"path": "plan/decisions/075-explicit-missing-directory-policy.md", "lifecycle": "active"},
-    {"path": "plan/decisions/076-frozen-repository-tree-contract.md", "lifecycle": "active"}
+    {
+      "path": "plan/decisions/075-explicit-missing-directory-policy.md",
+      "lifecycle": "active"
+    },
+    {
+      "path": "plan/decisions/076-frozen-repository-tree-contract.md",
+      "lifecycle": "active"
+    },
+    {
+      "path": "plan/decisions/077-p9-portable-restart-implementation.md",
+      "lifecycle": "active"
+    }
   ]
 }
