@@ -19,6 +19,20 @@
 
 namespace {
 
+constexpr std::size_t ExactParticleCount = 8;
+constexpr std::size_t LatticeParticleCount = 64;
+constexpr std::size_t OpenLeafCapacity = 16;
+constexpr double ExactOpeningAngle = 0.0;
+constexpr double DefaultOpeningAngle = 0.35;
+constexpr double ExactSoftening = 0.05;
+constexpr double ApproximateSoftening = 0.1;
+constexpr double ApproximateRelativeTolerance = 0.05;
+constexpr double KifmmExactRelativeBound = 1.0e-12;
+constexpr double WindowRadiusSquared = 1.0;
+
+constexpr blitzar_core::Vector3 BoxOrigin{-1.0, -1.0, -1.0};
+constexpr blitzar_core::Vector3 BoxSize{2.0, 2.0, 2.0};
+
 template <typename Settings>
 [[nodiscard]] Settings MakeSettings(
     std::size_t particle_count, double opening_angle, std::size_t leaf_capacity) noexcept
@@ -44,6 +58,27 @@ template <typename Solver>
         blitzar_core::ExecutionSettings{}, blitzar_solvers::SolverForceSourceKind::Local, periodic};
 
     return provider.Evaluate(request);
+}
+
+struct SolverCase final {
+    blitzar_core::ParticleStateView particles;
+    const blitzar_physics::GravityParameters& gravity;
+    std::size_t particle_count;
+    double opening_angle;
+    std::size_t leaf_capacity;
+};
+
+template <typename Settings, typename Solver>
+[[nodiscard]] bool EvaluateSolverCase(const SolverCase& config, blitzar_core::ForceView forces,
+    const blitzar_physics::PeriodicDomain* periodic) noexcept
+{
+    const auto settings =
+        MakeSettings<Settings>(config.particle_count, config.opening_angle, config.leaf_capacity);
+
+    auto resources = MakeResources(settings, config.particle_count);
+    Solver solver(config.gravity, settings, config.particle_count, resources);
+
+    return EvaluatePeriodic(solver, config.particles, forces, periodic) == BLITZAR_STATUS_OK;
 }
 
 void FillParticles(blitzar_particles::ParticleBuffer& particles, bool tight) noexcept
@@ -91,18 +126,15 @@ void FillParticles(blitzar_particles::ParticleBuffer& particles, bool tight) noe
 
 [[nodiscard]] bool RunWindowEquivalentCase() noexcept
 {
-    constexpr std::size_t ParticleCount = 8;
-    const blitzar_physics::PeriodicDomain periodic{
-        true, blitzar_core::Vector3{-1.0, -1.0, -1.0}, blitzar_core::Vector3{2.0, 2.0, 2.0}};
-
-    const blitzar_physics::GravityParameters gravity{1.0, 0.05};
-    blitzar_particles::ParticleBuffer particles(ParticleCount);
-    blitzar_particles::ParticleAccelerationBuffer direct_force(ParticleCount);
-    blitzar_particles::ParticleAccelerationBuffer windowed_force(ParticleCount);
+    const blitzar_physics::PeriodicDomain periodic{true, BoxOrigin, BoxSize};
+    const blitzar_physics::GravityParameters gravity{1.0, ExactSoftening};
+    blitzar_particles::ParticleBuffer particles(ExactParticleCount);
+    blitzar_particles::ParticleAccelerationBuffer direct_force(ExactParticleCount);
+    blitzar_particles::ParticleAccelerationBuffer windowed_force(ExactParticleCount);
 
     FillParticles(particles, true);
 
-    blitzar_direct::DirectSolver direct(gravity, ParticleCount);
+    blitzar_direct::DirectSolver direct(gravity, ExactParticleCount);
 
     if (EvaluatePeriodic(direct, particles.State(), direct_force.View(), &periodic) !=
         BLITZAR_STATUS_OK) {
@@ -129,11 +161,11 @@ void FillParticles(blitzar_particles::ParticleBuffer& particles, bool tight) noe
                 const double dz = state.z[source] - state.z[target] - shift.z;
                 const double distance_squared = dx * dx + dy * dy + dz * dz;
 
-                if (distance_squared > 1.0) {
+                if (distance_squared > WindowRadiusSquared) {
                     continue;
                 }
 
-                const double softened = distance_squared + 0.05 * 0.05;
+                const double softened = distance_squared + ExactSoftening * ExactSoftening;
                 const double factor = state.mass[source] / (softened * std::sqrt(softened));
 
                 ax += factor * dx;
@@ -152,59 +184,41 @@ void FillParticles(blitzar_particles::ParticleBuffer& particles, bool tight) noe
 
 [[nodiscard]] bool RunExactParityCase() noexcept
 {
-    constexpr std::size_t ParticleCount = 8;
-    const blitzar_physics::PeriodicDomain periodic{
-        true, blitzar_core::Vector3{-1.0, -1.0, -1.0}, blitzar_core::Vector3{2.0, 2.0, 2.0}};
-
-    const blitzar_physics::GravityParameters gravity{1.0, 0.05};
-    blitzar_particles::ParticleBuffer particles(ParticleCount);
-    blitzar_particles::ParticleAccelerationBuffer direct_force(ParticleCount);
-    blitzar_particles::ParticleAccelerationBuffer bh_force(ParticleCount);
-    blitzar_particles::ParticleAccelerationBuffer fmm_force(ParticleCount);
-    blitzar_particles::ParticleAccelerationBuffer kifmm_force(ParticleCount);
+    const blitzar_physics::PeriodicDomain periodic{true, BoxOrigin, BoxSize};
+    const blitzar_physics::GravityParameters gravity{1.0, ExactSoftening};
+    blitzar_particles::ParticleBuffer particles(ExactParticleCount);
+    blitzar_particles::ParticleAccelerationBuffer direct_force(ExactParticleCount);
+    blitzar_particles::ParticleAccelerationBuffer bh_force(ExactParticleCount);
+    blitzar_particles::ParticleAccelerationBuffer fmm_force(ExactParticleCount);
+    blitzar_particles::ParticleAccelerationBuffer kifmm_force(ExactParticleCount);
 
     FillParticles(particles, true);
 
-    blitzar_direct::DirectSolver direct(gravity, ParticleCount);
+    const SolverCase config{
+        particles.State(), gravity, ExactParticleCount, ExactOpeningAngle, ExactParticleCount};
+
+    blitzar_direct::DirectSolver direct(gravity, ExactParticleCount);
 
     if (EvaluatePeriodic(direct, particles.State(), direct_force.View(), &periodic) !=
         BLITZAR_STATUS_OK) {
         return false;
     }
 
-    const auto bh_settings =
-        MakeSettings<blitzar_barnes_hut::BarnesHutSettings>(ParticleCount, 0.0, ParticleCount);
-
-    auto bh_resources = MakeResources(bh_settings, ParticleCount);
-    blitzar_barnes_hut::BhSolver barnes_hut(gravity, bh_settings, ParticleCount, bh_resources);
-
-    if (EvaluatePeriodic(barnes_hut, particles.State(), bh_force.View(), &periodic) !=
-            BLITZAR_STATUS_OK ||
+    if (!EvaluateSolverCase<blitzar_barnes_hut::BarnesHutSettings, blitzar_barnes_hut::BhSolver>(
+            config, bh_force.View(), &periodic) ||
         ForceRelativeError(direct_force.View(), bh_force.View()) != 0.0) {
         return false;
     }
 
-    const auto fmm_settings =
-        MakeSettings<blitzar_fmm::FmmSettings>(ParticleCount, 0.0, ParticleCount);
-
-    auto fmm_resources = MakeResources(fmm_settings, ParticleCount);
-    blitzar_fmm::FmmSolver fmm(gravity, fmm_settings, ParticleCount, fmm_resources);
-
-    if (EvaluatePeriodic(fmm, particles.State(), fmm_force.View(), &periodic) !=
-            BLITZAR_STATUS_OK ||
+    if (!EvaluateSolverCase<blitzar_fmm::FmmSettings, blitzar_fmm::FmmSolver>(
+            config, fmm_force.View(), &periodic) ||
         ForceRelativeError(direct_force.View(), fmm_force.View()) != 0.0) {
         return false;
     }
 
-    const auto kifmm_settings =
-        MakeSettings<blitzar_kifmm::KifmmSettings>(ParticleCount, 0.0, ParticleCount);
-
-    auto kifmm_resources = MakeResources(kifmm_settings, ParticleCount);
-    blitzar_kifmm::KifmmSolver kifmm(gravity, kifmm_settings, ParticleCount, kifmm_resources);
-
-    if (EvaluatePeriodic(kifmm, particles.State(), kifmm_force.View(), &periodic) !=
-            BLITZAR_STATUS_OK ||
-        ForceRelativeError(direct_force.View(), kifmm_force.View()) > 1.0e-12) {
+    if (!EvaluateSolverCase<blitzar_kifmm::KifmmSettings, blitzar_kifmm::KifmmSolver>(
+            config, kifmm_force.View(), &periodic) ||
+        ForceRelativeError(direct_force.View(), kifmm_force.View()) > KifmmExactRelativeBound) {
         return false;
     }
 
@@ -213,57 +227,42 @@ void FillParticles(blitzar_particles::ParticleBuffer& particles, bool tight) noe
 
 [[nodiscard]] bool RunApproximateParityCase() noexcept
 {
-    constexpr std::size_t ParticleCount = 64;
-    const blitzar_physics::PeriodicDomain periodic{
-        true, blitzar_core::Vector3{-1.0, -1.0, -1.0}, blitzar_core::Vector3{2.0, 2.0, 2.0}};
-
-    const blitzar_physics::GravityParameters gravity{1.0, 0.1};
-    blitzar_particles::ParticleBuffer particles(ParticleCount);
-    blitzar_particles::ParticleAccelerationBuffer direct_force(ParticleCount);
-    blitzar_particles::ParticleAccelerationBuffer bh_force(ParticleCount);
-    blitzar_particles::ParticleAccelerationBuffer fmm_force(ParticleCount);
-    blitzar_particles::ParticleAccelerationBuffer kifmm_force(ParticleCount);
+    const blitzar_physics::PeriodicDomain periodic{true, BoxOrigin, BoxSize};
+    const blitzar_physics::GravityParameters gravity{1.0, ApproximateSoftening};
+    blitzar_particles::ParticleBuffer particles(LatticeParticleCount);
+    blitzar_particles::ParticleAccelerationBuffer direct_force(LatticeParticleCount);
+    blitzar_particles::ParticleAccelerationBuffer bh_force(LatticeParticleCount);
+    blitzar_particles::ParticleAccelerationBuffer fmm_force(LatticeParticleCount);
+    blitzar_particles::ParticleAccelerationBuffer kifmm_force(LatticeParticleCount);
 
     FillParticles(particles, false);
 
-    blitzar_direct::DirectSolver direct(gravity, ParticleCount);
+    const SolverCase config{
+        particles.State(), gravity, LatticeParticleCount, DefaultOpeningAngle, OpenLeafCapacity};
+
+    blitzar_direct::DirectSolver direct(gravity, LatticeParticleCount);
 
     if (EvaluatePeriodic(direct, particles.State(), direct_force.View(), &periodic) !=
         BLITZAR_STATUS_OK) {
         return false;
     }
 
-    const auto bh_settings =
-        MakeSettings<blitzar_barnes_hut::BarnesHutSettings>(ParticleCount, 0.35, 16);
-
-    auto bh_resources = MakeResources(bh_settings, ParticleCount);
-    blitzar_barnes_hut::BhSolver barnes_hut(gravity, bh_settings, ParticleCount, bh_resources);
-
-    if (EvaluatePeriodic(barnes_hut, particles.State(), bh_force.View(), &periodic) !=
-            BLITZAR_STATUS_OK ||
-        ForceRelativeError(direct_force.View(), bh_force.View()) > 0.05) {
+    if (!EvaluateSolverCase<blitzar_barnes_hut::BarnesHutSettings, blitzar_barnes_hut::BhSolver>(
+            config, bh_force.View(), &periodic) ||
+        ForceRelativeError(direct_force.View(), bh_force.View()) > ApproximateRelativeTolerance) {
         return false;
     }
 
-    const auto fmm_settings = MakeSettings<blitzar_fmm::FmmSettings>(ParticleCount, 0.35, 16);
-
-    auto fmm_resources = MakeResources(fmm_settings, ParticleCount);
-    blitzar_fmm::FmmSolver fmm(gravity, fmm_settings, ParticleCount, fmm_resources);
-
-    if (EvaluatePeriodic(fmm, particles.State(), fmm_force.View(), &periodic) !=
-            BLITZAR_STATUS_OK ||
-        ForceRelativeError(direct_force.View(), fmm_force.View()) > 0.05) {
+    if (!EvaluateSolverCase<blitzar_fmm::FmmSettings, blitzar_fmm::FmmSolver>(
+            config, fmm_force.View(), &periodic) ||
+        ForceRelativeError(direct_force.View(), fmm_force.View()) > ApproximateRelativeTolerance) {
         return false;
     }
 
-    const auto kifmm_settings = MakeSettings<blitzar_kifmm::KifmmSettings>(ParticleCount, 0.35, 16);
-
-    auto kifmm_resources = MakeResources(kifmm_settings, ParticleCount);
-    blitzar_kifmm::KifmmSolver kifmm(gravity, kifmm_settings, ParticleCount, kifmm_resources);
-
-    if (EvaluatePeriodic(kifmm, particles.State(), kifmm_force.View(), &periodic) !=
-            BLITZAR_STATUS_OK ||
-        ForceRelativeError(direct_force.View(), kifmm_force.View()) > 0.05) {
+    if (!EvaluateSolverCase<blitzar_kifmm::KifmmSettings, blitzar_kifmm::KifmmSolver>(
+            config, kifmm_force.View(), &periodic) ||
+        ForceRelativeError(direct_force.View(), kifmm_force.View()) >
+            ApproximateRelativeTolerance) {
         return false;
     }
 
@@ -272,16 +271,14 @@ void FillParticles(blitzar_particles::ParticleBuffer& particles, bool tight) noe
 
 [[nodiscard]] bool RunSeamNoDoubleCountCase() noexcept
 {
-    constexpr std::size_t ParticleCount = 2;
-    const blitzar_physics::PeriodicDomain periodic{
-        true, blitzar_core::Vector3{-1.0, -1.0, -1.0}, blitzar_core::Vector3{2.0, 2.0, 2.0}};
-
-    const blitzar_physics::GravityParameters gravity{1.0, 0.05};
-    blitzar_particles::ParticleBuffer particles(ParticleCount);
-    blitzar_particles::ParticleAccelerationBuffer periodic_force(ParticleCount);
-    blitzar_particles::ParticleAccelerationBuffer expected_force(ParticleCount);
-    blitzar_particles::ParticleAccelerationBuffer open_force(ParticleCount);
-    blitzar_particles::ParticleAccelerationBuffer bh_force(ParticleCount);
+    constexpr std::size_t SeamParticleCount = 2;
+    const blitzar_physics::PeriodicDomain periodic{true, BoxOrigin, BoxSize};
+    const blitzar_physics::GravityParameters gravity{1.0, ExactSoftening};
+    blitzar_particles::ParticleBuffer particles(SeamParticleCount);
+    blitzar_particles::ParticleAccelerationBuffer periodic_force(SeamParticleCount);
+    blitzar_particles::ParticleAccelerationBuffer expected_force(SeamParticleCount);
+    blitzar_particles::ParticleAccelerationBuffer open_force(SeamParticleCount);
+    blitzar_particles::ParticleAccelerationBuffer bh_force(SeamParticleCount);
 
     (void)particles.SetPosition(0, {-0.99, 0.0, 0.0});
     (void)particles.SetPosition(1, {0.99, 0.0, 0.0});
@@ -290,7 +287,10 @@ void FillParticles(blitzar_particles::ParticleBuffer& particles, bool tight) noe
     (void)particles.SetMass(0, 1.0);
     (void)particles.SetMass(1, 1.0);
 
-    blitzar_direct::DirectSolver direct(gravity, ParticleCount);
+    const SolverCase config{
+        particles.State(), gravity, SeamParticleCount, ExactOpeningAngle, SeamParticleCount};
+
+    blitzar_direct::DirectSolver direct(gravity, SeamParticleCount);
 
     if (EvaluatePeriodic(direct, particles.State(), periodic_force.View(), &periodic) !=
             BLITZAR_STATUS_OK ||
@@ -299,7 +299,7 @@ void FillParticles(blitzar_particles::ParticleBuffer& particles, bool tight) noe
         return false;
     }
 
-    const double softened = 0.02 * 0.02 + 0.05 * 0.05;
+    const double softened = 0.02 * 0.02 + ExactSoftening * ExactSoftening;
     const double factor = 1.0 / (softened * std::sqrt(softened));
     const blitzar_core::ForceView expected = expected_force.View();
 
@@ -310,16 +310,10 @@ void FillParticles(blitzar_particles::ParticleBuffer& particles, bool tight) noe
     expected.y[1] = 0.0;
     expected.z[1] = 0.0;
 
-    const auto bh_settings =
-        MakeSettings<blitzar_barnes_hut::BarnesHutSettings>(ParticleCount, 0.0, ParticleCount);
-
-    auto bh_resources = MakeResources(bh_settings, ParticleCount);
-    blitzar_barnes_hut::BhSolver barnes_hut(gravity, bh_settings, ParticleCount, bh_resources);
-
     if (ForceRelativeError(periodic_force.View(), expected_force.View()) > 1.0e-9 ||
         ForceRelativeError(open_force.View(), expected_force.View()) < 0.5 ||
-        EvaluatePeriodic(barnes_hut, particles.State(), bh_force.View(), &periodic) !=
-            BLITZAR_STATUS_OK ||
+        !EvaluateSolverCase<blitzar_barnes_hut::BarnesHutSettings, blitzar_barnes_hut::BhSolver>(
+            config, bh_force.View(), &periodic) ||
         ForceRelativeError(periodic_force.View(), bh_force.View()) != 0.0) {
         return false;
     }
@@ -329,16 +323,18 @@ void FillParticles(blitzar_particles::ParticleBuffer& particles, bool tight) noe
 
 [[nodiscard]] bool RunOpenBoundaryUnchangedCase() noexcept
 {
-    constexpr std::size_t ParticleCount = 64;
     const blitzar_physics::PeriodicDomain disabled{};
-    const blitzar_physics::GravityParameters gravity{1.0, 0.1};
-    blitzar_particles::ParticleBuffer particles(ParticleCount);
-    blitzar_particles::ParticleAccelerationBuffer untouched(ParticleCount);
-    blitzar_particles::ParticleAccelerationBuffer opened(ParticleCount);
+    const blitzar_physics::GravityParameters gravity{1.0, ApproximateSoftening};
+    blitzar_particles::ParticleBuffer particles(LatticeParticleCount);
+    blitzar_particles::ParticleAccelerationBuffer untouched(LatticeParticleCount);
+    blitzar_particles::ParticleAccelerationBuffer opened(LatticeParticleCount);
 
     FillParticles(particles, false);
 
-    blitzar_direct::DirectSolver direct(gravity, ParticleCount);
+    const SolverCase config{
+        particles.State(), gravity, LatticeParticleCount, DefaultOpeningAngle, OpenLeafCapacity};
+
+    blitzar_direct::DirectSolver direct(gravity, LatticeParticleCount);
 
     if (EvaluatePeriodic(direct, particles.State(), untouched.View(), &disabled) !=
             BLITZAR_STATUS_OK ||
@@ -347,40 +343,26 @@ void FillParticles(blitzar_particles::ParticleBuffer& particles, bool tight) noe
         return false;
     }
 
-    const auto bh_settings =
-        MakeSettings<blitzar_barnes_hut::BarnesHutSettings>(ParticleCount, 0.35, 16);
-
-    auto bh_resources = MakeResources(bh_settings, ParticleCount);
-    blitzar_barnes_hut::BhSolver barnes_hut(gravity, bh_settings, ParticleCount, bh_resources);
-
-    if (EvaluatePeriodic(barnes_hut, particles.State(), untouched.View(), &disabled) !=
-            BLITZAR_STATUS_OK ||
-        EvaluatePeriodic(barnes_hut, particles.State(), opened.View(), nullptr) !=
-            BLITZAR_STATUS_OK ||
+    if (!EvaluateSolverCase<blitzar_barnes_hut::BarnesHutSettings, blitzar_barnes_hut::BhSolver>(
+            config, untouched.View(), &disabled) ||
+        !EvaluateSolverCase<blitzar_barnes_hut::BarnesHutSettings, blitzar_barnes_hut::BhSolver>(
+            config, opened.View(), nullptr) ||
         ForceRelativeError(untouched.View(), opened.View()) != 0.0) {
         return false;
     }
 
-    const auto fmm_settings = MakeSettings<blitzar_fmm::FmmSettings>(ParticleCount, 0.35, 16);
-
-    auto fmm_resources = MakeResources(fmm_settings, ParticleCount);
-    blitzar_fmm::FmmSolver fmm(gravity, fmm_settings, ParticleCount, fmm_resources);
-
-    if (EvaluatePeriodic(fmm, particles.State(), untouched.View(), &disabled) !=
-            BLITZAR_STATUS_OK ||
-        EvaluatePeriodic(fmm, particles.State(), opened.View(), nullptr) != BLITZAR_STATUS_OK ||
+    if (!EvaluateSolverCase<blitzar_fmm::FmmSettings, blitzar_fmm::FmmSolver>(
+            config, untouched.View(), &disabled) ||
+        !EvaluateSolverCase<blitzar_fmm::FmmSettings, blitzar_fmm::FmmSolver>(
+            config, opened.View(), nullptr) ||
         ForceRelativeError(untouched.View(), opened.View()) != 0.0) {
         return false;
     }
 
-    const auto kifmm_settings = MakeSettings<blitzar_kifmm::KifmmSettings>(ParticleCount, 0.35, 16);
-
-    auto kifmm_resources = MakeResources(kifmm_settings, ParticleCount);
-    blitzar_kifmm::KifmmSolver kifmm(gravity, kifmm_settings, ParticleCount, kifmm_resources);
-
-    if (EvaluatePeriodic(kifmm, particles.State(), untouched.View(), &disabled) !=
-            BLITZAR_STATUS_OK ||
-        EvaluatePeriodic(kifmm, particles.State(), opened.View(), nullptr) != BLITZAR_STATUS_OK ||
+    if (!EvaluateSolverCase<blitzar_kifmm::KifmmSettings, blitzar_kifmm::KifmmSolver>(
+            config, untouched.View(), &disabled) ||
+        !EvaluateSolverCase<blitzar_kifmm::KifmmSettings, blitzar_kifmm::KifmmSolver>(
+            config, opened.View(), nullptr) ||
         ForceRelativeError(untouched.View(), opened.View()) != 0.0) {
         return false;
     }
@@ -390,53 +372,37 @@ void FillParticles(blitzar_particles::ParticleBuffer& particles, bool tight) noe
 
 [[nodiscard]] bool RunRefitParityCase() noexcept
 {
-    constexpr std::size_t ParticleCount = 64;
-    const blitzar_physics::PeriodicDomain periodic{
-        true, blitzar_core::Vector3{-1.0, -1.0, -1.0}, blitzar_core::Vector3{2.0, 2.0, 2.0}};
-
-    const blitzar_physics::GravityParameters gravity{1.0, 0.1};
-    blitzar_particles::ParticleBuffer particles(ParticleCount);
-    blitzar_particles::ParticleAccelerationBuffer first_force(ParticleCount);
-    blitzar_particles::ParticleAccelerationBuffer second_force(ParticleCount);
+    const blitzar_physics::PeriodicDomain periodic{true, BoxOrigin, BoxSize};
+    const blitzar_physics::GravityParameters gravity{1.0, ApproximateSoftening};
+    blitzar_particles::ParticleBuffer particles(LatticeParticleCount);
+    blitzar_particles::ParticleAccelerationBuffer first_force(LatticeParticleCount);
+    blitzar_particles::ParticleAccelerationBuffer second_force(LatticeParticleCount);
 
     FillParticles(particles, false);
 
-    const auto bh_settings =
-        MakeSettings<blitzar_barnes_hut::BarnesHutSettings>(ParticleCount, 0.35, 16);
+    const SolverCase config{
+        particles.State(), gravity, LatticeParticleCount, DefaultOpeningAngle, OpenLeafCapacity};
 
-    auto bh_resources = MakeResources(bh_settings, ParticleCount);
-    blitzar_barnes_hut::BhSolver barnes_hut(gravity, bh_settings, ParticleCount, bh_resources);
-
-    if (EvaluatePeriodic(barnes_hut, particles.State(), first_force.View(), &periodic) !=
-            BLITZAR_STATUS_OK ||
-        EvaluatePeriodic(barnes_hut, particles.State(), second_force.View(), &periodic) !=
-            BLITZAR_STATUS_OK ||
+    if (!EvaluateSolverCase<blitzar_barnes_hut::BarnesHutSettings, blitzar_barnes_hut::BhSolver>(
+            config, first_force.View(), &periodic) ||
+        !EvaluateSolverCase<blitzar_barnes_hut::BarnesHutSettings, blitzar_barnes_hut::BhSolver>(
+            config, second_force.View(), &periodic) ||
         ForceRelativeError(first_force.View(), second_force.View()) != 0.0) {
         return false;
     }
 
-    const auto fmm_settings = MakeSettings<blitzar_fmm::FmmSettings>(ParticleCount, 0.35, 16);
-
-    auto fmm_resources = MakeResources(fmm_settings, ParticleCount);
-    blitzar_fmm::FmmSolver fmm(gravity, fmm_settings, ParticleCount, fmm_resources);
-
-    if (EvaluatePeriodic(fmm, particles.State(), first_force.View(), &periodic) !=
-            BLITZAR_STATUS_OK ||
-        EvaluatePeriodic(fmm, particles.State(), second_force.View(), &periodic) !=
-            BLITZAR_STATUS_OK ||
+    if (!EvaluateSolverCase<blitzar_fmm::FmmSettings, blitzar_fmm::FmmSolver>(
+            config, first_force.View(), &periodic) ||
+        !EvaluateSolverCase<blitzar_fmm::FmmSettings, blitzar_fmm::FmmSolver>(
+            config, second_force.View(), &periodic) ||
         ForceRelativeError(first_force.View(), second_force.View()) != 0.0) {
         return false;
     }
 
-    const auto kifmm_settings = MakeSettings<blitzar_kifmm::KifmmSettings>(ParticleCount, 0.35, 16);
-
-    auto kifmm_resources = MakeResources(kifmm_settings, ParticleCount);
-    blitzar_kifmm::KifmmSolver kifmm(gravity, kifmm_settings, ParticleCount, kifmm_resources);
-
-    if (EvaluatePeriodic(kifmm, particles.State(), first_force.View(), &periodic) !=
-            BLITZAR_STATUS_OK ||
-        EvaluatePeriodic(kifmm, particles.State(), second_force.View(), &periodic) !=
-            BLITZAR_STATUS_OK ||
+    if (!EvaluateSolverCase<blitzar_kifmm::KifmmSettings, blitzar_kifmm::KifmmSolver>(
+            config, first_force.View(), &periodic) ||
+        !EvaluateSolverCase<blitzar_kifmm::KifmmSettings, blitzar_kifmm::KifmmSolver>(
+            config, second_force.View(), &periodic) ||
         ForceRelativeError(first_force.View(), second_force.View()) != 0.0) {
         return false;
     }

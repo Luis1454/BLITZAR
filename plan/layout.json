@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "plan_version": "1.0.63",
+  "plan_version": "1.0.64",
   "record_schema_version": 1,
   "target": "blitzar_layout_test",
   "runner": "tools/evidence/layout_evidence.py",

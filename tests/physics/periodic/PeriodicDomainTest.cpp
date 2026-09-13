@@ -9,6 +9,22 @@
 
 namespace {
 
+[[nodiscard]] bool SamePoint(
+    const blitzar_core::Vector3& first, const blitzar_core::Vector3& second) noexcept
+{
+    return first.x == second.x && first.y == second.y && first.z == second.z;
+}
+
+[[nodiscard]] double Distance(
+    const blitzar_core::Vector3& displacement, const blitzar_core::Vector3& shift) noexcept
+{
+    const double dx = displacement.x - shift.x;
+    const double dy = displacement.y - shift.y;
+    const double dz = displacement.z - shift.z;
+
+    return std::sqrt(dx * dx + dy * dy + dz * dz);
+}
+
 [[nodiscard]] bool RunVisibilityCase() noexcept
 {
     const blitzar_physics::PeriodicDomain disabled{};
@@ -85,36 +101,28 @@ namespace {
     return true;
 }
 
-[[nodiscard]] bool RunImageRegionCase() noexcept
+[[nodiscard]] bool RunImageEnumerationCase() noexcept
 {
     const blitzar_physics::PeriodicDomain domain{
         true, blitzar_core::Vector3{-1.0, -1.0, -1.0}, blitzar_core::Vector3{2.0, 2.0, 2.0}};
 
-    if (domain.ImageCount() != 27) {
-        return false;
-    }
-
     const blitzar_core::Vector3 zero{0.0, 0.0, 0.0};
 
-    if (domain.ImageShift(0).x != zero.x || domain.ImageShift(0).y != zero.y ||
-        domain.ImageShift(0).z != zero.z) {
+    if (domain.ImageCount() != 27 || !SamePoint(domain.ImageShift(0), zero) ||
+        !SamePoint(domain.ImageShift(1), {2.0, 0.0, 0.0}) ||
+
+        !SamePoint(domain.ImageShift(2), {-2.0, 0.0, 0.0}) ||
+        !SamePoint(domain.ImageShift(26), {-2.0, -2.0, -2.0})) {
         return false;
     }
 
-    if (domain.ImageShift(1).x != 2.0 || domain.ImageShift(1).y != 0.0 ||
-        domain.ImageShift(1).z != 0.0) {
-        return false;
-    }
+    return true;
+}
 
-    if (domain.ImageShift(2).x != -2.0 || domain.ImageShift(2).y != 0.0 ||
-        domain.ImageShift(2).z != 0.0) {
-        return false;
-    }
-
-    if (domain.ImageShift(26).x != -2.0 || domain.ImageShift(26).y != -2.0 ||
-        domain.ImageShift(26).z != -2.0) {
-        return false;
-    }
+[[nodiscard]] bool RunNearestImageFoldCase() noexcept
+{
+    const blitzar_physics::PeriodicDomain domain{
+        true, blitzar_core::Vector3{-1.0, -1.0, -1.0}, blitzar_core::Vector3{2.0, 2.0, 2.0}};
 
     const blitzar_core::Vector3 first{0.3, 0.1, -0.2};
     const blitzar_core::Vector3 second{-0.4, 0.2, 0.1};
@@ -127,11 +135,7 @@ namespace {
     double best_norm = 1.0e30;
 
     for (std::size_t index = 0; index < domain.ImageCount(); ++index) {
-        const blitzar_core::Vector3 shift = domain.ImageShift(index);
-        const double dx = displacement.x - shift.x;
-        const double dy = displacement.y - shift.y;
-        const double dz = displacement.z - shift.z;
-        const double norm = std::sqrt(dx * dx + dy * dy + dz * dz);
+        const double norm = Distance(displacement, domain.ImageShift(index));
 
         if (norm < best_norm) {
             best_norm = norm;
@@ -141,31 +145,40 @@ namespace {
 
     const blitzar_core::Vector3 best_shift = domain.ImageShift(best_index);
 
-    if (std::abs((displacement.x - best_shift.x) - folded.x) > 1.0e-12 ||
-        std::abs((displacement.y - best_shift.y) - folded.y) > 1.0e-12 ||
-        std::abs((displacement.z - best_shift.z) - folded.z) > 1.0e-12) {
-        return false;
-    }
+    return std::abs((displacement.x - best_shift.x) - folded.x) <= 1.0e-12 &&
+           std::abs((displacement.y - best_shift.y) - folded.y) <= 1.0e-12 &&
+           std::abs((displacement.z - best_shift.z) - folded.z) <= 1.0e-12;
+}
+
+[[nodiscard]] bool RunUniqueNearestImageCase() noexcept
+{
+    const blitzar_physics::PeriodicDomain domain{
+        true, blitzar_core::Vector3{-1.0, -1.0, -1.0}, blitzar_core::Vector3{2.0, 2.0, 2.0}};
+
+    const blitzar_core::Vector3 first{0.3, 0.1, -0.2};
+    const blitzar_core::Vector3 second{-0.4, 0.2, 0.1};
+
+    const blitzar_core::Vector3 displacement{
+        first.x - second.x, first.y - second.y, first.z - second.z};
 
     std::size_t minimum_count = 0;
+    double best_norm = 1.0e30;
 
     for (std::size_t index = 0; index < domain.ImageCount(); ++index) {
-        const blitzar_core::Vector3 shift = domain.ImageShift(index);
-        const double dx = displacement.x - shift.x;
-        const double dy = displacement.y - shift.y;
-        const double dz = displacement.z - shift.z;
-        const double norm = std::sqrt(dx * dx + dy * dy + dz * dz);
+        const double norm = Distance(displacement, domain.ImageShift(index));
 
-        if (std::abs(norm - best_norm) < 1.0e-9) {
+        if (norm < best_norm) {
+            best_norm = norm;
+        }
+    }
+
+    for (std::size_t index = 0; index < domain.ImageCount(); ++index) {
+        if (std::abs(Distance(displacement, domain.ImageShift(index)) - best_norm) < 1.0e-9) {
             ++minimum_count;
         }
     }
 
-    if (minimum_count != 1) {
-        return false;
-    }
-
-    return true;
+    return minimum_count == 1;
 }
 
 [[nodiscard]] bool RunContainmentCase() noexcept
@@ -225,7 +238,9 @@ int main()
     BLITZAR_CHECK(RunWrappingCase());
     BLITZAR_CHECK(RunFoldCase());
     BLITZAR_CHECK(RunDisabledIdentityCase());
-    BLITZAR_CHECK(RunImageRegionCase());
+    BLITZAR_CHECK(RunImageEnumerationCase());
+    BLITZAR_CHECK(RunNearestImageFoldCase());
+    BLITZAR_CHECK(RunUniqueNearestImageCase());
     BLITZAR_CHECK(RunContainmentCase());
     BLITZAR_CHECK(RunValidationCase());
 

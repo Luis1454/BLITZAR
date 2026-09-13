@@ -330,6 +330,10 @@
     {
       "path": "plan/decisions/079-periodic-boundaries-for-hierarchical-solvers.md",
       "lifecycle": "active"
+    },
+    {
+      "path": "plan/decisions/080-periodic-qualification-refinement.md",
+      "lifecycle": "active"
     }
   ]
 }
