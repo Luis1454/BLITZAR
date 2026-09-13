@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "plan_version": "1.0.64",
+  "plan_version": "1.0.65",
   "status": "frozen",
   "materialization": "materialized",
   "description": "Frozen repository taxonomy, language separation, naming, and source-test layout contract.",

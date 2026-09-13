@@ -1,0 +1,63 @@
+{
+  "schema_version": 1,
+  "plan_version": "1.0.65",
+  "decision_id": "INT-001",
+  "status": "frozen",
+  "production_integrator": "fixed-kdk-v1",
+  "catalog": {
+    "fixed-kdk-v1": {
+      "status": "retained-production",
+      "coordinates": "physical",
+      "description": "Existing fixed-step Leapfrog KDK on physical coordinates with Plummer softening; the sole production integrator",
+      "variables": {
+        "x": "physical position (SoA positions)",
+        "v": "physical velocity (SoA velocities)"
+      },
+      "implementation": "src/integration/kdk",
+      "evidence": "KdkDynamicsTest and KdkNumericalTest on the strict lane"
+    },
+    "comoving-kdk-v2": {
+      "status": "retained-contracted-implementation-deferred",
+      "implementation_issue": "INT-005 (issue 739)",
+      "coordinates": "co-moving",
+      "description": "Cosmological Leapfrog KDK on co-moving coordinates with peculiar velocities; the next retained integrator",
+      "variables": {
+        "x": "co-moving position (SoA positions), x = r_physical / a",
+        "v": "peculiar velocity (SoA velocities), v = a * dx/dt",
+        "a": "scale factor from a background expansion model",
+        "h": "Hubbles rate h = (da/dt) / a"
+      },
+      "background": "EdS default a(t) = (t / t0)^(2/3); a and h are deterministic inputs, not solver state",
+      "oracle_rubric": "INT-005 registers the concrete tests; the rubric is frozen here"
+    },
+    "block-kdk-schedule-v1": {
+      "status": "rejected-evidence-only",
+      "evidence": "plan/block_time.json; the scheduling proxy stays a P1 evidence boundary and is not promoted"
+    }
+  },
+  "rejected": {
+    "block_time_promotion": "rejection re-recorded from plan/block_time.json; promotion needs force-state, MPI, restart, and end-to-end evidence",
+    "variable_step_individual_timesteps": "reject: no production force-state coupling, MPI halo and migration, or restart/rollback evidence exists",
+    "higher_order_symplectic_fixed_step": "reject: no demonstrated product need; fixed KDK keeps the gravity phase space",
+    "explicit_runge_kutta": "reject: non-symplectic with no accepted energy behavior",
+    "implicit_integrators": "reject: no product requirement justifies the cost",
+    "imported_gadget_scheme": "reject: clean-room forbids an imported implementation; the co-moving scheme is defined by this contract only"
+  },
+  "comoving_leapfrog_contract": {
+    "equation_of_motion": "dv/dt = -(1 / a) * grad_x(phi) - h * v, where phi is the peculiar gravitational potential from the existing solver path evaluated on co-moving coordinates with the existing Plummer softening; the homogeneous background term is subtracted so only the peculiar field drives v",
+    "kdk_sequence": "kick (add -(dt/2) * (g / a) with h * v integrated by the scale-factor change), then drift x += dt * v / a, then symmetric kick",
+    "state_ownership": "particle state stays in the existing SoA ParticleBuffer; background (a, h) is a per-run execution input owned by the integration step, never by particles or solvers",
+    "conservation_targets": [
+      "empty-universe invariant: a * v is exactly constant because dv/dt = -h * v when gravity is absent",
+      "comoving peculiar kinetic plus displaced potential energy stays bounded",
+      "second-order convergence on the fixed-step grid against a fine-step reference at identical opening and softening"
+    ],
+    "interface_rules": [
+      "reuse the SolverForceEvaluation boundary exactly; no new solver entry point",
+      "same argument-count and no-hot-path-allocation rules as fixed KDK; no dynamic allocation after warmup",
+      "checkpoint capture, rollback, and finite-state validation behave identically to fixed KDK",
+      "compatible with Direct, Barnes-Hut, FMM, KIFMM, PM, TreePM through the force-evaluation boundary",
+      "periodic boundaries remain a solver-domain concern; the integrator stays domain-agnostic"
+    ]
+  }
+}

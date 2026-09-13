@@ -334,6 +334,10 @@
     {
       "path": "plan/decisions/080-periodic-qualification-refinement.md",
       "lifecycle": "active"
+    },
+    {
+      "path": "plan/decisions/081-integrator-scope-decision.md",
+      "lifecycle": "active"
     }
   ]
 }

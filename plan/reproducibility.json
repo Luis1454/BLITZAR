@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "plan_version": "1.0.64",
+  "plan_version": "1.0.65",
   "phase": "P6",
   "issue": "#685",
   "public_api": {

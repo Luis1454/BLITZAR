@@ -2,7 +2,7 @@
 
 Status: **FROZEN**  
 Product/API version: **1.0.0**
-Plan version: **1.0.64**
+Plan version: **1.0.65**
 
 This repository is a clean-room rewrite. The old repository, its source tree,
 its issues, and its documentation are not implementation inputs. Requirements
@@ -322,6 +322,22 @@ the exact neighbor reference and selected cell-linked index. The existing
 Octree is reported separately as the long-range baseline; the BVH is not a
 production gravity replacement.
 
+### Integrator Scope Decision (INT-001)
+
+`INT-001` freezes which integrators are product requirements. Fixed-step
+Leapfrog KDK stays the sole production integrator. One additional integrator,
+`comoving-kdk-v2` (cosmological Leapfrog KDK on co-moving coordinates with
+peculiar velocities), is retained as a contracted integrator and decomposed
+into implementation issue `INT-005`; its equations, state ownership, oracle
+rubric, and interface rules are frozen in `plan/integration.json`.
+
+Block-time scheduling stays an evidence-only P1 proxy and is not promoted.
+Variable-step individual timesteps, fixed-step higher-order symplectic
+methods, explicit Runge-Kutta, implicit integrators, and any imported
+Gadget-style scheme are explicitly rejected for production; the co-moving
+scheme is defined by `plan/integration.json` alone, preserving the clean-room
+rule. No production code or test id changes in this decision.
+
 ### P2: Public SDK and CLI
 
 Expose only the stable C ABI and the C++ RAII facade. Implement the CLI as a
@@ -588,7 +604,7 @@ an owner, an oracle, and an acceptance test.
 ## Frozen Repository Tree
 
 The exact destination taxonomy is the machine-readable contract in
-`plan/repository_tree.json`, frozen at plan version 1.0.64 and linked from
+`plan/repository_tree.json`, frozen at plan version 1.0.65 and linked from
 `plan/manifest.json`. It is the only authoritative source for the repository
 tree migration; the shape block below remains the as-built inventory until the
 migration is promoted.
