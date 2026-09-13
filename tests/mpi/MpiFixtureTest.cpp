@@ -1,6 +1,6 @@
 #include "fixtures/FixtureViews.hpp"
 #include "integration/kdk/KdkLeapfrog.hpp"
-#include "mpi/fixture/MpiCases.hpp"
+#include "mpi/MpiCases.hpp"
 #include "particles/buffer/ParticleAccelerationBuffer.hpp"
 #include "particles/buffer/ParticleBuffer.hpp"
 #include "solvers/SolverCpuForceProvider.hpp"

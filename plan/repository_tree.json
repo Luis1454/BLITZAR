@@ -1,8 +1,8 @@
 {
   "schema_version": 1,
-  "plan_version": "1.0.61",
+  "plan_version": "1.0.62",
   "status": "frozen",
-  "materialization": "planned",
+  "materialization": "materialized",
   "description": "Frozen repository taxonomy, language separation, naming, and source-test layout contract.",
   "aliases": {
     "barnes_hut": "bh",
@@ -105,6 +105,211 @@
       "source": "src/gpu/bh",
       "tests": "tests/gpu/bh",
       "reason": "GPU Barnes-Hut remains capability-gated and has no separate test executable yet."
+    },
+    {
+      "source": "src/io/diag",
+      "tests": "tests/io/diag",
+      "reason": "Diagnostics CSV production is exercised through the post-processing boundary and conservation contracts."
+    },
+    {
+      "source": "src/io/md/cursor",
+      "tests": "tests/io/md/cursor",
+      "reason": "Metadata consolidated in tests/io/md/MdTest.cpp read coverage"
+    },
+    {
+      "source": "src/io/md/fields",
+      "tests": "tests/io/md/fields",
+      "reason": "Metadata consolidated in tests/io/md/MdTest.cpp field handling"
+    },
+    {
+      "source": "src/io/md/manifest",
+      "tests": "tests/io/md/manifest",
+      "reason": "Metadata consolidated in tests/io/md/MdTest.cpp manifest round-trips"
+    },
+    {
+      "source": "src/io/md/reader",
+      "tests": "tests/io/md/reader",
+      "reason": "Metadata consolidated in tests/io/md/MdTest.cpp reader contracts"
+    },
+    {
+      "source": "src/io/md/run",
+      "tests": "tests/io/md/run",
+      "reason": "Metadata consolidated in tests/io/md/MdTest.cpp run-context metadata"
+    },
+    {
+      "source": "src/io/md/text",
+      "tests": "tests/io/md/text",
+      "reason": "Metadata consolidated in tests/io/md/MdTest.cpp text metadata writes"
+    },
+    {
+      "source": "src/io/post",
+      "tests": "tests/io/post",
+      "reason": "Post-processing is exercised through the CLI post-processing boundary (CliPostTest.cpp)."
+    },
+    {
+      "source": "src/io/post/input",
+      "tests": "tests/io/post/input",
+      "reason": "Config and manifest preflight is exercised through CliPostTest.cpp and SimConfigRunTest.cpp."
+    },
+    {
+      "source": "src/io/post/output",
+      "tests": "tests/io/post/output",
+      "reason": "Post-processing output enumeration is exercised through CliPostTest.cpp byte-parity checks."
+    },
+    {
+      "source": "src/io/post/state",
+      "tests": "tests/io/post/state",
+      "reason": "State-directory inventory and shard reconstruction are exercised through CliPostTest.cpp."
+    },
+    {
+      "source": "src/io/snap/codec",
+      "tests": "tests/io/snap/codec",
+      "reason": "Snapshot codec coverage is consolidated in tests/io/snap/SnapTest.cpp and SnapV2Test.cpp."
+    },
+    {
+      "source": "src/io/snap/delta",
+      "tests": "tests/io/snap/delta",
+      "reason": "Snapshot delta coverage is consolidated in tests/io/snap/SnapDeltaTest.cpp."
+    },
+    {
+      "source": "src/mpi/collectives",
+      "tests": "tests/mpi/collectives",
+      "reason": "MPI collectives contracts are exercised through the MPI boundary tests in tests/mpi (MpiTest.cpp and the runtime test suite)."
+    },
+    {
+      "source": "src/mpi/gather",
+      "tests": "tests/mpi/gather",
+      "reason": "MPI gather contracts are exercised through the MPI boundary tests in tests/mpi (MpiTest.cpp and the runtime test suite)."
+    },
+    {
+      "source": "src/mpi/ghost",
+      "tests": "tests/mpi/ghost",
+      "reason": "MPI ghost contracts are exercised through the MPI boundary tests in tests/mpi (MpiTest.cpp and the runtime test suite)."
+    },
+    {
+      "source": "src/mpi/native",
+      "tests": "tests/mpi/native",
+      "reason": "MPI native contracts are exercised through the MPI boundary tests in tests/mpi (MpiTest.cpp and the runtime test suite)."
+    },
+    {
+      "source": "src/mpi/runtime",
+      "tests": "tests/mpi/runtime",
+      "reason": "MPI runtime contracts are exercised through the MPI boundary tests in tests/mpi (MpiTest.cpp and the runtime test suite)."
+    },
+    {
+      "source": "src/simulation/cfg/diagnostics",
+      "tests": "tests/simulation/cfg/diagnostics",
+      "reason": "Simulation consolidated in tests/simulation/cfg SimConfigFileTest/SimConfigRunTest diagnostics keys"
+    },
+    {
+      "source": "src/simulation/cfg/directive",
+      "tests": "tests/simulation/cfg/directive",
+      "reason": "Simulation consolidated in tests/simulation/cfg directive parsing coverage"
+    },
+    {
+      "source": "src/simulation/cfg/execution",
+      "tests": "tests/simulation/cfg/execution",
+      "reason": "Simulation consolidated in tests/simulation/cfg execution-key contracts"
+    },
+    {
+      "source": "src/simulation/cfg/output",
+      "tests": "tests/simulation/cfg/output",
+      "reason": "Simulation consolidated in tests/simulation/cfg output-key contracts"
+    },
+    {
+      "source": "src/simulation/cfg/physics",
+      "tests": "tests/simulation/cfg/physics",
+      "reason": "Simulation consolidated in tests/simulation/cfg physics-key contracts"
+    },
+    {
+      "source": "src/simulation/cfg/restart",
+      "tests": "tests/simulation/cfg/restart",
+      "reason": "Simulation consolidated in tests/simulation/cfg restart-key contracts"
+    },
+    {
+      "source": "src/simulation/cfg/run",
+      "tests": "tests/simulation/cfg/run",
+      "reason": "Simulation consolidated in tests/simulation/cfg run-contract coverage"
+    },
+    {
+      "source": "src/simulation/cfg/simulation",
+      "tests": "tests/simulation/cfg/simulation",
+      "reason": "Simulation consolidated in tests/simulation/cfg simulation-key contracts"
+    },
+    {
+      "source": "src/simulation/init",
+      "tests": "tests/simulation/init",
+      "reason": "Simulation initialization is exercised through tests/simulation/SimLifecycleTest.cpp and SimConfigRunTest.cpp"
+    },
+    {
+      "source": "src/simulation/runtime",
+      "tests": "tests/simulation/runtime",
+      "reason": "Simulation runtime identity is exercised through tests/simulation SimLifecycleTest.cpp and metadata contracts"
+    },
+    {
+      "source": "src/simulation/solver",
+      "tests": "tests/simulation/solver",
+      "reason": "Simulation solver wiring is exercised through tests/simulation/cfg SimConfigRunTest.cpp"
+    },
+    {
+      "source": "src/simulation/stage",
+      "tests": "tests/simulation/stage",
+      "reason": "Simulation staging is exercised through tests/simulation/SimLifecycleTest.cpp and MPI migration suites"
+    },
+    {
+      "source": "src/simulation/state",
+      "tests": "tests/simulation/state",
+      "reason": "Simulation state assembly is exercised through tests/simulation SimLifecycleTest.cpp and snapshot contracts"
+    },
+    {
+      "source": "src/simulation/step",
+      "tests": "tests/simulation/step",
+      "reason": "Simulation stepping is exercised through tests/simulation SimLifecycleTest.cpp, MPI suites, and overlap tests"
+    },
+    {
+      "source": "src/simulation/step/distributed",
+      "tests": "tests/simulation/step/distributed",
+      "reason": "Simulation distributed stepping is exercised through the MPI test suite"
+    },
+    {
+      "source": "src/simulation/step/local",
+      "tests": "tests/simulation/step/local",
+      "reason": "Simulation local stepping is exercised through tests/simulation SimLifecycleTest.cpp"
+    },
+    {
+      "source": "src/simulation/step/migration",
+      "tests": "tests/simulation/step/migration",
+      "reason": "Simulation migration stepping is exercised through the MPI migration test suite"
+    },
+    {
+      "source": "src/simulation/step/overlap",
+      "tests": "tests/simulation/step/overlap",
+      "reason": "Simulation overlap stepping is exercised through tests/mpi/exchange/MpiOverlapTest.cpp"
+    },
+    {
+      "source": "src/simulation/step/packets",
+      "tests": "tests/simulation/step/packets",
+      "reason": "Simulation packetized stepping is exercised through tests/mpi/packets/MpiWireTest.cpp"
+    },
+    {
+      "source": "src/simulation/step/prepare",
+      "tests": "tests/simulation/step/prepare",
+      "reason": "Simulation step preparation is exercised through tests/simulation SimLifecycleTest.cpp"
+    },
+    {
+      "source": "src/simulation/tx",
+      "tests": "tests/simulation/tx",
+      "reason": "Simulation transaction rollback is exercised through tests/mpi/MpiRollbackTest.cpp"
+    },
+    {
+      "source": "src/gpu/memory",
+      "tests": "tests/gpu/memory",
+      "reason": "GPU memory remains capability-gated and is covered by tests/gpu/GpuRuntimeTest.cpp fallback semantics."
+    },
+    {
+      "source": "src/gpu/runtime",
+      "tests": "tests/gpu/runtime",
+      "reason": "GPU runtime remains capability-gated and is covered by tests/gpu/GpuRuntimeTest.cpp."
     }
   ],
   "test_suffix": {
@@ -141,19 +346,19 @@
     "tests/io/snap/SnapDeltaTest.cpp",
     "tests/io/md/MdTest.cpp",
     "tests/io/hdf5/Hdf5Test.cpp",
-    "tests/io/cli/CliOutputTest.cpp",
-    "tests/io/cli/CliSummaryTest.cpp",
-    "tests/io/cli/CliUsageTest.cmake",
-    "tests/io/cli/CliRestartTest.cpp",
-    "tests/io/cli/CliProcessRestartTest.cpp",
-    "tests/io/cli/CliPostTest.cpp",
-    "tests/io/cli/CliHdf5Test.cpp",
-    "tests/io/mpi/MpiOutputTest.cmake",
-    "tests/io/mpi/MpiShardOutputTest.cmake",
+    "tests/apps/blitzar/CliOutputTest.cpp",
+    "tests/apps/blitzar/CliSummaryTest.cpp",
+    "tests/apps/blitzar/CliUsageTest.cmake",
+    "tests/apps/blitzar/CliRestartTest.cpp",
+    "tests/apps/blitzar/CliProcessRestartTest.cpp",
+    "tests/apps/blitzar/CliPostTest.cpp",
+    "tests/apps/blitzar/CliHdf5Test.cpp",
+    "tests/apps/blitzar/MpiOutputTest.cmake",
+    "tests/apps/blitzar/MpiShardOutputTest.cmake",
     "tests/physics/conservation/ConservationTest.cpp",
     "tests/integration/kdk/KdkDynamicsTest.cpp",
     "tests/integration/kdk/KdkNumericalTest.cpp",
-    "tests/simulation/alloc/SimAllocationsTest.cpp",
+    "tests/simulation/SimAllocationsTest.cpp",
     "tests/simulation/cfg/SimConfigFileTest.cpp",
     "tests/simulation/cfg/SimConfigRunTest.cpp",
     "tests/scaling/workload/ScaleTest.cpp",
@@ -208,7 +413,7 @@
     "src/simulation/transaction"
   ],
   "migration": {
-    "state": "planned",
+    "state": "materialized",
     "rule": "old paths remain allowed only until the corresponding materialization change; the final tree gate rejects them",
     "directory_moves": [
       [

@@ -319,7 +319,7 @@
       "decision": "Input validation keeps manifest compatibility, deterministic step checks, exact state-directory inventory, and snapshot-frame preflight in one persistence boundary; it rejects invalid runs before post-processing output is created."
     },
     {
-      "path": "tests/io/cli/CliPostTest.cpp",
+      "path": "tests/apps/blitzar/CliPostTest.cpp",
       "signals": [
         "function_length"
       ],

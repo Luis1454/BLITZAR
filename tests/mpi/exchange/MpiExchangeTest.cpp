@@ -1,5 +1,5 @@
 #include "fixtures/FixtureProtocol.hpp"
-#include "mpi/fixture/MpiCases.hpp"
+#include "mpi/MpiCases.hpp"
 
 #include <array>
 #include <utility>

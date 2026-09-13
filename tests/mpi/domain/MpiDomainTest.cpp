@@ -1,6 +1,6 @@
 #include "fixtures/FixtureViews.hpp"
+#include "mpi/MpiCases.hpp"
 #include "mpi/domain/MpiDomainDecomposition.hpp"
-#include "mpi/fixture/MpiCases.hpp"
 #include "particles/buffer/ParticleBuffer.hpp"
 
 #include <array>

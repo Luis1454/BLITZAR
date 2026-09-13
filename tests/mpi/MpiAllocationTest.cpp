@@ -1,6 +1,6 @@
 #include "fixtures/FixtureAllocationMonitor.hpp"
 #include "fixtures/FixtureViews.hpp"
-#include "mpi/fixture/MpiCases.hpp"
+#include "mpi/MpiCases.hpp"
 
 #include <array>
 

@@ -111,7 +111,7 @@ add_executable(blitzar_cli_output_test
     apps/blitzar/BlitzarRestart.cpp
     apps/blitzar/BlitzarSummary.cpp
     apps/blitzar/BlitzarRun.cpp
-    tests/io/cli/CliOutputTest.cpp
+    tests/apps/blitzar/CliOutputTest.cpp
 )
 target_link_libraries(blitzar_cli_output_test PRIVATE blitzar)
 target_compile_features(blitzar_cli_output_test PRIVATE cxx_std_20)
@@ -126,7 +126,7 @@ add_executable(blitzar_cli_hdf5_test
     apps/blitzar/BlitzarSummary.cpp
     apps/blitzar/BlitzarRun.cpp
     tests/fixtures/FixtureRestartTest.cpp
-    tests/io/cli/CliHdf5Test.cpp
+    tests/apps/blitzar/CliHdf5Test.cpp
 )
 target_link_libraries(blitzar_cli_hdf5_test PRIVATE blitzar)
 target_compile_features(blitzar_cli_hdf5_test PRIVATE cxx_std_20)
@@ -142,7 +142,7 @@ add_executable(blitzar_cli_summary_test
     apps/blitzar/BlitzarRestart.cpp
     apps/blitzar/BlitzarSummary.cpp
     apps/blitzar/BlitzarRun.cpp
-    tests/io/cli/CliSummaryTest.cpp
+    tests/apps/blitzar/CliSummaryTest.cpp
 )
 target_link_libraries(blitzar_cli_summary_test PRIVATE blitzar)
 target_compile_features(blitzar_cli_summary_test PRIVATE cxx_std_20)
@@ -157,7 +157,7 @@ add_executable(blitzar_cli_restart_test
     apps/blitzar/BlitzarSummary.cpp
     apps/blitzar/BlitzarRun.cpp
     tests/fixtures/FixtureRestartTest.cpp
-    tests/io/cli/CliRestartTest.cpp
+    tests/apps/blitzar/CliRestartTest.cpp
 )
 target_link_libraries(blitzar_cli_restart_test PRIVATE blitzar)
 target_compile_features(blitzar_cli_restart_test PRIVATE cxx_std_20)
@@ -170,7 +170,7 @@ if(BLITZAR_BUILD_CLI)
     add_executable(blitzar_cli_process_restart_test
         tests/fixtures/FixtureProcessTest.cpp
         tests/fixtures/FixtureRestartTest.cpp
-        tests/io/cli/CliProcessRestartTest.cpp
+        tests/apps/blitzar/CliProcessRestartTest.cpp
     )
     target_link_libraries(blitzar_cli_process_restart_test PRIVATE blitzar)
     target_compile_features(blitzar_cli_process_restart_test PRIVATE cxx_std_20)
@@ -186,7 +186,7 @@ if(BLITZAR_BUILD_CLI)
         apps/blitzar/BlitzarSummary.cpp
         tests/fixtures/FixtureProcessTest.cpp
         tests/fixtures/FixtureRestartTest.cpp
-        tests/io/cli/CliPostTest.cpp
+        tests/apps/blitzar/CliPostTest.cpp
     )
     target_link_libraries(blitzar_cli_postprocess_test PRIVATE blitzar)
     target_compile_features(blitzar_cli_postprocess_test PRIVATE cxx_std_20)
@@ -256,7 +256,7 @@ blitzar_enable_warnings(blitzar_dynamics_test)
 
 add_executable(blitzar_allocation_test
     tests/fixtures/FixtureAllocationMonitorTest.cpp
-    tests/simulation/alloc/SimAllocationsTest.cpp
+    tests/simulation/SimAllocationsTest.cpp
 )
 target_link_libraries(blitzar_allocation_test PRIVATE blitzar)
 target_compile_features(blitzar_allocation_test PRIVATE cxx_std_20)
@@ -465,16 +465,16 @@ blitzar_enable_warnings(blitzar_bvh_test)
 if(BLITZAR_MPI_ENABLED)
     add_executable(blitzar_mpi_test
         tests/fixtures/FixtureAllocationMonitorTest.cpp
-        tests/mpi/fixture/MpiAllocationTest.cpp
+        tests/mpi/MpiAllocationTest.cpp
         tests/mpi/MpiTest.cpp
         tests/mpi/domain/MpiDomainTest.cpp
         tests/mpi/exchange/MpiExchangeTest.cpp
-        tests/mpi/fixture/MpiFixtureTest.cpp
+        tests/mpi/MpiFixtureTest.cpp
         tests/mpi/domain/MpiInvalidTest.cpp
-        tests/mpi/overlap/MpiOverlapTest.cpp
-        tests/mpi/rollback/MpiRollbackTest.cpp
+        tests/mpi/exchange/MpiOverlapTest.cpp
+        tests/mpi/MpiRollbackTest.cpp
         tests/mpi/domain/MpiValidationTest.cpp
-        tests/mpi/wire/MpiWireTest.cpp
+        tests/mpi/packets/MpiWireTest.cpp
     )
     target_link_libraries(blitzar_mpi_test PRIVATE blitzar)
     target_compile_features(blitzar_mpi_test PRIVATE cxx_std_20)

@@ -322,6 +322,10 @@
     {
       "path": "plan/decisions/077-p9-portable-restart-implementation.md",
       "lifecycle": "active"
+    },
+    {
+      "path": "plan/decisions/078-promote-repository-tree-materialized.md",
+      "lifecycle": "active"
     }
   ]
 }

@@ -158,13 +158,13 @@
       "reason": "Configuration syntax test main receives the file path from the test runner."
     },
     {
-      "path": "tests/io/cli/CliProcessRestartTest.cpp",
+      "path": "tests/apps/blitzar/CliProcessRestartTest.cpp",
       "category": "process_entrypoint",
       "ownership": "borrowed_process_arguments",
       "reason": "CLI restart qualification main receives the executable path from the test runner."
     },
     {
-      "path": "tests/io/cli/CliPostTest.cpp",
+      "path": "tests/apps/blitzar/CliPostTest.cpp",
       "category": "process_entrypoint",
       "ownership": "borrowed_process_arguments",
       "reason": "CLI post-processing qualification main receives the executable path from the test runner."

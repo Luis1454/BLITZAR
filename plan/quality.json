@@ -69,7 +69,7 @@
     {
       "id": "TST-P6-007",
       "name": "cli-usage-error-stream-and-exit-contract",
-      "command": "cmake -DBLITZAR_CLI=blitzar_cli -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/io/cli/CliUsageTest.cmake",
+      "command": "cmake -DBLITZAR_CLI=blitzar_cli -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/apps/blitzar/CliUsageTest.cmake",
       "phase": "P6"
     },
     {
@@ -93,13 +93,13 @@
     {
       "id": "TST-P6-011",
       "name": "mpi-cli-single-rank-output-parity",
-      "command": "cmake -DBLITZAR_CLI=blitzar_cli -DMPIEXEC_EXECUTABLE=mpiexec -DMPIEXEC_NUMPROC_FLAG=-np -DBLITZAR_TEST_ROOT=${CMAKE_CURRENT_BINARY_DIR}/blitzar-output-boundary-649 -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/io/mpi/MpiOutputTest.cmake",
+      "command": "cmake -DBLITZAR_CLI=blitzar_cli -DMPIEXEC_EXECUTABLE=mpiexec -DMPIEXEC_NUMPROC_FLAG=-np -DBLITZAR_TEST_ROOT=${CMAKE_CURRENT_BINARY_DIR}/blitzar-output-boundary-649 -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/apps/blitzar/MpiOutputTest.cmake",
       "phase": "P6"
     },
     {
       "id": "TST-P7-006",
       "name": "mpi-explicit-shard-output-and-restart",
-      "command": "cmake -DBLITZAR_CLI=blitzar_cli -DMPIEXEC_EXECUTABLE=mpiexec -DMPIEXEC_NUMPROC_FLAG=-np -DBLITZAR_TEST_ROOT=${CMAKE_CURRENT_BINARY_DIR}/blitzar-shard-output-685 -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/io/mpi/MpiShardOutputTest.cmake",
+      "command": "cmake -DBLITZAR_CLI=blitzar_cli -DMPIEXEC_EXECUTABLE=mpiexec -DMPIEXEC_NUMPROC_FLAG=-np -DBLITZAR_TEST_ROOT=${CMAKE_CURRENT_BINARY_DIR}/blitzar-shard-output-685 -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/apps/blitzar/MpiShardOutputTest.cmake",
       "phase": "P7"
     },
     {
@@ -907,7 +907,7 @@
           "reason": "MpiNative opaque state fragment"
         },
         {
-          "path": "tests/mpi/fixture/MpiCases.hpp",
+          "path": "tests/mpi/MpiCases.hpp",
           "reason": "MPI test-case facade and StateArrays value contract"
         }
       ],
@@ -965,7 +965,7 @@
     ],
     "test_native_units": [
       "tests/mpi/MpiTest.cpp",
-      "tests/mpi/fixture/MpiFixtureTest.cpp"
+      "tests/mpi/MpiFixtureTest.cpp"
     ],
     "scan_roots": [
       "src",

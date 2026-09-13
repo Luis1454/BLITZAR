@@ -55,8 +55,8 @@
     },
     {
       "id": "TST-P6-004",
-      "entrypoint": "tests/io/cli/CliOutputTest.cpp",
-      "responsibility": "tests/io/cli/CliOutputTest.cpp",
+      "entrypoint": "tests/apps/blitzar/CliOutputTest.cpp",
+      "responsibility": "tests/apps/blitzar/CliOutputTest.cpp",
       "mode": "",
       "ranks": 1,
       "phase": "P6",
@@ -73,8 +73,8 @@
     },
     {
       "id": "TST-P6-006",
-      "entrypoint": "tests/io/cli/CliSummaryTest.cpp",
-      "responsibility": "tests/io/cli/CliSummaryTest.cpp",
+      "entrypoint": "tests/apps/blitzar/CliSummaryTest.cpp",
+      "responsibility": "tests/apps/blitzar/CliSummaryTest.cpp",
       "mode": "",
       "ranks": 1,
       "phase": "P6",
@@ -82,8 +82,8 @@
     },
     {
       "id": "TST-P6-007",
-      "entrypoint": "tests/io/cli/CliUsageTest.cmake",
-      "responsibility": "tests/io/cli/CliUsageTest.cmake",
+      "entrypoint": "tests/apps/blitzar/CliUsageTest.cmake",
+      "responsibility": "tests/apps/blitzar/CliUsageTest.cmake",
       "mode": "",
       "ranks": 1,
       "phase": "P6",
@@ -91,8 +91,8 @@
     },
     {
       "id": "TST-P6-008",
-      "entrypoint": "tests/io/cli/CliRestartTest.cpp",
-      "responsibility": "tests/io/cli/CliRestartTest.cpp",
+      "entrypoint": "tests/apps/blitzar/CliRestartTest.cpp",
+      "responsibility": "tests/apps/blitzar/CliRestartTest.cpp",
       "mode": "",
       "ranks": 1,
       "phase": "P6",
@@ -100,8 +100,8 @@
     },
     {
       "id": "TST-P6-009",
-      "entrypoint": "tests/io/cli/CliProcessRestartTest.cpp",
-      "responsibility": "tests/io/cli/CliProcessRestartTest.cpp",
+      "entrypoint": "tests/apps/blitzar/CliProcessRestartTest.cpp",
+      "responsibility": "tests/apps/blitzar/CliProcessRestartTest.cpp",
       "mode": "production-entrypoint",
       "ranks": 1,
       "phase": "P6",
@@ -109,8 +109,8 @@
     },
     {
       "id": "TST-P6-010",
-      "entrypoint": "tests/io/cli/CliPostTest.cpp",
-      "responsibility": "tests/io/cli/CliPostTest.cpp",
+      "entrypoint": "tests/apps/blitzar/CliPostTest.cpp",
+      "responsibility": "tests/apps/blitzar/CliPostTest.cpp",
       "mode": "production-entrypoint",
       "ranks": 1,
       "phase": "P6",
@@ -118,8 +118,8 @@
     },
     {
       "id": "TST-P6-011",
-      "entrypoint": "tests/io/mpi/MpiOutputTest.cmake",
-      "responsibility": "tests/io/mpi/MpiOutputTest.cmake",
+      "entrypoint": "tests/apps/blitzar/MpiOutputTest.cmake",
+      "responsibility": "tests/apps/blitzar/MpiOutputTest.cmake",
       "mode": "mpi-output-boundary",
       "ranks": 2,
       "phase": "P6",
@@ -127,8 +127,8 @@
     },
     {
       "id": "TST-P7-006",
-      "entrypoint": "tests/io/mpi/MpiShardOutputTest.cmake",
-      "responsibility": "tests/io/mpi/MpiShardOutputTest.cmake",
+      "entrypoint": "tests/apps/blitzar/MpiShardOutputTest.cmake",
+      "responsibility": "tests/apps/blitzar/MpiShardOutputTest.cmake",
       "mode": "mpi-sharded-output",
       "ranks": 2,
       "phase": "P7",
@@ -154,8 +154,8 @@
     },
     {
       "id": "TST-P6-014",
-      "entrypoint": "tests/io/cli/CliHdf5Test.cpp",
-      "responsibility": "tests/io/cli/CliHdf5Test.cpp",
+      "entrypoint": "tests/apps/blitzar/CliHdf5Test.cpp",
+      "responsibility": "tests/apps/blitzar/CliHdf5Test.cpp",
       "mode": "capability-gated",
       "ranks": 1,
       "phase": "P6",
@@ -212,8 +212,8 @@
     },
     {
       "id": "TST-P1-003",
-      "entrypoint": "tests/simulation/alloc/SimAllocationsTest.cpp",
-      "responsibility": "tests/simulation/alloc/SimAllocationsTest.cpp",
+      "entrypoint": "tests/simulation/SimAllocationsTest.cpp",
+      "responsibility": "tests/simulation/SimAllocationsTest.cpp",
       "mode": "",
       "ranks": 1,
       "contract": "steady-state allocation-free execution"
@@ -445,7 +445,7 @@
     {
       "id": "TST-P7-001",
       "entrypoint": "tests/mpi/MpiTest.cpp",
-      "responsibility": "tests/mpi/fixture/MpiFixtureTest.cpp",
+      "responsibility": "tests/mpi/MpiFixtureTest.cpp",
       "mode": "",
       "ranks": 2,
       "contract": "MPI two-rank distribution parity"
@@ -453,7 +453,7 @@
     {
       "id": "TST-P7-002",
       "entrypoint": "tests/mpi/MpiTest.cpp",
-      "responsibility": "tests/mpi/fixture/MpiFixtureTest.cpp",
+      "responsibility": "tests/mpi/MpiFixtureTest.cpp",
       "mode": "",
       "ranks": 4,
       "contract": "MPI four-rank distribution parity"
@@ -461,7 +461,7 @@
     {
       "id": "TST-P8-001",
       "entrypoint": "tests/mpi/MpiTest.cpp",
-      "responsibility": "tests/mpi/fixture/MpiFixtureTest.cpp",
+      "responsibility": "tests/mpi/MpiFixtureTest.cpp",
       "mode": "migration",
       "ranks": 2,
       "contract": "in-step migration parity"
@@ -469,7 +469,7 @@
     {
       "id": "TST-P7-003",
       "entrypoint": "tests/mpi/MpiTest.cpp",
-      "responsibility": "tests/mpi/fixture/MpiFixtureTest.cpp",
+      "responsibility": "tests/mpi/MpiFixtureTest.cpp",
       "mode": "single",
       "ranks": 1,
       "contract": "one-rank failure completion"
@@ -477,7 +477,7 @@
     {
       "id": "TST-P7-004",
       "entrypoint": "tests/mpi/MpiTest.cpp",
-      "responsibility": "tests/mpi/fixture/MpiFixtureTest.cpp",
+      "responsibility": "tests/mpi/MpiFixtureTest.cpp",
       "mode": "barnes-hut-migration",
       "ranks": 2,
       "contract": "Barnes-Hut migration parity"
@@ -501,7 +501,7 @@
     {
       "id": "TST-P8-003",
       "entrypoint": "tests/mpi/MpiTest.cpp",
-      "responsibility": "tests/mpi/overlap/MpiOverlapTest.cpp",
+      "responsibility": "tests/mpi/exchange/MpiOverlapTest.cpp",
       "mode": "overlap",
       "ranks": 2,
       "contract": "overlap timeline, volume, speedup, and parity"

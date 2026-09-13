@@ -1,4 +1,4 @@
-#include "mpi/fixture/MpiCases.hpp"
+#include "mpi/MpiCases.hpp"
 #include "mpi/packets/MpiPacketWire.hpp"
 
 #include <array>

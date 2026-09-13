@@ -49,7 +49,7 @@ if(BLITZAR_BUILD_CLI)
         NAME TST-P6-007
         COMMAND cmake
             -DBLITZAR_CLI=$<TARGET_FILE:blitzar_cli>
-            -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/io/cli/CliUsageTest.cmake
+            -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/apps/blitzar/CliUsageTest.cmake
     )
 endif()
 add_test(NAME TST-P0-004 COMMAND blitzar_bounded_contract_test)
@@ -104,7 +104,7 @@ if(BLITZAR_MPI_ENABLED)
                 -DMPIEXEC_EXECUTABLE=${MPIEXEC_EXECUTABLE}
                 -DMPIEXEC_NUMPROC_FLAG=${MPIEXEC_NUMPROC_FLAG}
                 -DBLITZAR_TEST_ROOT=${CMAKE_CURRENT_BINARY_DIR}/blitzar-output-boundary-649
-                -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/io/mpi/MpiOutputTest.cmake
+                -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/apps/blitzar/MpiOutputTest.cmake
         )
         set_tests_properties(TST-P6-011 PROPERTIES TIMEOUT 120)
         add_test(
@@ -114,7 +114,7 @@ if(BLITZAR_MPI_ENABLED)
                 -DMPIEXEC_EXECUTABLE=${MPIEXEC_EXECUTABLE}
                 -DMPIEXEC_NUMPROC_FLAG=${MPIEXEC_NUMPROC_FLAG}
                 -DBLITZAR_TEST_ROOT=${CMAKE_CURRENT_BINARY_DIR}/blitzar-shard-output-685
-                -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/io/mpi/MpiShardOutputTest.cmake
+                -P ${CMAKE_CURRENT_SOURCE_DIR}/tests/apps/blitzar/MpiShardOutputTest.cmake
         )
         set_tests_properties(TST-P7-006 PROPERTIES TIMEOUT 120)
     endif()
