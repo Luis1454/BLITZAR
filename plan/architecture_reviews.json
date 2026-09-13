@@ -733,6 +733,25 @@
       "issue": 686,
       "status": "accepted",
       "decision": "The wire reader gained a hashed skip used by the V2 two-pass validator so unknown or truncated sections are rejected without touching destination state; the bounded helper count stays in one wire utility."
+    },
+    {
+      "path": "tests/physics/periodic/PeriodicDomainTest.cpp",
+      "signals": [
+        "branching",
+        "function_length"
+      ],
+      "issue": 741,
+      "status": "accepted",
+      "decision": "The periodic-domain fixture keeps visibility, wrap, fold, disabled identity, 3x3x3 image enumeration, containment, and validation checks in one acceptance boundary; the image-region case is long and branching by design because it enumerates and checks every image shift against the FMM-style traversal distance, and it is fixture-local with no production threshold waiver."
+    },
+    {
+      "path": "tests/physics/periodic/PeriodicSolverTest.cpp",
+      "signals": [
+        "include_dependencies"
+      ],
+      "issue": 741,
+      "status": "accepted",
+      "decision": "The periodic solver fixture links the Direct reference and all three periodic-capable hierarchical solver families plus threading, tree, and core types because ocean-002's acceptance cases compare every solver family against one oracle in a single test executable; the dependency count is the test topology and does not widen the production include boundary."
     }
   ]
 }

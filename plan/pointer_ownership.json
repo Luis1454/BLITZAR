@@ -134,6 +134,48 @@
       "reason": "Device error flag is externally allocated and bounded by the launch request."
     },
     {
+      "path": "src/solvers/SolverForceEvaluation.hpp",
+      "category": "execution_boundary",
+      "ownership": "borrowed_execution_input",
+      "reason": "Borrowed immutable periodic-domain descriptor forwarded from the request boundary; null when periodic physics is disabled."
+    },
+    {
+      "path": "src/solvers/SolverForceRequest.hpp",
+      "category": "execution_boundary",
+      "ownership": "borrowed_execution_input",
+      "reason": "Borrowed immutable periodic-domain descriptor at the force-request execution boundary; null when periodic physics is disabled."
+    },
+    {
+      "path": "src/solvers/bh/BhSolver.hpp",
+      "category": "execution_boundary",
+      "ownership": "borrowed_execution_input",
+      "reason": "Tree traversal requests carry the borrowed periodic-domain descriptor from the request boundary."
+    },
+    {
+      "path": "src/solvers/direct/DirectForce.cpp",
+      "category": "execution_boundary",
+      "ownership": "borrowed_execution_input",
+      "reason": "Direct accumulation re-binds the borrowed periodic-domain descriptor from the evaluation boundary."
+    },
+    {
+      "path": "src/solvers/fmm/FmmSolver.hpp",
+      "category": "execution_boundary",
+      "ownership": "borrowed_execution_input",
+      "reason": "Tree traversal requests carry the borrowed periodic-domain descriptor from the request boundary."
+    },
+    {
+      "path": "src/solvers/fmm/kifmm/KifmmSolver.hpp",
+      "category": "execution_boundary",
+      "ownership": "borrowed_execution_input",
+      "reason": "Kernel interaction requests carry the borrowed periodic-domain descriptor from the request boundary."
+    },
+    {
+      "path": "tests/physics/periodic/PeriodicSolverTest.cpp",
+      "category": "execution_boundary",
+      "ownership": "borrowed_execution_input",
+      "reason": "Qualification harness passes the borrowed immutable periodic-domain descriptor to the EvaluatePeriodic helper."
+    },
+    {
       "path": "tests/fixtures/FixtureAllocationMonitorTest.cpp",
       "category": "test_allocator",
       "ownership": "test_instrumentation",

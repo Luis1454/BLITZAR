@@ -1,13 +1,22 @@
 {
   "schema_version": 1,
-  "plan_version": "1.0.62",
+  "plan_version": "1.0.63",
   "record_schema_version": 1,
   "target": "blitzar_layout_test",
   "runner": "tools/evidence/layout_evidence.py",
   "precision": "float64",
   "seed": 424242,
-  "particle_counts": [65, 513, 4097],
-  "bounded_tile_widths": [4, 8, 16, 32],
+  "particle_counts": [
+    65,
+    513,
+    4097
+  ],
+  "bounded_tile_widths": [
+    4,
+    8,
+    16,
+    32
+  ],
   "orderings": [
     {
       "id": "stable-comparison-v1",

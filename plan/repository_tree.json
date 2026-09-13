@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "plan_version": "1.0.62",
+  "plan_version": "1.0.63",
   "status": "frozen",
   "materialization": "materialized",
   "description": "Frozen repository taxonomy, language separation, naming, and source-test layout contract.",
@@ -377,6 +377,8 @@
     "tests/trees/octree/build/OctreeBuildTest.cpp",
     "tests/trees/octree/resource/OctreeResourceTest.cpp",
     "tests/trees/octree/view/OctreeViewTest.cpp",
+    "tests/physics/periodic/PeriodicDomainTest.cpp",
+    "tests/physics/periodic/PeriodicSolverTest.cpp",
     "tests/gpu/GpuRuntimeTest.cpp",
     "tests/mpi/MpiTest.cpp",
     "tests/package/ConsumerTest.cmake",

@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "plan_version": "1.0.62",
+  "plan_version": "1.0.63",
   "record_schema_version": 1,
   "target": "blitzar_bvh_test",
   "runner": "tools/evidence/bvh_evidence.py",
@@ -23,7 +23,12 @@
     "id": "octree-v1",
     "description": "Existing Octree structural baseline for long-range gravity"
   },
-  "workloads": ["dense", "sparse", "clustered", "moving"],
+  "workloads": [
+    "dense",
+    "sparse",
+    "clustered",
+    "moving"
+  ],
   "policies": {
     "bounding_volume": "axis-aligned bounding boxes over float64 particle coordinates",
     "split": "longest AABB spatial extent; median; coordinate then particle index",
@@ -104,7 +109,12 @@
   ],
   "artifacts": {
     "generated_outside_source": true,
-    "files": ["metadata.json", "results.json", "summary.md", "run.log"],
+    "files": [
+      "metadata.json",
+      "results.json",
+      "summary.md",
+      "run.log"
+    ],
     "hardware_counters": "not_claimed",
     "physical_force_speedup": "not_claimed",
     "long_range_replacement": "not_claimed"

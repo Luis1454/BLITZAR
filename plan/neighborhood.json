@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "plan_version": "1.0.62",
+  "plan_version": "1.0.63",
   "record_schema_version": 1,
   "target": "blitzar_neighborhood_test",
   "runner": "tools/evidence/neighborhood_evidence.py",
@@ -19,10 +19,26 @@
     "future_use": "local interactions, SPH, and grid paths only; not a long-range gravity oracle"
   },
   "scenarios": [
-    {"id": "dense", "motion": "static", "description": "uniform points in [-2,2]^3"},
-    {"id": "sparse", "motion": "static", "description": "uniform points in [-8,8]^3"},
-    {"id": "clustered", "motion": "static", "description": "two deterministic clusters"},
-    {"id": "moving", "motion": "moving", "description": "bounded points with deterministic velocity"}
+    {
+      "id": "dense",
+      "motion": "static",
+      "description": "uniform points in [-2,2]^3"
+    },
+    {
+      "id": "sparse",
+      "motion": "static",
+      "description": "uniform points in [-8,8]^3"
+    },
+    {
+      "id": "clustered",
+      "motion": "static",
+      "description": "two deterministic clusters"
+    },
+    {
+      "id": "moving",
+      "motion": "moving",
+      "description": "bounded points with deterministic velocity"
+    }
   ],
   "candidates": [
     {
@@ -70,7 +86,12 @@
     "kind": "existing Octree",
     "role": "long-range spatial-resource baseline only",
     "local_neighbor_oracle": false,
-    "measured_fields": ["build_ns", "cells", "memory_bytes", "hash"]
+    "measured_fields": [
+      "build_ns",
+      "cells",
+      "memory_bytes",
+      "hash"
+    ]
   },
   "required_record_fields": [
     "schema",
@@ -113,7 +134,12 @@
   ],
   "artifacts": {
     "generated_outside_source": true,
-    "files": ["metadata.json", "results.json", "summary.md", "run.log"],
+    "files": [
+      "metadata.json",
+      "results.json",
+      "summary.md",
+      "run.log"
+    ],
     "hardware_counters": "not_claimed",
     "timing": "wall-clock qualification only; build and query timing are reported separately"
   }

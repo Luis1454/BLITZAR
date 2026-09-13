@@ -72,11 +72,21 @@ blitzar_status KifmmSolver::BuildInteractions(
             continue;
         }
 
-        const blitzar_core::Vector3 displacement = Difference(cell.center_of_mass, target_position);
+        blitzar_core::Vector3 displacement = Difference(cell.center_of_mass, target_position);
+
+        const bool periodic_enabled = request.periodic != nullptr && request.periodic->IsEnabled();
+
+        if (periodic_enabled) {
+            displacement = request.periodic->Fold(displacement);
+        }
+
         const blitzar_core::Scalar squared_distance = SquaredLength(displacement);
         const blitzar_core::Scalar distance = std::sqrt(squared_distance);
+        const bool contains_far = periodic_enabled ? !request.periodic->Contains(cell.center,
+                                                         cell.half_extent, target_position)
+                                                   : !Contains(cell, target_position);
 
-        if (!Contains(cell, target_position) && distance > 0.0 &&
+        if (contains_far && distance > 0.0 &&
             2.0 * cell.half_extent / distance < settings_.opening_angle) {
             if (list.far_count == list.far_cells.size()) {
                 return BLITZAR_STATUS_INTERNAL_ERROR;
@@ -133,8 +143,12 @@ blitzar_status KifmmSolver::AccumulateNearCell(const TreeComputeRequest& request
             continue;
         }
 
-        const blitzar_core::Vector3 displacement =
+        blitzar_core::Vector3 displacement =
             Difference(Position(request.sources, source), target_position);
+
+        if (request.periodic != nullptr && request.periodic->IsEnabled()) {
+            displacement = request.periodic->Fold(displacement);
+        }
 
         const blitzar_core::Scalar squared_distance = SquaredLength(displacement);
         const blitzar_physics::PairStatus pair_status =
@@ -195,7 +209,12 @@ blitzar_status KifmmSolver::AccumulateFarCell(const TreeComputeRequest& request,
             cell.center.y + cell.half_extent * equivalent_nodes[node].y,
             cell.center.z + cell.half_extent * equivalent_nodes[node].z};
 
-        const blitzar_core::Vector3 displacement = Difference(point, target_position);
+        blitzar_core::Vector3 displacement = Difference(point, target_position);
+
+        if (request.periodic != nullptr && request.periodic->IsEnabled()) {
+            displacement = request.periodic->Fold(displacement);
+        }
+
         const blitzar_core::Scalar softened_distance =
             SquaredLength(displacement) + softening_squared;
 

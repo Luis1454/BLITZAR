@@ -26,7 +26,8 @@ template <> struct SolverCpuForceTraits<blitzar_direct::DirectSolver> final {
 
         const bool local = request.source_kind == SolverForceSourceKind::Local;
         const SolverForceRequest::Direct typed_request{request.targets, request.sources,
-            request.forces, request.settings, {0, request.sources.SourceCount(), !local}, local};
+            request.forces, request.settings, {0, request.sources.SourceCount(), !local}, local,
+            request.periodic};
 
         return solver.Evaluate(typed_request);
     }
@@ -55,7 +56,7 @@ template <> struct SolverCpuForceTraits<blitzar_barnes_hut::BhSolver> final {
 
         const SolverForceRequest::Tree typed_request{request.targets, request.sources,
             request.forces, request.settings, resource, resource.View(), request.source_kind,
-            !local, local};
+            !local, local, request.periodic};
 
         return solver.Evaluate(typed_request);
     }
@@ -84,7 +85,7 @@ template <> struct SolverCpuForceTraits<blitzar_fmm::FmmSolver> final {
 
         const SolverForceRequest::Tree typed_request{request.targets, request.sources,
             request.forces, request.settings, resource, resource.View(), request.source_kind,
-            !local, local};
+            !local, local, request.periodic};
 
         return solver.Evaluate(typed_request);
     }
@@ -113,7 +114,7 @@ template <> struct SolverCpuForceTraits<blitzar_kifmm::KifmmSolver> final {
 
         const SolverForceRequest::Tree typed_request{request.targets, request.sources,
             request.forces, request.settings, resource, resource.View(), request.source_kind,
-            !local, local};
+            !local, local, request.periodic};
 
         return solver.Evaluate(typed_request);
     }

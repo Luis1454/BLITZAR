@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "plan_version": "1.0.62",
+  "plan_version": "1.0.63",
   "phase": "P6",
   "issue": "#685",
   "public_api": {
@@ -12,7 +12,11 @@
   "configuration": {
     "directive": "execution",
     "arguments": [
-      {"name": "mode", "type": "enum(strict|fast)", "required": true}
+      {
+        "name": "mode",
+        "type": "enum(strict|fast)",
+        "required": true
+      }
     ],
     "optional": true,
     "default": "strict"
@@ -33,14 +37,25 @@
       "restart": "numerical tolerance is required; bitwise equality is not advertised"
     }
   },
-  "backend_policy_order": ["cpu", "hip", "mpi"],
-  "backend_policy_fields": ["fma", "reduction"],
+  "backend_policy_order": [
+    "cpu",
+    "hip",
+    "mpi"
+  ],
+  "backend_policy_fields": [
+    "fma",
+    "reduction"
+  ],
   "restart_state": {
     "integrator": "leapfrog_kdk",
     "rng": "seeded-jitter-v1",
     "compensator": "strict=direct-plain;fast=backend-defined;diagnostics=neumaier-v1",
     "ordering": "stable-particle-id-v1",
-    "units": ["length_scale", "mass_scale", "time_scale"],
+    "units": [
+      "length_scale",
+      "mass_scale",
+      "time_scale"
+    ],
     "precision": "float64",
     "compiler": "exact compiler family and version identity",
     "device": "selected execution boundary identity",
@@ -76,8 +91,14 @@
     "fast_manifest_identity": "initial=runtime-selected;completed=resolved cpu|hip backend and device identity"
   },
   "acceptance": {
-    "tests": ["TST-P6-009", "TST-P6-015"],
-    "checks": ["CHK-P0-048", "CHK-P0-049"],
+    "tests": [
+      "TST-P6-009",
+      "TST-P6-015"
+    ],
+    "checks": [
+      "CHK-P0-048",
+      "CHK-P0-049"
+    ],
     "strict_restart": "byte-identical final snapshot and compatible manifest",
     "fast_disclosure": "metadata bitwise_reproducible is false and backend is runtime-selected before execution",
     "boundary": "active MPI communication rejects snapshot capture",

@@ -3,6 +3,7 @@
 
 #include "core/CoreExecution.hpp"
 #include "physics/gravity/GravityLaw.hpp"
+#include "physics/periodic/PeriodicDomain.hpp"
 #include "solvers/SolverContract.hpp"
 #include "solvers/SolverForceRequest.hpp"
 #include "solvers/SolverTreeResources.hpp"
@@ -56,6 +57,7 @@ private:
         const blitzar_core::ExecutionSettings& settings;
         bool accumulate{false};
         bool skip_self{false};
+        const blitzar_physics::PeriodicDomain* periodic{nullptr};
     };
 
     struct InteractionList final {

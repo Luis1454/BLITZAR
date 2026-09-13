@@ -3,6 +3,7 @@
 
 #include "core/CoreExecution.hpp"
 #include "physics/gravity/GravityLaw.hpp"
+#include "physics/periodic/PeriodicDomain.hpp"
 #include "solvers/SolverContract.hpp"
 #include "solvers/SolverForceRequest.hpp"
 #include "solvers/SolverTreeResources.hpp"
@@ -54,6 +55,7 @@ private:
         std::span<std::size_t> stack;
         blitzar_core::Vector3& acceleration;
         bool skip_self{false};
+        const blitzar_physics::PeriodicDomain* periodic{nullptr};
     };
 
     struct TreeComputeRequest final {
@@ -66,6 +68,7 @@ private:
         blitzar_solver_threading::ThreadStackPool& stack_pool;
         bool accumulate{false};
         bool skip_self{false};
+        const blitzar_physics::PeriodicDomain* periodic{nullptr};
     };
 
     [[nodiscard]] static bool IsValidState(blitzar_core::ParticleStateView particles) noexcept;

@@ -40,10 +40,18 @@ blitzar_status BhSolver::AccumulateSource(const AccumulationRequest& request, st
         return BLITZAR_STATUS_OK;
     }
 
-    const blitzar_core::Scalar dx = request.sources.x[source] - target_position.x;
-    const blitzar_core::Scalar dy = request.sources.y[source] - target_position.y;
-    const blitzar_core::Scalar dz = request.sources.z[source] - target_position.z;
-    const blitzar_core::Scalar distance_squared = dx * dx + dy * dy + dz * dz;
+    blitzar_core::Vector3 displacement{request.sources.x[source] - target_position.x,
+        request.sources.y[source] - target_position.y,
+        request.sources.z[source] - target_position.z};
+
+    if (request.periodic != nullptr && request.periodic->IsEnabled()) {
+        displacement = request.periodic->Fold(displacement);
+    }
+
+    const blitzar_core::Scalar distance_squared = displacement.x * displacement.x +
+                                                  displacement.y * displacement.y +
+                                                  displacement.z * displacement.z;
+
     const blitzar_physics::PairStatus pair_status =
         gravity_.ValidatePair(request.sources.mass[source], distance_squared);
 
@@ -60,9 +68,9 @@ blitzar_status BhSolver::AccumulateSource(const AccumulationRequest& request, st
         return BLITZAR_STATUS_INVALID_ARGUMENT;
     }
 
-    request.acceleration.x += factor * dx;
-    request.acceleration.y += factor * dy;
-    request.acceleration.z += factor * dz;
+    request.acceleration.x += factor * displacement.x;
+    request.acceleration.y += factor * displacement.y;
+    request.acceleration.z += factor * displacement.z;
 
     return BLITZAR_STATUS_OK;
 }
@@ -93,15 +101,26 @@ blitzar_status BhSolver::AccumulateMultipole(const AccumulationRequest& request,
 {
     consumed = false;
 
-    const blitzar_core::Scalar dx = cell.center_of_mass.x - target_position.x;
-    const blitzar_core::Scalar dy = cell.center_of_mass.y - target_position.y;
-    const blitzar_core::Scalar dz = cell.center_of_mass.z - target_position.z;
-    const blitzar_core::Scalar distance_squared = dx * dx + dy * dy + dz * dz;
+    blitzar_core::Vector3 displacement{cell.center_of_mass.x - target_position.x,
+        cell.center_of_mass.y - target_position.y, cell.center_of_mass.z - target_position.z};
+
+    const bool periodic_enabled = request.periodic != nullptr && request.periodic->IsEnabled();
+
+    if (periodic_enabled) {
+        displacement = request.periodic->Fold(displacement);
+    }
+
+    const blitzar_core::Scalar distance_squared = displacement.x * displacement.x +
+                                                  displacement.y * displacement.y +
+                                                  displacement.z * displacement.z;
+
     const blitzar_core::Scalar distance = std::sqrt(distance_squared);
     const blitzar_core::Scalar cell_width = 2.0 * cell.half_extent;
+    const bool contains = periodic_enabled ? request.periodic->Contains(
+                                                 cell.center, cell.half_extent, target_position)
+                                           : Contains(cell, target_position);
 
-    if (Contains(cell, target_position) || distance <= 0.0 ||
-        cell_width / distance >= settings_.opening_angle) {
+    if (contains || distance <= 0.0 || cell_width / distance >= settings_.opening_angle) {
         return BLITZAR_STATUS_OK;
     }
 
@@ -120,9 +139,9 @@ blitzar_status BhSolver::AccumulateMultipole(const AccumulationRequest& request,
         return BLITZAR_STATUS_INVALID_ARGUMENT;
     }
 
-    request.acceleration.x += factor * dx;
-    request.acceleration.y += factor * dy;
-    request.acceleration.z += factor * dz;
+    request.acceleration.x += factor * displacement.x;
+    request.acceleration.y += factor * displacement.y;
+    request.acceleration.z += factor * displacement.z;
     consumed = true;
 
     return BLITZAR_STATUS_OK;
@@ -239,7 +258,7 @@ blitzar_status BhSolver::ComputeTargets(const TreeComputeRequest& request) noexc
         const AccumulationRequest accumulation{request.tree, request.targets, request.sources,
             target,
             request.stack_pool.Stack(blitzar_solver_threading::ThreadStackPool::CurrentThread()),
-            acceleration, request.skip_self};
+            acceleration, request.skip_self, request.periodic};
 
         const blitzar_status target_status = Accumulate(accumulation);
 

@@ -288,6 +288,22 @@ target_compile_features(blitzar_octree_view_test PRIVATE cxx_std_20)
 target_include_directories(blitzar_octree_view_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
 blitzar_enable_warnings(blitzar_octree_view_test)
 
+add_executable(blitzar_periodic_domain_test
+    tests/physics/periodic/PeriodicDomainTest.cpp
+)
+target_link_libraries(blitzar_periodic_domain_test PRIVATE blitzar)
+target_compile_features(blitzar_periodic_domain_test PRIVATE cxx_std_20)
+target_include_directories(blitzar_periodic_domain_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
+blitzar_enable_warnings(blitzar_periodic_domain_test)
+
+add_executable(blitzar_periodic_solver_test
+    tests/physics/periodic/PeriodicSolverTest.cpp
+)
+target_link_libraries(blitzar_periodic_solver_test PRIVATE blitzar)
+target_compile_features(blitzar_periodic_solver_test PRIVATE cxx_std_20)
+target_include_directories(blitzar_periodic_solver_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
+blitzar_enable_warnings(blitzar_periodic_solver_test)
+
 add_executable(blitzar_fmm_test
     tests/fixtures/FixtureAllocationMonitorTest.cpp
     tests/solvers/fmm/FmmTest.cpp
@@ -512,6 +528,8 @@ set(BLITZAR_TEST_TARGETS
     blitzar_hierarchy_test
     blitzar_octree_resource_test
     blitzar_octree_view_test
+    blitzar_periodic_domain_test
+    blitzar_periodic_solver_test
     blitzar_fmm_test
     blitzar_kifmm_test
     blitzar_kifmm_qualification_test

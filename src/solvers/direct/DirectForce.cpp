@@ -39,19 +39,22 @@ blitzar_status DirectSolver::CalculateTarget(const ForceTargetRequest& request) 
             continue;
         }
 
-        const blitzar_core::Scalar dx =
-            request.evaluation.sources.x[source] - request.evaluation.targets.x[request.target];
+        blitzar_core::Vector3 displacement{
+            request.evaluation.sources.x[source] - request.evaluation.targets.x[request.target],
+            request.evaluation.sources.y[source] - request.evaluation.targets.y[request.target],
+            request.evaluation.sources.z[source] - request.evaluation.targets.z[request.target]};
 
-        const blitzar_core::Scalar dy =
-            request.evaluation.sources.y[source] - request.evaluation.targets.y[request.target];
+        const blitzar_physics::PeriodicDomain* periodic = request.evaluation.periodic;
 
-        const blitzar_core::Scalar dz =
-            request.evaluation.sources.z[source] - request.evaluation.targets.z[request.target];
+        if (periodic != nullptr && periodic->IsEnabled()) {
+            displacement = periodic->Fold(displacement);
+        }
 
-        const blitzar_core::Scalar distance_squared = blitzar_core::MultiplyAdd(dx, dx,
-            blitzar_core::MultiplyAdd(
-                dy, dy, blitzar_core::MultiplyAdd(dz, dz, 0.0, policy), policy),
-            policy);
+        const blitzar_core::Scalar distance_squared =
+            blitzar_core::MultiplyAdd(displacement.x, displacement.x,
+                blitzar_core::MultiplyAdd(displacement.y, displacement.y,
+                    blitzar_core::MultiplyAdd(displacement.z, displacement.z, 0.0, policy), policy),
+                policy);
 
         const blitzar_physics::PairStatus pair_status =
             request.gravity.ValidatePair(request.evaluation.sources.mass[source], distance_squared);
@@ -69,9 +72,9 @@ blitzar_status DirectSolver::CalculateTarget(const ForceTargetRequest& request) 
             return BLITZAR_STATUS_INVALID_ARGUMENT;
         }
 
-        acceleration_x.AddProduct(factor, dx);
-        acceleration_y.AddProduct(factor, dy);
-        acceleration_z.AddProduct(factor, dz);
+        acceleration_x.AddProduct(factor, displacement.x);
+        acceleration_y.AddProduct(factor, displacement.y);
+        acceleration_z.AddProduct(factor, displacement.z);
     }
 
     request.acceleration = {acceleration_x.Value(), acceleration_y.Value(), acceleration_z.Value()};

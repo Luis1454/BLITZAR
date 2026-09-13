@@ -2,6 +2,7 @@
 #define BLITZAR_SOLVERS_SOLVER_FORCE_REQUEST_HPP
 
 #include "grid/resource/GridResource.hpp"
+#include "physics/periodic/PeriodicDomain.hpp"
 #include "solvers/SolverContract.hpp"
 #include "solvers/SolverForceEvaluation.hpp"
 #include "trees/octree/resource/OctreeResource.hpp"
@@ -16,6 +17,7 @@ struct SolverForceRequest final {
         const blitzar_core::ExecutionSettings& settings;
         ForceRange range;
         bool skip_self{false};
+        const blitzar_physics::PeriodicDomain* periodic{nullptr};
     };
 
     struct Tree final {
@@ -28,6 +30,7 @@ struct SolverForceRequest final {
         SolverForceSourceKind source_kind{SolverForceSourceKind::Local};
         bool accumulate{false};
         bool skip_self{false};
+        const blitzar_physics::PeriodicDomain* periodic{nullptr};
     };
 
     struct Grid final {

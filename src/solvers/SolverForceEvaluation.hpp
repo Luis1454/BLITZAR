@@ -3,6 +3,7 @@
 
 #include "core/CoreExecution.hpp"
 #include "core/CoreTypes.hpp"
+#include "physics/periodic/PeriodicDomain.hpp"
 
 #include <blitzar/c/blitzar.h>
 #include <concepts>
@@ -21,6 +22,7 @@ struct SolverForceEvaluation final {
     blitzar_core::ForceView forces;
     const blitzar_core::ExecutionSettings& settings;
     SolverForceSourceKind source_kind{SolverForceSourceKind::Local};
+    const blitzar_physics::PeriodicDomain* periodic{nullptr};
 };
 
 template <typename Provider>

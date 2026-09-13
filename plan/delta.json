@@ -1,10 +1,13 @@
 {
   "schema_version": 1,
-  "plan_version": "1.0.62",
+  "plan_version": "1.0.63",
   "state": "evaluated-not-default",
   "codec": "xor-rle-v1",
   "format_version": 1,
-  "scope": ["snapshot-payload", "transport-payload"],
+  "scope": [
+    "snapshot-payload",
+    "transport-payload"
+  ],
   "payload_order": [
     "ids",
     "position_x",
@@ -20,7 +23,13 @@
     "bytes": 24,
     "magic": "BLD1",
     "version": 1,
-    "fields": ["magic", "version", "reserved", "raw_payload_bytes", "payload_checksum"]
+    "fields": [
+      "magic",
+      "version",
+      "reserved",
+      "raw_payload_bytes",
+      "payload_checksum"
+    ]
   },
   "runs": {
     "control_byte": "bit7=zero-run; bits0-6=run_length_minus_one",

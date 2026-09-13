@@ -48,7 +48,8 @@ blitzar_status KifmmSolver::Evaluate(
     const blitzar_solvers::SolverForceRequest::Tree& request) noexcept
 {
     const TreeComputeRequest evaluation{request.resource, request.tree, request.targets,
-        request.sources, request.forces, request.settings, request.accumulate, request.skip_self};
+        request.sources, request.forces, request.settings, request.accumulate, request.skip_self,
+        request.periodic};
 
     const blitzar_status status = ComputeTree(evaluation);
 

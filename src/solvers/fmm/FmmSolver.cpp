@@ -71,7 +71,7 @@ blitzar_status FmmSolver::Evaluate(
 
     const TreeComputeRequest evaluation{request.resource, request.tree, multipoles, request.targets,
         request.sources, request.forces, request.settings, stack_pool_, request.accumulate,
-        request.skip_self};
+        request.skip_self, request.periodic};
 
     const blitzar_status status = ComputeTree(evaluation);
 

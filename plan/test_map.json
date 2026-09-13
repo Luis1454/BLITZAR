@@ -435,6 +435,22 @@
       "contract": "read-only Octree view contract, Morton ordering, parent-child access, and bounds validation"
     },
     {
+      "id": "TST-P3-010",
+      "entrypoint": "tests/physics/periodic/PeriodicDomainTest.cpp",
+      "responsibility": "tests/physics/periodic/PeriodicDomainTest.cpp",
+      "mode": "",
+      "ranks": 1,
+      "contract": "periodic domain semantics: wrap, minimum-image fold, 3x3x3 image enumeration, containment, and disabled identity"
+    },
+    {
+      "id": "TST-P3-011",
+      "entrypoint": "tests/physics/periodic/PeriodicSolverTest.cpp",
+      "responsibility": "tests/physics/periodic/PeriodicSolverTest.cpp",
+      "mode": "",
+      "ranks": 1,
+      "contract": "periodic force interaction: windowed reference equivalence, Direct parity for BH/FMM/KIFMM, seam no-double-count, open-boundary parity, and refit parity"
+    },
+    {
       "id": "TST-P4-001",
       "entrypoint": "tests/gpu/GpuRuntimeTest.cpp",
       "responsibility": "tests/gpu/GpuRuntimeTest.cpp",

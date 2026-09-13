@@ -1,39 +1,88 @@
 {
   "schema_version": 1,
-  "plan_version": "1.0.62",
+  "plan_version": "1.0.63",
   "configuration": {
     "path_base": "config_parent",
     "directives": {
       "output": {
         "optional": true,
-          "arguments": [
-          {"name": "directory", "type": "quoted_path", "required": true},
-          {"name": "format", "type": "enum(binary|hdf5)", "required": false, "default": "binary"},
-          {"name": "every_steps", "type": "positive_int64", "required": true},
-          {"name": "write_initial", "type": "boolean", "required": true},
-          {"name": "write_final", "type": "boolean", "required": true}
+        "arguments": [
+          {
+            "name": "directory",
+            "type": "quoted_path",
+            "required": true
+          },
+          {
+            "name": "format",
+            "type": "enum(binary|hdf5)",
+            "required": false,
+            "default": "binary"
+          },
+          {
+            "name": "every_steps",
+            "type": "positive_int64",
+            "required": true
+          },
+          {
+            "name": "write_initial",
+            "type": "boolean",
+            "required": true
+          },
+          {
+            "name": "write_final",
+            "type": "boolean",
+            "required": true
+          }
         ]
       },
       "diagnostics": {
         "optional": true,
         "arguments": [
-          {"name": "every_steps", "type": "positive_int64", "required": true},
-          {"name": "energy", "type": "boolean", "required": true},
-          {"name": "momentum", "type": "boolean", "required": true},
-          {"name": "relative_error", "type": "boolean", "required": true}
+          {
+            "name": "every_steps",
+            "type": "positive_int64",
+            "required": true
+          },
+          {
+            "name": "energy",
+            "type": "boolean",
+            "required": true
+          },
+          {
+            "name": "momentum",
+            "type": "boolean",
+            "required": true
+          },
+          {
+            "name": "relative_error",
+            "type": "boolean",
+            "required": true
+          }
         ]
       },
       "restart": {
         "optional": true,
         "arguments": [
-          {"name": "directory", "type": "quoted_path", "required": true},
-          {"name": "step", "type": "nonnegative_uint64", "required": true}
+          {
+            "name": "directory",
+            "type": "quoted_path",
+            "required": true
+          },
+          {
+            "name": "step",
+            "type": "nonnegative_uint64",
+            "required": true
+          }
         ]
       },
       "execution": {
         "optional": true,
         "arguments": [
-          {"name": "mode", "type": "enum(strict|fast)", "required": true}
+          {
+            "name": "mode",
+            "type": "enum(strict|fast)",
+            "required": true
+          }
         ],
         "default": "strict"
       }
@@ -91,15 +140,24 @@
       "ordering",
       "bitwise_reproducible"
     ],
-    "backend_execution_policy_order": ["fma", "reduction"],
+    "backend_execution_policy_order": [
+      "fma",
+      "reduction"
+    ],
     "capabilities_order": [
       "implemented_solver_mask",
       "unsupported_solver_mask",
       "deferred_feature_mask",
       "compiled_backend_mask"
     ],
-    "distribution_order": ["rank_count", "rank_index"],
-    "completed_output_order": ["step", "path|shards"],
+    "distribution_order": [
+      "rank_count",
+      "rank_index"
+    ],
+    "completed_output_order": [
+      "step",
+      "path|shards"
+    ],
     "state_path_patterns": {
       "binary": "states/state-%08d.bin",
       "hdf5": "states/state-%08d.h5"
@@ -199,7 +257,10 @@
     "timestamp": "excluded"
   },
   "summary": {
-    "formats": ["human", "json"],
+    "formats": [
+      "human",
+      "json"
+    ],
     "default_format": "human",
     "stream": "stdout",
     "human": {
@@ -239,19 +300,33 @@
     }
   },
   "failure": {
-    "formats": ["human", "json"],
+    "formats": [
+      "human",
+      "json"
+    ],
     "default_format": "human",
     "stream": "stderr",
     "human": {
       "record": "fixed_labeled_lines",
-      "fields": ["phase", "status", "message", "exit_code"],
+      "fields": [
+        "phase",
+        "status",
+        "message",
+        "exit_code"
+      ],
       "locale": "classic",
       "ansi": "forbidden"
     },
     "json": {
       "schema_version": 1,
       "record": "one_line",
-      "field_order": ["schema_version", "status", "phase", "exit_code", "message"]
+      "field_order": [
+        "schema_version",
+        "status",
+        "phase",
+        "exit_code",
+        "message"
+      ]
     },
     "exit_codes": {
       "success": 0,

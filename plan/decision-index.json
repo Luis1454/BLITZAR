@@ -326,6 +326,10 @@
     {
       "path": "plan/decisions/078-promote-repository-tree-materialized.md",
       "lifecycle": "active"
+    },
+    {
+      "path": "plan/decisions/079-periodic-boundaries-for-hierarchical-solvers.md",
+      "lifecycle": "active"
     }
   ]
 }

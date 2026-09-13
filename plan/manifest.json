@@ -1,6 +1,6 @@
 {
   "product_version": "1.0.0",
-  "plan_version": "1.0.62",
+  "plan_version": "1.0.63",
   "status": "frozen",
   "product": "deterministic particle simulation SDK",
   "source_of_truth": [
@@ -23,6 +23,7 @@
     "plan/final_audit.json",
     "plan/reproducibility.json",
     "plan/ops002.json",
+    "plan/periodic.json",
     "plan/repository_tree.json"
   ],
   "roots": [
@@ -36,6 +37,7 @@
     "src/physics/gravity",
     "src/physics/conservation",
     "src/physics/reduction",
+    "src/physics/periodic",
     "src/integration",
     "src/integration/kdk",
     "src/trees",
@@ -97,6 +99,7 @@
     "tests/reduction",
     "tests/neighborhood",
     "tests/bvh",
+    "tests/physics/periodic",
     "tests/solvers/pm",
     "tests/solvers/treepm",
     "tests/simulation",

@@ -289,6 +289,18 @@
       "phase": "P3"
     },
     {
+      "id": "TST-P3-010",
+      "name": "periodic-domain-semantics",
+      "command": "blitzar_periodic_domain_test",
+      "phase": "P3"
+    },
+    {
+      "id": "TST-P3-011",
+      "name": "periodic-force-interaction",
+      "command": "blitzar_periodic_solver_test",
+      "phase": "P3"
+    },
+    {
       "id": "TST-P4-001",
       "name": "hip-acceleration-and-fallback",
       "command": "blitzar_accelerator_test",
@@ -636,14 +648,18 @@
           "path": "src/particles/source",
           "prefix": "Particle"
         },
-        {
-          "path": "src/physics/gravity",
-          "prefix": "Gravity"
-        },
-        {
-          "path": "src/physics/reduction",
-          "prefix": "ScalarReduction"
-        },
+{
+   "path": "src/physics/gravity",
+   "prefix": "Gravity"
+  },
+  {
+   "path": "src/physics/periodic",
+   "prefix": "Periodic"
+  },
+  {
+   "path": "src/physics/reduction",
+   "prefix": "ScalarReduction"
+  },
         {
           "path": "src/integration/kdk",
           "prefix": "Kdk"
@@ -836,14 +852,18 @@
           "path": "tests/reduction",
           "prefix": "Reduction"
         },
-        {
-          "path": "tests/neighborhood",
-          "prefix": "Neighbor"
-        },
-        {
-          "path": "tests/bvh",
-          "prefix": "Bvh"
-        },
+{
+   "path": "tests/neighborhood",
+   "prefix": "Neighbor"
+  },
+  {
+   "path": "tests/physics/periodic",
+   "prefix": "Periodic"
+  },
+  {
+   "path": "tests/bvh",
+   "prefix": "Bvh"
+  },
         {
           "path": "tests/solvers/pm",
           "prefix": "Pm"

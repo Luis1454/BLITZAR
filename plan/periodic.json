@@ -1,0 +1,118 @@
+{
+  "schema_version": 1,
+  "plan_version": "1.0.63",
+  "phase": "P3",
+  "issue": "P3-PBC-001",
+  "issue_tracker": 741,
+  "status": "implemented-qualified",
+  "title": "Periodic boundaries and image interactions for hierarchical solvers",
+  "owner": "physics-maintainers",
+  "depends_on": [
+    "P3"
+  ],
+  "numerical_oracle": "Direct CPU strict reference with minimum-image displacement",
+  "scope": {
+    "domain": "box wrap, minimum-image fold, and periodic cell acceptance for Octree-based short-range interactions",
+    "solvers": [
+      "Direct",
+      "Barnes-Hut",
+      "FMM",
+      "KIFMM"
+    ],
+    "periodic_domain": {
+      "box_origin": "Vector3 finite origin; period starts at origin and repeats with stride size",
+      "box_size": "Vector3 positive, finite Lx, Ly, Lz; the same value is used for the wrap and the fold",
+      "wrap": "coordinates are folded into [origin, origin + size) along every axis",
+      "minimum_image": "a displacement is folded per axis into (-size/2, size/2]; only the nearest image of a distinct source can fall within the interaction window",
+      "interaction_window": "Rc is bounded by min(Lx, Ly, Lz) / 2, which guarantees at most one image of each source lies inside Rc; every pair contributes its minimum-image displacement and the window does not truncate the force, so the windowed 27-region enumeration is exactly equivalent to the minimum-image reference inside Rc",
+      "disabled": "when periodic boundaries are disabled the wrap, fold, and containment reduce exactly to the open-boundary identity; the non-periodic CPU path is bit-identical to the baseline"
+    },
+    "image_regions": {
+      "enumeration": "3 x 3 x 3 lattice of periodic copies of the box",
+      "central": "the primary copy that holds the physical sources (region index 0)",
+      "neighbors": "the 26 surrounding regions: 6 face regions with a single axis shift, 12 edge regions with two axis shifts, and 8 corner regions with three axis shifts",
+      "candidate_rule": "a source contributes exactly one image inside Rc; that image is the minimum-image displacement, so the 26 neighboring regions plus the central copy are the complete set of candidates inside Rc",
+      "ordering": "image regions are enumerated deterministically: z, then y, then x, each in order 0, +1, -1 shift with the central region first"
+    },
+    "hierarchy": {
+      "no_duplication": "periodic interactions reuse the single Octree built over the wrapped box; no per-image tree copy is created",
+      "folded_geometry": "leaf sources, multipole displacements, far-cell equivalent points, and cell containment all use minimum-image geometry against the wrapped box",
+      "no_double_count": "each physical source is visited at most once per target and contributes its single nearest image",
+      "refit_parity": "a refit pass and a full rebuild produce the same periodic forces for the same wrapped state"
+    },
+    "input_convention": "source and target coordinates are wrapped into the box before planning and evaluation; the periodic domain exposes the wrap for the caller and the solvers consume already-wrapped state"
+  },
+  "acceptance": {
+    "planned_cases": [
+      {
+        "id": "PBC-AC-001",
+        "name": "periodic-domain-semantics",
+        "contract": "wrap folds coordinates into the box; minimum image folds per axis into (-size/2, size/2]; the 26 neighboring regions are enumerated deterministically with the central copy first; disabled boundaries act as the identity; invalid boxes are rejected"
+      },
+      {
+        "id": "PBC-AC-002",
+        "name": "reference-window-equivalence",
+        "contract": "the Direct periodic reference equals the summed interaction of the central copy plus the 26 surrounding regions after window reduction: each pair contributes exactly its nearest image inside Rc and no other region is within Rc"
+      },
+      {
+        "id": "PBC-AC-003",
+        "name": "bh-periodic-parity",
+        "contract": "Barnes-Hut with periodic boundaries matches the Direct periodic reference within the declared relative tolerance, and bit-exactly as the opening angle vanishes"
+      },
+      {
+        "id": "PBC-AC-004",
+        "name": "fmm-periodic-parity",
+        "contract": "FMM with periodic boundaries matches the Direct periodic reference within the declared relative tolerance"
+      },
+      {
+        "id": "PBC-AC-005",
+        "name": "kifmm-periodic-parity",
+        "contract": "KIFMM with periodic boundaries matches the Direct periodic reference within the declared relative tolerance"
+      },
+      {
+        "id": "PBC-AC-006",
+        "name": "seam-no-double-count",
+        "contract": "a pair straddling the wrap seam receives exactly one interaction: isolated-pair forces are equal in magnitude and opposite in direction, and equal to the minimum-image single-pair force rather than to a multiple-image sum"
+      },
+      {
+        "id": "PBC-AC-007",
+        "name": "open-boundary-unchanged",
+        "contract": "with periodic boundaries disabled every solver produces bit-identical forces to the existing non-periodic CPU baseline"
+      },
+      {
+        "id": "PBC-AC-008",
+        "name": "refit-and-rebuild-parity",
+        "contract": "periodic forces are identical whether the Octree is built fresh or built then refit for the same wrapped state"
+      },
+      {
+        "id": "PBC-AC-009",
+        "name": "mpi-race-lane",
+        "contract": "PBC interaction with domain-decomposition halos, migration, restart, and changed-rank-count runs is coordinated with the P7/P8 MPI lanes and the P5 grid mesh; it is capability-gated on the local single-rank qualification path",
+        "gate": "capability"
+      }
+    ],
+    "implementation_registration": "convert planned cases into TST-P3 identifiers and CTest entries; PBC-AC-009 registers as a capability-gated lane",
+    "qualification": "CPU strict reference is mandatory; MPI halo, migration, restart, and rank-change PBC qualification is capability-gated",
+    "tolerances": {
+      "reference_parity": "relative L2 force error below 0.05 at the default hierarchical opening angle, matching the established P3 tree-solver acceptance",
+      "exact_gate": "bit-exact equality against the Direct periodic reference at opening angle zero for the tree solvers",
+      "open_boundary": "bit parity with the existing non-periodic CPU lane"
+    }
+  },
+  "non_goals": {
+    "no_tree_duplication": "no per-image copy of the Octree hierarchy is introduced",
+    "no_ewald_long_range": "lattice-sum regularization of the replicated gravitational system (Ewald, P3M mesh, TreePM long range) is not implemented by P3-PBC-001; coordination is deferred to the grid and multipole mesh lanes",
+    "no_grid_periodicity": "the P5 Grid resource and PM/TreePM mesh remain non-periodic under this contract",
+    "no_ode_periodicity": "no periodic correction is applied to position integration; only the force interaction geometry is periodic"
+  },
+  "coordination": {
+    "grid_boundary": "grid-mesh periodic deposition and halo exchange coordinate with issue 695",
+    "ewald_mesh": "long-range lattice-sum regularization coordinates with the multipole-mesh dependency",
+    "mpi_pbc": "PBC across domain boundaries coordinates with the P7/P8 MPI lanes and remains capability-gated until a multi-rank lane exists",
+    "short_range_window": "the Rc bound subsumes the local-neighborhood window of plan/neighborhood.json so a distinct source has at most one contributing image inside Rc"
+  },
+  "migration": {
+    "open_boundary_is_default": "absence of a periodic domain retains the exact non-periodic behavior, so no legacy configuration is reinterpreted",
+    "input_wrapping": "the caller wraps state before evaluation; the solver boundary is the folded interaction kernel, not coordinate mutation"
+  }
+}

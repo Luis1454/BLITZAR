@@ -1,6 +1,6 @@
 {
   "schema_version": 2,
-  "plan_version": "1.0.62",
+  "plan_version": "1.0.63",
   "record_schema_version": 2,
   "target": "blitzar_scaling_test",
   "runner": "tools/evidence/release_evidence.py",
@@ -52,11 +52,24 @@
       "id": "strong-scaling",
       "kind": "strong",
       "distribution": "box-pair-v1",
-      "particle_counts": [32, 64],
+      "particle_counts": [
+        32,
+        64
+      ],
       "particles_per_rank": 0,
-      "ranks": [1, 2, 4],
-      "solvers": ["direct", "barnes-hut", "fmm"],
-      "overlap_modes": ["overlapped"],
+      "ranks": [
+        1,
+        2,
+        4
+      ],
+      "solvers": [
+        "direct",
+        "barnes-hut",
+        "fmm"
+      ],
+      "overlap_modes": [
+        "overlapped"
+      ],
       "oracle": true,
       "migration": false
     },
@@ -66,9 +79,19 @@
       "distribution": "box-pair-v1",
       "particle_counts": [],
       "particles_per_rank": 32,
-      "ranks": [1, 2, 4],
-      "solvers": ["direct", "barnes-hut", "fmm"],
-      "overlap_modes": ["overlapped"],
+      "ranks": [
+        1,
+        2,
+        4
+      ],
+      "solvers": [
+        "direct",
+        "barnes-hut",
+        "fmm"
+      ],
+      "overlap_modes": [
+        "overlapped"
+      ],
       "oracle": true,
       "migration": false
     },
@@ -76,11 +99,20 @@
       "id": "migration",
       "kind": "migration",
       "distribution": "boundary-crossing-v1",
-      "particle_counts": [64],
+      "particle_counts": [
+        64
+      ],
       "particles_per_rank": 0,
-      "ranks": [2, 4],
-      "solvers": ["direct"],
-      "overlap_modes": ["overlapped"],
+      "ranks": [
+        2,
+        4
+      ],
+      "solvers": [
+        "direct"
+      ],
+      "overlap_modes": [
+        "overlapped"
+      ],
       "oracle": false,
       "migration": true
     },
@@ -88,11 +120,21 @@
       "id": "overlap",
       "kind": "overlap",
       "distribution": "box-pair-v1",
-      "particle_counts": [64],
+      "particle_counts": [
+        64
+      ],
       "particles_per_rank": 0,
-      "ranks": [2, 4],
-      "solvers": ["direct"],
-      "overlap_modes": ["overlapped", "serialized"],
+      "ranks": [
+        2,
+        4
+      ],
+      "solvers": [
+        "direct"
+      ],
+      "overlap_modes": [
+        "overlapped",
+        "serialized"
+      ],
       "oracle": false,
       "migration": false
     }
@@ -105,7 +147,12 @@
       "summary.md",
       "logs/"
     ],
-    "evidence_states": ["passed", "failed", "skipped", "unknown"],
+    "evidence_states": [
+      "passed",
+      "failed",
+      "skipped",
+      "unknown"
+    ],
     "topology_rule": "single-host multi-rank is not multi-node evidence",
     "gpu_rule": "compile, fallback, and device execution are separate records"
   }

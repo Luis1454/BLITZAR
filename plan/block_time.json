@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "plan_version": "1.0.62",
+  "plan_version": "1.0.63",
   "record_schema_version": 1,
   "target": "blitzar_block_time_test",
   "runner": "tools/evidence/block_time_evidence.py",
@@ -102,7 +102,12 @@
   ],
   "artifacts": {
     "generated_outside_source": true,
-    "files": ["metadata.json", "results.json", "summary.md", "run.log"],
+    "files": [
+      "metadata.json",
+      "results.json",
+      "summary.md",
+      "run.log"
+    ],
     "hardware_counters": "not_claimed",
     "end_to_end_speedup": "not_claimed"
   }
