@@ -742,6 +742,24 @@
       "issue": 741,
       "status": "accepted",
       "decision": "The periodic solver fixture links the Direct reference and all three periodic-capable hierarchical solver families plus threading, tree, and core types because ocean-002's acceptance cases compare every solver family against one oracle in a single test executable; the dependency count is the test topology and does not widen the production include boundary."
+    },
+    {
+      "path": "src/integration/comoving/ComovingAdvance.hpp",
+      "signals": [
+        "branching"
+      ],
+      "issue": 739,
+      "status": "accepted",
+      "decision": "The comoving advance header keeps validation, force phase, kick, drift, and clock rollback in one template header so the KDK checkpoint contract (capture, finite checks, rollback) is reused bit-for-bit; ValidateAdvanceState concentrates the expansion-validity branching that guards EdS cosmic time and is accepted for INT-005."
+    },
+    {
+      "path": "tests/integration/comoving/ComovingLeapfrogTest.cpp",
+      "signals": [
+        "function_count"
+      ],
+      "issue": 739,
+      "status": "accepted",
+      "decision": "The comoving oracle keeps one focused check per physical property (static/KDK bit parity, empty-universe momentum, EdS convergence, momentum conservation, validation rejection, force-failure rollback) so each assertion is independently attributable to a question on issue 739."
     }
   ]
 }

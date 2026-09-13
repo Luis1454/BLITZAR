@@ -9,6 +9,7 @@ else()
 endif()
 
 set(BLITZAR_LIBRARY_SOURCES
+    src/integration/comoving/ComovingBackground.cpp
     src/integration/kdk/KdkCheckpoint.cpp
     src/particles/arena/ParticleArena.cpp
     src/particles/buffer/ParticleBuffer.cpp

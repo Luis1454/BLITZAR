@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "plan_version": "1.0.65",
+  "plan_version": "1.0.66",
   "decision_id": "INT-001",
   "status": "frozen",
   "production_integrator": "fixed-kdk-v1",
@@ -17,18 +17,19 @@
       "evidence": "KdkDynamicsTest and KdkNumericalTest on the strict lane"
     },
     "comoving-kdk-v2": {
-      "status": "retained-contracted-implementation-deferred",
+      "status": "retained-implemented",
       "implementation_issue": "INT-005 (issue 739)",
       "coordinates": "co-moving",
-      "description": "Cosmological Leapfrog KDK on co-moving coordinates with peculiar velocities; the next retained integrator",
+      "description": "Cosmological Leapfrog KDK on co-moving coordinates with canonical comoving momentum; the retained expanding-universe integrator",
+      "background_reference": "EdS default a(t) = (t / t0)^(2/3) in src/integration/comoving/ComovingBackground.cpp",
       "variables": {
         "x": "co-moving position (SoA positions), x = r_physical / a",
-        "v": "peculiar velocity (SoA velocities), v = a * dx/dt",
+        "w": "canonical comoving momentum w = a * v stored directly in the SoA velocity field; physical peculiar velocity is v = w / a",
         "a": "scale factor from a background expansion model",
-        "h": "Hubbles rate h = (da/dt) / a"
+        "z": "redshift z = (1 / a) - 1"
       },
-      "background": "EdS default a(t) = (t / t0)^(2/3); a and h are deterministic inputs, not solver state",
-      "oracle_rubric": "INT-005 registers the concrete tests; the rubric is frozen here"
+      "implementation": "src/integration/comoving",
+      "evidence": "ComovingBackgroundTest and ComovingLeapfrogTest on the strict lane (TST-P1-010, TST-P1-011)"
     },
     "block-kdk-schedule-v1": {
       "status": "rejected-evidence-only",
@@ -44,18 +45,22 @@
     "imported_gadget_scheme": "reject: clean-room forbids an imported implementation; the co-moving scheme is defined by this contract only"
   },
   "comoving_leapfrog_contract": {
-    "equation_of_motion": "dv/dt = -(1 / a) * grad_x(phi) - h * v, where phi is the peculiar gravitational potential from the existing solver path evaluated on co-moving coordinates with the existing Plummer softening; the homogeneous background term is subtracted so only the peculiar field drives v",
-    "kdk_sequence": "kick (add -(dt/2) * (g / a) with h * v integrated by the scale-factor change), then drift x += dt * v / a, then symmetric kick",
-    "state_ownership": "particle state stays in the existing SoA ParticleBuffer; background (a, h) is a per-run execution input owned by the integration step, never by particles or solvers",
+    "frames": {
+      "physical": "dv/dt = -(g / a) - h * v, with the homogeneous Hubble drag h * v subtracted from the peculiar acceleration g from the existing solver path on co-moving coordinates with the existing Plummer softening",
+      "integrated": "w = a * v and dw/dt = -g: the canonical momentum removes the Hubble drag from the kick explicitly, so only the peculiar field drives w; v = w / a"
+    },
+    "kdk_sequence": "kick w += (dt / 2) * g, then drift x += dtau * w with dtau = ComovingDrift(a, t, t + dt) = integral of dt / a over the step, then symmetric kick",
+    "static_background_degeneracy": "with a(t) == 1 the background is Static: a == 1, h == 0, dtau == dt exactly, and the comoving integrator reproduces fixed KDK bit-exactly",
+    "state_ownership": "particle state stays in the existing SoA ParticleBuffer; the canonical momentum w occupies the existing velocity field; background (a, h) and cosmic time are per-run execution inputs owned by the integration step, never by particles or solvers",
     "conservation_targets": [
-      "empty-universe invariant: a * v is exactly constant because dv/dt = -h * v when gravity is absent",
-      "comoving peculiar kinetic plus displaced potential energy stays bounded",
-      "second-order convergence on the fixed-step grid against a fine-step reference at identical opening and softening"
+      "empty-universe invariant: w = a * v is exactly constant because g == 0 implies the kicks add zero; verified bit-exact over the oracle run",
+      "expanding two-body configs converge at second order against a fine-step reference at identical softening (energy-like invariant bounded)",
+      "static parity: the comoving integrator and fixed KDK produce bit-identical trajectories on symmetric inputs"
     ],
     "interface_rules": [
       "reuse the SolverForceEvaluation boundary exactly; no new solver entry point",
       "same argument-count and no-hot-path-allocation rules as fixed KDK; no dynamic allocation after warmup",
-      "checkpoint capture, rollback, and finite-state validation behave identically to fixed KDK",
+      "checkpoint capture, rollback, and finite-state validation behave identically to fixed KDK (cosmic time is additionally rolled back)",
       "compatible with Direct, Barnes-Hut, FMM, KIFMM, PM, TreePM through the force-evaluation boundary",
       "periodic boundaries remain a solver-domain concern; the integrator stays domain-agnostic"
     ]

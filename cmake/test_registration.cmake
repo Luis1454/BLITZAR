@@ -56,6 +56,8 @@ add_test(NAME TST-P0-004 COMMAND blitzar_bounded_contract_test)
 add_test(NAME TST-P0-005 COMMAND blitzar_abi_test)
 add_test(NAME TST-P0-006 COMMAND blitzar_capability_test)
 add_test(NAME TST-P1-001 COMMAND blitzar_dynamics_test)
+add_test(NAME TST-P1-010 COMMAND blitzar_comoving_background_test)
+add_test(NAME TST-P1-011 COMMAND blitzar_comoving_leapfrog_test)
 add_test(NAME TST-P1-003 COMMAND blitzar_allocation_test)
 add_test(
     NAME TST-P1-004

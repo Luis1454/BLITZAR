@@ -2,7 +2,7 @@
 
 Status: **FROZEN**  
 Product/API version: **1.0.0**
-Plan version: **1.0.65**
+Plan version: **1.0.66**
 
 This repository is a clean-room rewrite. The old repository, its source tree,
 its issues, and its documentation are not implementation inputs. Requirements
@@ -338,6 +338,24 @@ Gadget-style scheme are explicitly rejected for production; the co-moving
 scheme is defined by `plan/integration.json` alone, preserving the clean-room
 rule. No production code or test id changes in this decision.
 
+### Comoving Leapfrog Oracle (INT-005)
+
+`INT-005` implements the retained `comoving-kdk-v2` integrator in
+`src/integration/comoving` behind the existing `SolverForceEvaluation`
+boundary. The SoA velocity field stores the canonical comoving momentum
+`w = a * v`; the Hubble drag is removed from the kick by construction, so the
+integrated equation is `dw/dt = -g` and the drift is `x += dtau * w` with
+`dtau = integral_of(dt / a)`. With a `Static` background (`a == 1`) the
+comoving integrator reproduces fixed KDK bit-exactly; the Einstein-DeSitter
+background `a(t) = (t / t0)^(2/3)` keeps scale factor and redshift
+restart-transparent through the single cosmic-time scalar.
+
+`TST-P1-010` checks static and EdS background semantics; `TST-P1-011` checks
+static bit-parity with fixed KDK, the empty-universe canonical-momentum
+oracle, second-order convergence of an expanding two-body orbit, comoving
+momentum conservation, validation rejection, and exact rollback on force
+failure.
+
 ### P2: Public SDK and CLI
 
 Expose only the stable C ABI and the C++ RAII facade. Implement the CLI as a
@@ -604,7 +622,7 @@ an owner, an oracle, and an acceptance test.
 ## Frozen Repository Tree
 
 The exact destination taxonomy is the machine-readable contract in
-`plan/repository_tree.json`, frozen at plan version 1.0.65 and linked from
+`plan/repository_tree.json`, frozen at plan version 1.0.66 and linked from
 `plan/manifest.json`. It is the only authoritative source for the repository
 tree migration; the shape block below remains the as-built inventory until the
 migration is promoted.

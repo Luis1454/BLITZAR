@@ -254,6 +254,22 @@ target_compile_features(blitzar_dynamics_test PRIVATE cxx_std_20)
 target_include_directories(blitzar_dynamics_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
 blitzar_enable_warnings(blitzar_dynamics_test)
 
+add_executable(blitzar_comoving_background_test
+    tests/integration/comoving/ComovingBackgroundTest.cpp
+)
+target_link_libraries(blitzar_comoving_background_test PRIVATE blitzar)
+target_compile_features(blitzar_comoving_background_test PRIVATE cxx_std_20)
+target_include_directories(blitzar_comoving_background_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
+blitzar_enable_warnings(blitzar_comoving_background_test)
+
+add_executable(blitzar_comoving_leapfrog_test
+    tests/integration/comoving/ComovingLeapfrogTest.cpp
+)
+target_link_libraries(blitzar_comoving_leapfrog_test PRIVATE blitzar)
+target_compile_features(blitzar_comoving_leapfrog_test PRIVATE cxx_std_20)
+target_include_directories(blitzar_comoving_leapfrog_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
+blitzar_enable_warnings(blitzar_comoving_leapfrog_test)
+
 add_executable(blitzar_allocation_test
     tests/fixtures/FixtureAllocationMonitorTest.cpp
     tests/simulation/SimAllocationsTest.cpp
@@ -523,7 +539,9 @@ set(BLITZAR_TEST_TARGETS
     blitzar_spatial_resource_test
     blitzar_abi_test
     blitzar_capability_test
-    blitzar_dynamics_test
+blitzar_dynamics_test
+    blitzar_comoving_background_test
+    blitzar_comoving_leapfrog_test
     blitzar_allocation_test
     blitzar_hierarchy_test
     blitzar_octree_resource_test

@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "plan_version": "1.0.65",
+  "plan_version": "1.0.66",
   "status": "frozen",
   "materialization": "materialized",
   "description": "Frozen repository taxonomy, language separation, naming, and source-test layout contract.",
@@ -382,7 +382,9 @@
     "tests/gpu/GpuRuntimeTest.cpp",
     "tests/mpi/MpiTest.cpp",
     "tests/package/ConsumerTest.cmake",
-    "tests/package/CliContractTest.cmake"
+    "tests/package/CliContractTest.cmake",
+    "tests/integration/comoving/ComovingBackgroundTest.cpp",
+    "tests/integration/comoving/ComovingLeapfrogTest.cpp"
   ],
   "python": {
     "root": "tools",

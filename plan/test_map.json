@@ -267,6 +267,24 @@
       "contract": "deterministic AABB BVH build, refit, rebuild, and traversal against exact neighbor reference, selected cell-linked index, and separate Octree baseline"
     },
     {
+      "id": "TST-P1-010",
+      "entrypoint": "tests/integration/comoving/ComovingBackgroundTest.cpp",
+      "responsibility": "tests/integration/comoving/ComovingBackgroundTest.cpp",
+      "mode": "qualification",
+      "ranks": 1,
+      "phase": "P1",
+      "contract": "comoving background (static and Einstein-DeSitter) scale factor, expansion rate, redshift, and comoving drift semantics"
+    },
+    {
+      "id": "TST-P1-011",
+      "entrypoint": "tests/integration/comoving/ComovingLeapfrogTest.cpp",
+      "responsibility": "tests/integration/comoving/ComovingLeapfrogTest.cpp",
+      "mode": "qualification",
+      "ranks": 1,
+      "phase": "P1",
+      "contract": "comoving Leapfrog static/KDK bit parity, empty-universe canonical-momentum oracle, second-order convergence, momentum conservation, validation, and rollback"
+    },
+    {
       "id": "TST-P5-001",
       "entrypoint": "tests/grid/resource/GridResourceTest.cpp",
       "responsibility": "tests/grid/resource/GridResourceTest.cpp",

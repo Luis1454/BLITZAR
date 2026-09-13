@@ -1,6 +1,6 @@
 {
   "product_version": "1.0.0",
-  "plan_version": "1.0.65",
+  "plan_version": "1.0.66",
   "status": "frozen",
   "product": "deterministic particle simulation SDK",
   "source_of_truth": [
@@ -41,6 +41,7 @@
     "src/physics/periodic",
     "src/integration",
     "src/integration/kdk",
+    "src/integration/comoving",
     "src/trees",
     "src/trees/octree",
     "src/grid",

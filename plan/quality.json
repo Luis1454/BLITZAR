@@ -193,6 +193,18 @@
       "phase": "P1"
     },
     {
+      "id": "TST-P1-010",
+      "name": "comoving-background-semantics",
+      "command": "blitzar_comoving_background_test",
+      "phase": "P1"
+    },
+    {
+      "id": "TST-P1-011",
+      "name": "comoving-leapfrog-oracle",
+      "command": "blitzar_comoving_leapfrog_test",
+      "phase": "P1"
+    },
+    {
       "id": "TST-P5-001",
       "name": "grid-layout-and-deposition",
       "command": "blitzar_pm_grid_test",
@@ -648,18 +660,18 @@
           "path": "src/particles/source",
           "prefix": "Particle"
         },
-{
-   "path": "src/physics/gravity",
-   "prefix": "Gravity"
-  },
-  {
-   "path": "src/physics/periodic",
-   "prefix": "Periodic"
-  },
-  {
-   "path": "src/physics/reduction",
-   "prefix": "ScalarReduction"
-  },
+        {
+          "path": "src/physics/gravity",
+          "prefix": "Gravity"
+        },
+        {
+          "path": "src/physics/periodic",
+          "prefix": "Periodic"
+        },
+        {
+          "path": "src/physics/reduction",
+          "prefix": "ScalarReduction"
+        },
         {
           "path": "src/integration/kdk",
           "prefix": "Kdk"
@@ -852,18 +864,18 @@
           "path": "tests/reduction",
           "prefix": "Reduction"
         },
-{
-   "path": "tests/neighborhood",
-   "prefix": "Neighbor"
-  },
-  {
-   "path": "tests/physics/periodic",
-   "prefix": "Periodic"
-  },
-  {
-   "path": "tests/bvh",
-   "prefix": "Bvh"
-  },
+        {
+          "path": "tests/neighborhood",
+          "prefix": "Neighbor"
+        },
+        {
+          "path": "tests/physics/periodic",
+          "prefix": "Periodic"
+        },
+        {
+          "path": "tests/bvh",
+          "prefix": "Bvh"
+        },
         {
           "path": "tests/solvers/pm",
           "prefix": "Pm"
@@ -883,6 +895,10 @@
         {
           "path": "examples/cpp",
           "prefix": "Cpp"
+        },
+        {
+          "path": "tests/integration/comoving",
+          "prefix": "Comoving"
         }
       ],
       "type_mapping_exceptions": [
