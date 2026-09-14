@@ -449,6 +449,12 @@
       "name": "v2-transactional-restart-rejection",
       "command": "blitzar_snapshot_v2_test reject",
       "phase": "P9"
+    },
+    {
+      "id": "TST-P10-002",
+      "name": "sph-density-summation-oracle",
+      "command": "blitzar_sph_density_test",
+      "phase": "P10"
     }
   ],
   "architecture": {
@@ -909,6 +915,14 @@
         {
           "path": "src/physics/neighbors",
           "prefix": "Neighbor"
+        },
+        {
+          "path": "src/physics/sph",
+          "prefix": "Sph"
+        },
+        {
+          "path": "tests/physics/sph",
+          "prefix": "Sph"
         }
       ],
       "type_mapping_exceptions": [

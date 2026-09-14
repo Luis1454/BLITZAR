@@ -59,6 +59,7 @@ add_test(NAME TST-P1-001 COMMAND blitzar_dynamics_test)
 add_test(NAME TST-P1-010 COMMAND blitzar_comoving_background_test)
 add_test(NAME TST-P1-011 COMMAND blitzar_comoving_leapfrog_test)
 add_test(NAME TST-P10-001 COMMAND blitzar_neighbor_index_test)
+add_test(NAME TST-P10-002 COMMAND blitzar_sph_density_test)
 add_test(NAME TST-P1-003 COMMAND blitzar_allocation_test)
 add_test(
     NAME TST-P1-004

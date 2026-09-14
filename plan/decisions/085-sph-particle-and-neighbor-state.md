@@ -36,5 +36,5 @@ lifetime until P8-SPH-007 freezes its definition.
   new solver entry point and no gravity-path change.
 - Gravity-only trajectories and all pre-existing test ids are unchanged.
 - New hydro tests use the TST-P10-* namespace.
-- The concrete EOS remains open and is selected by P8-SPH-002.
+- The concrete EOS remains open and is selected by P8-SPH-004.
 - This contract introduces no production code.

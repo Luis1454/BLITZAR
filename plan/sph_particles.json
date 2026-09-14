@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "plan_version": "1.0.70",
+  "plan_version": "1.0.71",
   "decision_id": "P8-SPH-001",
   "phase": "P10",
   "status": "frozen",
@@ -18,7 +18,7 @@
       "units": "mass / (length time^2)",
       "lifetime": "derived quantity, recomputed from density and the chosen EOS at every hydro update; never stored as restart state",
       "initialization": "derived, never a run parameter",
-      "eos_policy": "the concrete EOS is selected by P8-SPH-002; Tait with gamma = 7 is the wcsp-v1 contract default and the only retained candidate until the EOS issue decides"
+      "eos_policy": "the concrete EOS is selected by P8-SPH-004; Tait with gamma = 7 is the wcsp-v1 contract default and the only retained candidate until the EOS issue decides"
     },
     "specific_internal_energy": {
       "symbol": "u_i",

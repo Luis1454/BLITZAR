@@ -1,6 +1,6 @@
 {
   "product_version": "1.0.0",
-  "plan_version": "1.0.70",
+  "plan_version": "1.0.71",
   "status": "frozen",
   "product": "deterministic particle simulation SDK",
   "source_of_truth": [
@@ -43,6 +43,7 @@
     "src/physics/reduction",
     "src/physics/periodic",
     "src/physics/neighbors",
+    "src/physics/sph",
     "src/integration",
     "src/integration/kdk",
     "src/integration/comoving",
@@ -106,6 +107,7 @@
     "tests/neighborhood",
     "tests/bvh",
     "tests/physics/periodic",
+    "tests/physics/sph",
     "tests/solvers/pm",
     "tests/solvers/treepm",
     "tests/simulation",

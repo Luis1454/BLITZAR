@@ -610,6 +610,15 @@
       "ranks": 1,
       "phase": "P10",
       "contract": "production cell-linked neighbor index matches the brute-force inclusive-radius reference exactly; target lists are strictly ascending; rebuilds are identical; particle and neighbor capacity overflow is rejected before any buffer is committed; boundary, exact-radius, empty, span-mismatch, and non-finite cases behave deterministically"
+    },
+    {
+      "id": "TST-P10-002",
+      "entrypoint": "tests/physics/sph/SphDensityTest.cpp",
+      "responsibility": "tests/physics/sph/SphDensityTest.cpp",
+      "mode": "qualification",
+      "ranks": 1,
+      "phase": "P10",
+      "contract": "the production density summation reproduces the normalized cubic B-spline integral in physical mass-over-volume units; the two-body raw and Shepard-adjusted values are exact; uniform and gentle analytic fields pass declared interior error bounds; empty, zero-mass, non-finite, degenerate smoothing-length, span-mismatch, and unbuilt-index cases fail without publishing any output"
     }
   ]
 }

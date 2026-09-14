@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "plan_version": "1.0.70",
+  "plan_version": "1.0.71",
   "status": "frozen",
   "materialization": "materialized",
   "description": "Frozen repository taxonomy, language separation, naming, and source-test layout contract.",
@@ -385,7 +385,8 @@
     "tests/package/CliContractTest.cmake",
     "tests/integration/comoving/ComovingBackgroundTest.cpp",
     "tests/integration/comoving/ComovingLeapfrogTest.cpp",
-    "tests/neighborhood/NeighborIndexTest.cpp"
+    "tests/neighborhood/NeighborIndexTest.cpp",
+    "tests/physics/sph/SphDensityTest.cpp"
   ],
   "python": {
     "root": "tools",

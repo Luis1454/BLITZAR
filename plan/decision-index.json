@@ -358,6 +358,10 @@
     {
       "path": "plan/decisions/086-production-cell-linked-neighbor-index.md",
       "lifecycle": "active"
+    },
+    {
+      "path": "plan/decisions/087-sph-density-summation.md",
+      "lifecycle": "active"
     }
   ]
 }

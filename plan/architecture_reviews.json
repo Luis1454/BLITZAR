@@ -766,9 +766,28 @@
       "signals": [
         "allocation"
       ],
-      "issue": 719,
+      "issue": 720,
       "status": "accepted",
       "decision": "Five vector resizes occur at construction time to bound geometry and capacity before any step; steady state after warmup is allocation-free as required by the production cell-linked index contract."
+    },
+    {
+      "path": "src/physics/sph/SphDensity.cpp",
+      "signals": [
+        "branching"
+      ],
+      "issue": 723,
+      "status": "accepted",
+      "decision": "Density summation, neighbor-pass validation, and the two safe-failure passes stay together so no output is ever published before every weight, mass, and support is finite and positive; the acceptance boundaries (Shepard mode, restart transparency, units) are documented in the decision record."
+    },
+    {
+      "path": "tests/physics/sph/SphDensityTest.cpp",
+      "signals": [
+        "function_length",
+        "parameter_count"
+      ],
+      "issue": 723,
+      "status": "accepted",
+      "decision": "Each oracle builds its own bounded lattice, index, and density request so the uniform, Shepard, analytic, and fail-safe acceptances are independently checkable; the shared NeighborParameters decouples geometry from the index capacity so domain size and neighbor limits are exercised explicitly."
     }
   ]
 }

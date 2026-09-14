@@ -2,7 +2,7 @@
 
 Status: **FROZEN**  
 Product/API version: **1.0.0**
-Plan version: **1.0.70**
+Plan version: **1.0.71**
 
 This repository is a clean-room rewrite. The old repository, its source tree,
 its issues, and its documentation are not implementation inputs. Requirements
@@ -655,7 +655,7 @@ density, boundary cases follow the PBC and finite-box contracts, and
 duplicate directed pairs are index quality errors. MPI-owned particles carry
 hydro state through the same views; nothing is ghosted. The ysph-v1 entropy
 slot stays reserved until `P8-SPH-007` confirmation. No equation of state is
-chosen here; `P8-SPH-002` selects it.
+chosen here; `P8-SPH-004` selects it.
 
 ### Production Cell-Linked Neighbor Index (P8-SPH-002)
 
@@ -672,6 +672,24 @@ oracle (`NeighborIndexTest`) qualifies brute-force equality, determinism,
 ordering, overflow-before-mutation, and boundary semantics. GPU and MPI views
 reuse the same logical index boundary.
 
+### Production SPH Density Summation (P8-SPH-003)
+
+`P8-SPH-003` (issue 723) ships the production density summation in
+`src/physics/sph/SphDensity.{hpp,cpp}`. The normalized cubic B-spline
+`W(r,h)` weights the ascending `NeighborIndex` lists (radius `2 h`) and,
+because the index excludes the self pair, adds the explicit self term
+`m_i W(0, h_i)`, reproducing the physical mass-over-volume density. Masses
+and smoothing lengths are per-particle inputs; the `h(rho)` fixed point
+remains execution policy for later chantiers. `normalize_boundary` applies
+the Shepard correction (uniform-field-exact boundary values, particle-mass
+units) or keeps the raw summative estimate. Every validation runs before any
+output is published: empty indexed support, non-positive neighborhood mass,
+degenerate smoothing lengths, non-finite inputs, and unbuilt indexes fail
+deterministically with no partial state. TST-P10-002 (`SphDensityTest`)
+qualifies the kernel weights, exact two-body values, uniform-lattice interior
+and Shepard-boundary behaviors, a gentle sinusoid field, and all safe-failure
+paths. Density is restart-transparent derived state and is never snapshotted.
+
 ## Non-Goals for the Initial Rewrite
 
 - Reusing or mechanically translating old implementation files.
@@ -686,7 +704,7 @@ an owner, an oracle, and an acceptance test.
 ## Frozen Repository Tree
 
 The exact destination taxonomy is the machine-readable contract in
-`plan/repository_tree.json`, frozen at plan version 1.0.70 and linked from
+`plan/repository_tree.json`, frozen at plan version 1.0.71 and linked from
 `plan/manifest.json`. It is the only authoritative source for the repository
 tree migration; the shape block below remains the as-built inventory until the
 migration is promoted.

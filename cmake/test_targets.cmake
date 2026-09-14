@@ -278,6 +278,16 @@ target_compile_features(blitzar_neighbor_index_test PRIVATE cxx_std_20)
 target_include_directories(blitzar_neighbor_index_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
 blitzar_enable_warnings(blitzar_neighbor_index_test)
 
+add_executable(blitzar_sph_density_test
+    tests/physics/sph/SphDensityTest.cpp
+)
+target_link_libraries(blitzar_sph_density_test PRIVATE blitzar)
+target_compile_features(blitzar_sph_density_test PRIVATE cxx_std_20)
+target_include_directories(blitzar_sph_density_test PRIVATE
+    ${CMAKE_CURRENT_SOURCE_DIR}/src
+    ${CMAKE_CURRENT_SOURCE_DIR}/tests)
+blitzar_enable_warnings(blitzar_sph_density_test)
+
 add_executable(blitzar_allocation_test
     tests/fixtures/FixtureAllocationMonitorTest.cpp
     tests/simulation/SimAllocationsTest.cpp

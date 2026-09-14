@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "plan_version": "1.0.70",
+  "plan_version": "1.0.71",
   "phase": "P9",
   "issue": "OPS-002",
   "status": "implemented-local",
