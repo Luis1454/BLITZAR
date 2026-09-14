@@ -1,6 +1,6 @@
 {
   "product_version": "1.0.0",
-  "plan_version": "1.0.67",
+  "plan_version": "1.0.68",
   "status": "frozen",
   "product": "deterministic particle simulation SDK",
   "source_of_truth": [
@@ -26,7 +26,8 @@
     "plan/periodic.json",
     "plan/integration.json",
     "plan/repository_tree.json",
-    "plan/hydrodynamics.json"
+    "plan/hydrodynamics.json",
+    "plan/collision.json"
   ],
   "roots": [
     "include/blitzar",

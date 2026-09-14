@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "plan_version": "1.0.67",
+  "plan_version": "1.0.68",
   "decision_id": "P8-DEC-001",
   "phase": "P10",
   "status": "frozen",
@@ -10,7 +10,13 @@
   "catalog": {
     "wcsp-v1": {
       "status": "retained-contracted-implementation-deferred",
-      "implementation_issues": ["P8-SPH-001", "P8-SPH-002", "P8-SPH-003", "P8-SPH-004", "P8-SPH-005"],
+      "implementation_issues": [
+        "P8-SPH-001",
+        "P8-SPH-002",
+        "P8-SPH-003",
+        "P8-SPH-004",
+        "P8-SPH-005"
+      ],
       "name": "weakly-compressible SPH",
       "coordinates": "comoving (INT-005) or physical (INT-001)",
       "equations": {
@@ -62,7 +68,12 @@
     },
     "eulerian-godunov-v1": {
       "status": "retained-contracted-implementation-deferred",
-      "implementation_issues": ["P8-EULER-001", "P8-EULER-002", "P8-EULER-003", "P8-EULER-004"],
+      "implementation_issues": [
+        "P8-EULER-001",
+        "P8-EULER-002",
+        "P8-EULER-003",
+        "P8-EULER-004"
+      ],
       "name": "Eulerian Godunov finite-volume method",
       "coordinates": "static Eulerian grid in the physical or comoving frame",
       "equations": {
