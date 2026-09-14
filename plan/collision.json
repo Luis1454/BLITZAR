@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "plan_version": "1.0.69",
+  "plan_version": "1.0.70",
   "decision_id": "PHYS-001",
   "status": "frozen",
   "description": "Collision, close-encounter, and merger scope decision: which contact models are product requirements, with detection radius, close-encounter policy, response, conservation, identity, rollback, and solver/MPI/SPH compatibility. Plummer softening is never a physical contact model.",

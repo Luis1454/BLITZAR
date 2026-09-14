@@ -270,6 +270,14 @@ target_compile_features(blitzar_comoving_leapfrog_test PRIVATE cxx_std_20)
 target_include_directories(blitzar_comoving_leapfrog_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
 blitzar_enable_warnings(blitzar_comoving_leapfrog_test)
 
+add_executable(blitzar_neighbor_index_test
+    tests/neighborhood/NeighborIndexTest.cpp
+)
+target_link_libraries(blitzar_neighbor_index_test PRIVATE blitzar)
+target_compile_features(blitzar_neighbor_index_test PRIVATE cxx_std_20)
+target_include_directories(blitzar_neighbor_index_test PRIVATE ${CMAKE_CURRENT_SOURCE_DIR}/src)
+blitzar_enable_warnings(blitzar_neighbor_index_test)
+
 add_executable(blitzar_allocation_test
     tests/fixtures/FixtureAllocationMonitorTest.cpp
     tests/simulation/SimAllocationsTest.cpp
@@ -542,6 +550,7 @@ set(BLITZAR_TEST_TARGETS
 blitzar_dynamics_test
     blitzar_comoving_background_test
     blitzar_comoving_leapfrog_test
+    blitzar_neighbor_index_test
     blitzar_allocation_test
     blitzar_hierarchy_test
     blitzar_octree_resource_test

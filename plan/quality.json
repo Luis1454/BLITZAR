@@ -205,6 +205,12 @@
       "phase": "P1"
     },
     {
+      "id": "TST-P10-001",
+      "name": "cell-linked-neighbor-index-oracle",
+      "command": "blitzar_neighbor_index_test",
+      "phase": "P10"
+    },
+    {
       "id": "TST-P5-001",
       "name": "grid-layout-and-deposition",
       "command": "blitzar_pm_grid_test",
@@ -899,6 +905,10 @@
         {
           "path": "tests/integration/comoving",
           "prefix": "Comoving"
+        },
+        {
+          "path": "src/physics/neighbors",
+          "prefix": "Neighbor"
         }
       ],
       "type_mapping_exceptions": [

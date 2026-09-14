@@ -17,6 +17,7 @@ set(BLITZAR_LIBRARY_SOURCES
     src/particles/buffer/ParticleAccess.cpp
     src/particles/source/ParticleSourceBuffer.cpp
     src/physics/gravity/GravityLaw.cpp
+    src/physics/neighbors/NeighborIndex.cpp
     src/physics/conservation/ConservationMetrics.cpp
     src/physics/reduction/ScalarReduction.cpp
     src/physics/periodic/PeriodicDomain.cpp

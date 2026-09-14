@@ -354,6 +354,10 @@
     {
       "path": "plan/decisions/085-sph-particle-and-neighbor-state.md",
       "lifecycle": "active"
+    },
+    {
+      "path": "plan/decisions/086-production-cell-linked-neighbor-index.md",
+      "lifecycle": "active"
     }
   ]
 }

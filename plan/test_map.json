@@ -601,6 +601,15 @@
       "ranks": 1,
       "phase": "P9",
       "contract": "checksum errors, truncation, unknown sections, and incompatible versions leave destination state unchanged"
+    },
+    {
+      "id": "TST-P10-001",
+      "entrypoint": "tests/neighborhood/NeighborIndexTest.cpp",
+      "responsibility": "tests/neighborhood/NeighborIndexTest.cpp",
+      "mode": "qualification",
+      "ranks": 1,
+      "phase": "P10",
+      "contract": "production cell-linked neighbor index matches the brute-force inclusive-radius reference exactly; target lists are strictly ascending; rebuilds are identical; particle and neighbor capacity overflow is rejected before any buffer is committed; boundary, exact-radius, empty, span-mismatch, and non-finite cases behave deterministically"
     }
   ]
 }

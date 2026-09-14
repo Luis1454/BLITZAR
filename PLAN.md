@@ -2,7 +2,7 @@
 
 Status: **FROZEN**  
 Product/API version: **1.0.0**
-Plan version: **1.0.69**
+Plan version: **1.0.70**
 
 This repository is a clean-room rewrite. The old repository, its source tree,
 its issues, and its documentation are not implementation inputs. Requirements
@@ -657,6 +657,21 @@ hydro state through the same views; nothing is ghosted. The ysph-v1 entropy
 slot stays reserved until `P8-SPH-007` confirmation. No equation of state is
 chosen here; `P8-SPH-002` selects it.
 
+### Production Cell-Linked Neighbor Index (P8-SPH-002)
+
+`P8-SPH-002` (issue 720) ships the production local neighbor index in
+`src/physics/neighbors/NeighborIndex.{hpp,cpp}`. `NeighborIndex` is a bounded,
+cell-linked index over particle positions: geometry and capacity sizing happen
+once at construction, after which no allocation occurs. `Build` runs a strict
+read-only overflow preflight before any buffer mutation (particle and
+neighbor capacity), then places entries and emits strictly-ascending neighbor
+lists that exactly match the inclusive-radius brute-force reference.
+Empty, finite-box boundary, exact-radius, span-mismatch, non-finite, and
+empty-support cases are defined and rejected deterministically. The TST-P10-001
+oracle (`NeighborIndexTest`) qualifies brute-force equality, determinism,
+ordering, overflow-before-mutation, and boundary semantics. GPU and MPI views
+reuse the same logical index boundary.
+
 ## Non-Goals for the Initial Rewrite
 
 - Reusing or mechanically translating old implementation files.
@@ -671,7 +686,7 @@ an owner, an oracle, and an acceptance test.
 ## Frozen Repository Tree
 
 The exact destination taxonomy is the machine-readable contract in
-`plan/repository_tree.json`, frozen at plan version 1.0.69 and linked from
+`plan/repository_tree.json`, frozen at plan version 1.0.70 and linked from
 `plan/manifest.json`. It is the only authoritative source for the repository
 tree migration; the shape block below remains the as-built inventory until the
 migration is promoted.

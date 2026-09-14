@@ -760,6 +760,15 @@
       "issue": 739,
       "status": "accepted",
       "decision": "The comoving oracle keeps one focused check per physical property (static/KDK bit parity, empty-universe momentum, EdS convergence, momentum conservation, validation rejection, force-failure rollback) so each assertion is independently attributable to a question on issue 739."
+    },
+    {
+      "path": "src/physics/neighbors/NeighborIndex.cpp",
+      "signals": [
+        "allocation"
+      ],
+      "issue": 719,
+      "status": "accepted",
+      "decision": "Five vector resizes occur at construction time to bound geometry and capacity before any step; steady state after warmup is allocation-free as required by the production cell-linked index contract."
     }
   ]
 }
