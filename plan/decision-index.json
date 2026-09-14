@@ -346,6 +346,10 @@
     {
       "path": "plan/decisions/083-hydrodynamics-scope.md",
       "lifecycle": "active"
+    },
+    {
+      "path": "plan/decisions/084-collision-and-merger-scope.md",
+      "lifecycle": "active"
     }
   ]
 }

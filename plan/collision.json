@@ -1,0 +1,55 @@
+{
+  "schema_version": 1,
+  "plan_version": "1.0.68",
+  "decision_id": "PHYS-001",
+  "status": "frozen",
+  "description": "Collision, close-encounter, and merger scope decision: which contact models are product requirements, with detection radius, close-encounter policy, response, conservation, identity, rollback, and solver/MPI/SPH compatibility. Plummer softening is never a physical contact model.",
+  "gravity_only_preserved": "Existing fixed-kdk-v1 and comoving-kdk-v2 trajectories, all solver families, PBC, MPI, restart (P9), SPH (P10 contract), and reduction diagnostics are unchanged; mergers add a deterministic detection-and-response stage, never a replacement.",
+  "detection": {
+    "radius": "physical contact radius R_contact, a per-run parameter in length units, distinct from the Plummer softening parameter",
+    "trigger": "a pair (i, j) merges when |r_ij| <= R_contact and the radial approach condition r_ij . v_ij < 0 holds at the detection stage on the deterministic local-neighbor graph",
+    "softening_separation": "zero-distance softening is never a collision or merger trigger; R_contact is an independent physical parameter documented in the run contracts"
+  },
+  "catalog": {
+    "sticky-mergers-v1": {
+      "status": "retained-contracted-implementation-deferred",
+      "implementation_issues": ["PHYS-002", "PHYS-003"],
+      "name": "perfectly inelastic sticky merger",
+      "equations": {
+        "mass": "m_3 = m_i + m_j",
+        "momentum": "v_3 = (m_i v_i + m_j v_j) / m_3, so total momentum m v is exactly preserved",
+        "position": "x_3 equals the survivor position; the survivor is the particle with the lower stable ID",
+        "energy_policy": "kinetic deficit Delta_E = (1/2) mu |v_i - v_j|^2 with mu = m_i m_j / m_3 is recorded as the dissipated-energy diagnostic; the total-energy policy is documented: merger is not an energy-conserving stage, the deficit is explicit"
+      },
+      "state_ownership": "particles keep the existing SoA mass, position, and velocity boundaries; the removed particle leaves the active mask and its mass slot is zeroed; hydro density (P10) and solver caches are recomputed rather than merged",
+      "determinism": "simultaneous and transitive contact sets are resolved in ascending stable-ID order, one survivor per set; the merge set ordering is a deterministic sort over the local neighbor graph",
+      "rollback": "the pre-detection particle and acceleration state is checkpointed; any non-finite merged state or failure returns the recorded error and restores the checkpoint exactly",
+      "conservation_targets": [
+        "total mass is exactly conserved across a merge",
+        "total momentum (canonical comoving momentum in the INT-005 frame) is exactly conserved",
+        "the dissipated kinetic budget equals the documented formula to round-off",
+        "identical contact sets and survivors on identical inputs (determinism)"
+      ],
+      "identity_and_ownership": {
+        "ids": "the survivor keeps the lowest stable ID of the merged set; stable IDs (P9 restart) remain authoritative",
+        "mpi": "detection covers only the local deterministic neighbor graph; cross-ownership contact pairs transfer ownership to the rank of the survivor (lowest stable ID) before merging",
+        "snapshots": "published state contains only the active set; removed particles are absent, never ghosted"
+      },
+      "boundaries": "periodic boundaries via the existing PBC contract; the detection stage stays domain-agnostic like the integrator"
+    }
+  },
+  "rejected": {
+    "elastic_restitution": "reject: no clean-room bounce/restitution model exists and no product evidence justifies an energy-conserving contact deflection",
+    "contact_softening_as_collision": "reject: confirmed non-goal of PHYS-001; Plummer softening never constitutes a physical contact or merger model",
+    "mass_loss_and_radiation_channels": "reject: no clean-room sink, radiation, or mass-loss channel has product evidence",
+    "subgrid_fragmentation": "reject: no unambiguous clean-room definition exists; fragmentation is not a Product requirement",
+    "gas_dynamic_mergers": "reject at this scope: gas mergers belong to the P10 SPH family and are defined by the hydrodynamics contract, not by PHYS-001"
+  },
+  "interface_rules": [
+    "detection reuses the deterministic local-neighbor index; no new solver entry point and no force-path change",
+    "the detection-and-response stage runs between integrator stages of the fixed split with full checkpoint rollback",
+    "no dynamic allocation after warmup; the merge-set sort is deterministic and in-place",
+    "compatible with Direct, Barnes-Hut, FMM, KIFMM, PM, and TreePM through the same neighbor contract, with MPI ownership transfer, and with the P10 SPH density summation",
+    "particle IDs, ownership, snapshots, and MPI migration remain coherent as specified in the identity_and_ownership block"
+  ]
+}

@@ -2,7 +2,7 @@
 
 Status: **FROZEN**  
 Product/API version: **1.0.0**
-Plan version: **1.0.67**
+Plan version: **1.0.68**
 
 This repository is a clean-room rewrite. The old repository, its source tree,
 its issues, and its documentation are not implementation inputs. Requirements
@@ -14,7 +14,7 @@ The authoritative planning state is the combination of this file,
 `plan/neighborhood.json`, `plan/output_contract.json`, `plan/delta.json`, and
 `plan/block_time.json`, `plan/bvh.json`, `plan/grid.json`,
 `plan/final_audit.json`, `plan/reproducibility.json`, `plan/ops002.json`,
-`plan/integration.json`, `plan/hydrodynamics.json`,
+`plan/integration.json`, `plan/hydrodynamics.json`, `plan/collision.json`,
 and `plan/repository_tree.json`.
 Decision records under `plan/decisions/` preserve the rationale and migration
 history for that state.
@@ -625,6 +625,21 @@ the existing `SolverForceEvaluation` boundary; the fixed KDK and comoving
 contiguous phase `P10` (`hydrodynamics-and-hybrid`, depends on P5, P8, P9)
 with reserved `TST-P10-*` ids.
 
+### Collision and Merger Scope (PHYS-001)
+
+`PHYS-001` (issue 740) freezes the collision and merger scope in
+`plan/collision.json`. One model is retained: `sticky-mergers-v1`, a
+deterministic perfectly-inelastic sticky merger triggered by the physical
+contact radius `R_contact` with a radial-approach condition over the
+deterministic local-neighbor graph. Mergers conserve mass and momentum
+exactly, the survivor keeps the lowest stable ID, simultaneous and transitive
+sets resolve in ascending ID order, and the kinetic deficit is an explicit
+dissipated-energy diagnostic. Plummer softening is never a contact model.
+Elastic restitution, zero-distance-as-contact, mass-loss and radiation
+channels, subgrid fragmentation, and gas-dynamic mergers are explicitly
+rejected (the last deferred to the P10 SPH contract). The retained model is
+decomposed into implementation issues `PHYS-002` and `PHYS-003`.
+
 ## Non-Goals for the Initial Rewrite
 
 - Reusing or mechanically translating old implementation files.
@@ -639,7 +654,7 @@ an owner, an oracle, and an acceptance test.
 ## Frozen Repository Tree
 
 The exact destination taxonomy is the machine-readable contract in
-`plan/repository_tree.json`, frozen at plan version 1.0.67 and linked from
+`plan/repository_tree.json`, frozen at plan version 1.0.68 and linked from
 `plan/manifest.json`. It is the only authoritative source for the repository
 tree migration; the shape block below remains the as-built inventory until the
 migration is promoted.
