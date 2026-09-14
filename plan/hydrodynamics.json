@@ -1,0 +1,106 @@
+{
+  "schema_version": 1,
+  "plan_version": "1.0.67",
+  "decision_id": "P8-DEC-001",
+  "phase": "P10",
+  "status": "frozen",
+  "description": "Hydrodynamics scope decision: which particle-SPH, incompressible-SPH, entropy-SPH, Eulerian grid, and hybrid schemes are product requirements, with equations, state ownership, integrator coupling, conservation targets, supported boundaries, and explicit rejections.",
+  "phase_premise": "The issue series P8-SPH-*, P8-EULER-*, P8-HYBRID-*, and P8-QUAL-* carry an id token that collides with the frozen phase P8 (mpi-kdk-overlap-and-migration). This decision maps the hydrodynamics family to the contiguous phase P10; new hydrodynamics ids, test ids, and quality phases use P10 only.",
+  "gravity_only_preserved": "The gravity-only path (fixed-kdk-v1 and comoving-kdk-v2, all solver families, PBC, MPI, restart, reduction diagnostics) is unchanged by this decision; hydrodynamics add a force/energy contribution, never a replacement.",
+  "catalog": {
+    "wcsp-v1": {
+      "status": "retained-contracted-implementation-deferred",
+      "implementation_issues": ["P8-SPH-001", "P8-SPH-002", "P8-SPH-003", "P8-SPH-004", "P8-SPH-005"],
+      "name": "weakly-compressible SPH",
+      "coordinates": "comoving (INT-005) or physical (INT-001)",
+      "equations": {
+        "kernel": "cubic B-spline W(r, h) with compact support 2h, normalized by the deterministic summation; h is the per-particle smoothing length",
+        "density": "rho_i = sum_j m_j W(r_ij, h) over the deterministic local-neighbor index contract",
+        "eos": "Tait: P = (rho_0 c_s^2 / gamma) * ((rho / rho_0)^gamma - 1), gamma = 7, rho_0 rest density, c_s reference sound speed",
+        "momentum": "dv_i/dt = -(1/rho_i) sum_j m_j (P_i / rho_i^2 + P_j / rho_j^2 + viscosity_ij) grad_i W_ij, with a documented linear-plus-quadratic artificial viscosity",
+        "energy": "du_i/dt = (1/2) sum_j m_j (P_i / rho_i^2 + P_j / rho_j^2 + viscosity_ij) (v_i - v_j) . grad_i W_ij"
+      },
+      "state_ownership": "per-particle density, pressure, specific internal energy, and smoothing length are SoA hydro execution state owned by the hydro layer; particles keep the existing SoA mass, position, and velocity boundaries",
+      "integrator_coupling": "the hydro momentum contribution is evaluated through the SolverForceEvaluation boundary in the existing fixed-step split; no variable timestep (the CFL condition is a documented step-selection constraint on the fixed step)",
+      "conservation_targets": [
+        "total mass is exactly conserved by the density summation over the retained mask",
+        "non-dissipative entropy tendency zero apart from the explicit viscosity switch",
+        "internal-plus-kinetic energy bounded over periodic zero-gravity runs",
+        "second-order convergence of a smooth periodic density field"
+      ],
+      "oracles": [
+        "uniform rest-lattice density reproduces analytic rho_0 to the symmetric-kernel tolerance",
+        "hydrostatic equilibrium profile against the analytic integrated pressure gradient",
+        "periodic 1D shock-tube (Sod) against the reference profile",
+        "zero-gravity adiabatic expansion invariant"
+      ],
+      "boundaries": "periodic boundaries via the existing PBC contract; the hydro layer stays domain-agnostic like the integrator"
+    },
+    "isph-v1": {
+      "status": "retained-contracted-implementation-deferred",
+      "implementation_issue": "P8-SPH-006",
+      "name": "incompressible SPH projection method",
+      "coordinates": "comoving (INT-005) or physical (INT-001)",
+      "equations": {
+        "projection": "pressure Poisson solve on the deterministic neighbor graph: div(v*/dt) = laplacian(P)/rho, with the retained solver reusing the deterministic linear machinery",
+        "correction": "v^{n+1} = v* - (dt / rho) grad P so the projected divergence is zero to the solver tolerance"
+      },
+      "state_ownership": "pressure becomes a Lagrange field of the projection; density is fixed at rho_0; no internal energy advection in the retained minimal mode",
+      "integrator_coupling": "the projected correction enters the drift of the existing fixed-step split; the comoving frame keeps the canonical-momentum kick, only the pressure term differs",
+      "conservation_targets": [
+        "volume conservation (zero projected divergence) to the linear-solve tolerance",
+        "total momentum conservation in periodic zero-gravity lanes"
+      ],
+      "boundaries": "periodic via the existing PBC contract"
+    },
+    "ysph-v1": {
+      "status": "retained-confirmation-pending",
+      "implementation_issue": "P8-SPH-007",
+      "name": "entropy-formulation SPH variant",
+      "definition_required": "P8-SPH-007 must freeze an unambiguous clean-room definition and equations before any implementation; no imported scheme is acceptable. The retained formulation is the entropy form P_i = A_i rho_i^gamma with per-particle specific entropy A_i replacing internal energy, viscosity kept as the documented dissipative switch",
+      "integrator_coupling": "same as wcsp-v1; A_i advects in the energy slot of the split step"
+    },
+    "eulerian-godunov-v1": {
+      "status": "retained-contracted-implementation-deferred",
+      "implementation_issues": ["P8-EULER-001", "P8-EULER-002", "P8-EULER-003", "P8-EULER-004"],
+      "name": "Eulerian Godunov finite-volume method",
+      "coordinates": "static Eulerian grid in the physical or comoving frame",
+      "equations": {
+        "state": "conservative cell state Q = (rho, rho v, E) on the P5 grid contract (indexing, boundaries, precision)",
+        "flux": "Godunov: Q^{n+1} = Q^n - (dt / volume) sum_faces F_f, with face fluxes from the selected Riemann solver",
+        "reconstruction": "deterministic slope reconstruction with the chosen limiter; the CFL constraint selects the fixed step"
+      },
+      "state_ownership": "the grid owns the Eulerian field state; particles enter only through the hybrid coupling, never as a second Eulerian copy",
+      "integrator_coupling": "the grid advance is a separate deterministic stage; gravity fields are interpolated from the existing solver path under the P5 deterministic interpolation contract",
+      "conservation_targets": [
+        "drive-space conservation: sum(rho), sum(rho v), sum(E) change only by boundary fluxes",
+        "shock-tube and Riemann-family oracles against the analytic reference"
+      ],
+      "boundaries": "periodic via the existing PBC contract on the grid mesh"
+    },
+    "hybrid-sph-grid-v1": {
+      "status": "retained-contracted-implementation-deferred",
+      "implementation_issue": "P8-HYBRID-001",
+      "name": "SPH and Eulerian grid coupling",
+      "equations": "P8-HYBRID-001 freezes the coupling region, the two-way momentum and energy exchange, and the deterministic double-counting prevention",
+      "state_ownership": "each particle and cell keeps a single host; the coupling layer owns only the exchange descriptors",
+      "conservation_targets": [
+        "no double counting of mass, momentum, or energy across the coupling region",
+        "identical free-stream trajectories on both sides of the coupling boundary"
+      ]
+    }
+  },
+  "rejected": {
+    "imported_hydrodynamics_implementations": "reject: clean-room forbids an imported implementation; every scheme is defined by this contract and its issue refinements only",
+    "zero_distance_softening_as_collision": "reject: overlapping with PHYS-001 non-goal; Plummer softening is never a physical contact or merger model",
+    "variable_timestep_hydro": "reject: consistent with plan/integration.json, no production variable timestep exists; CFL is a step-selection constraint on the fixed step",
+    "sph_as_gravity_solver": "reject: SPH densities never replace the gravitational force path; hydro adds force, gravity stays on the existing solver matrix"
+  },
+  "interface_rules": [
+    "the particle-based hydro phases (wcsp, isph, ysph) evaluate through the existing SolverForceEvaluation boundary; no new solver entry point",
+    "the comoving integrator (INT-005) is the default hydro frame; the canonical-momentum kick is unchanged, hydro terms enter the same fixed-step split",
+    "checkpoint capture, rollback, finite-state validation, and no-hot-path-allocation rules match the KDK/comoving integrators",
+    "gravity-only trajectories and all pre-existing test ids are unchanged",
+    "new hydrodynamics tests and quality phases use the P10 phase with TST-P10-* ids"
+  ]
+}

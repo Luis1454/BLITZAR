@@ -342,6 +342,10 @@
     {
       "path": "plan/decisions/082-comoving-leapfrog-implementation.md",
       "lifecycle": "active"
+    },
+    {
+      "path": "plan/decisions/083-hydrodynamics-scope.md",
+      "lifecycle": "active"
     }
   ]
 }

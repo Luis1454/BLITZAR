@@ -2,7 +2,7 @@
 
 Status: **FROZEN**  
 Product/API version: **1.0.0**
-Plan version: **1.0.66**
+Plan version: **1.0.67**
 
 This repository is a clean-room rewrite. The old repository, its source tree,
 its issues, and its documentation are not implementation inputs. Requirements
@@ -14,6 +14,7 @@ The authoritative planning state is the combination of this file,
 `plan/neighborhood.json`, `plan/output_contract.json`, `plan/delta.json`, and
 `plan/block_time.json`, `plan/bvh.json`, `plan/grid.json`,
 `plan/final_audit.json`, `plan/reproducibility.json`, `plan/ops002.json`,
+`plan/integration.json`, `plan/hydrodynamics.json`,
 and `plan/repository_tree.json`.
 Decision records under `plan/decisions/` preserve the rationale and migration
 history for that state.
@@ -608,6 +609,22 @@ manifest must record the resolved `cpu` or `hip` backend and device boundary.
 The acceptance cases are defined in `plan/ops002.json` and are registered as
 `TST-P9-001` through `TST-P9-005` on the CPU strict lane.
 
+### P10: Hydrodynamics and Hybrid (P8-DEC-001)
+
+`P8-DEC-001` (issue 721) freezes the hydrodynamics scope in
+`plan/hydrodynamics.json`. Five retained families are defined there with
+equations, state ownership, integrator coupling, conservation targets, and
+explicit rejections: weakly-compressible SPH (`wcsp-v1`), incompressible
+SPH (`isph-v1`), entropy-formulation SPH (`ysph-v1`, confirmation-pending
+until issue `P8-SPH-007` provides an unambiguous clean-room definition),
+Eulerian Godunov (`eulerian-godunov-v1`), and SPH-grid hybrid
+(`hybrid-sph-grid-v1`). Every retained particle-hydro phase evaluates through
+the existing `SolverForceEvaluation` boundary; the fixed KDK and comoving
+(INT-005) integrators and the gravity-only path are unchanged. The phase
+`P8` remains `mpi-kdk-overlap-and-migration`; this family maps to the
+contiguous phase `P10` (`hydrodynamics-and-hybrid`, depends on P5, P8, P9)
+with reserved `TST-P10-*` ids.
+
 ## Non-Goals for the Initial Rewrite
 
 - Reusing or mechanically translating old implementation files.
@@ -622,7 +639,7 @@ an owner, an oracle, and an acceptance test.
 ## Frozen Repository Tree
 
 The exact destination taxonomy is the machine-readable contract in
-`plan/repository_tree.json`, frozen at plan version 1.0.66 and linked from
+`plan/repository_tree.json`, frozen at plan version 1.0.67 and linked from
 `plan/manifest.json`. It is the only authoritative source for the repository
 tree migration; the shape block below remains the as-built inventory until the
 migration is promoted.

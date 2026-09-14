@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "plan_version": "1.0.66",
+  "plan_version": "1.0.67",
   "state": "capability-gated",
   "mode_values": [
     "AUTO",
