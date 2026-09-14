@@ -2,7 +2,7 @@
 
 Status: **FROZEN**  
 Product/API version: **1.0.0**
-Plan version: **1.0.68**
+Plan version: **1.0.69**
 
 This repository is a clean-room rewrite. The old repository, its source tree,
 its issues, and its documentation are not implementation inputs. Requirements
@@ -15,6 +15,7 @@ The authoritative planning state is the combination of this file,
 `plan/block_time.json`, `plan/bvh.json`, `plan/grid.json`,
 `plan/final_audit.json`, `plan/reproducibility.json`, `plan/ops002.json`,
 `plan/integration.json`, `plan/hydrodynamics.json`, `plan/collision.json`,
+`plan/sph_particles.json`,
 and `plan/repository_tree.json`.
 Decision records under `plan/decisions/` preserve the rationale and migration
 history for that state.
@@ -640,6 +641,22 @@ channels, subgrid fragmentation, and gas-dynamic mergers are explicitly
 rejected (the last deferred to the P10 SPH contract). The retained model is
 decomposed into implementation issues `PHYS-002` and `PHYS-003`.
 
+### SPH Particle and Neighbor State (P8-SPH-001)
+
+`P8-SPH-001` (issue 719) freezes the SPH particle-state contract in
+`plan/sph_particles.json`. Density, pressure, specific internal energy, and
+smoothing length are SoA hydro execution state sharing particle identity and
+the active mask; mass, position, and canonical velocity stay untouched.
+Density is the deterministic neighbor summation, smoothing length obeys the
+recorded fixed-point consistency `h_i = eta (m_i / rho_i)^(1/3)` with compact
+support `2 h_i`, and neighbor views reuse the bounded non-allocating
+deterministic index contract. Empty support rolls back on zero/non-finite
+density, boundary cases follow the PBC and finite-box contracts, and
+duplicate directed pairs are index quality errors. MPI-owned particles carry
+hydro state through the same views; nothing is ghosted. The ysph-v1 entropy
+slot stays reserved until `P8-SPH-007` confirmation. No equation of state is
+chosen here; `P8-SPH-002` selects it.
+
 ## Non-Goals for the Initial Rewrite
 
 - Reusing or mechanically translating old implementation files.
@@ -654,7 +671,7 @@ an owner, an oracle, and an acceptance test.
 ## Frozen Repository Tree
 
 The exact destination taxonomy is the machine-readable contract in
-`plan/repository_tree.json`, frozen at plan version 1.0.68 and linked from
+`plan/repository_tree.json`, frozen at plan version 1.0.69 and linked from
 `plan/manifest.json`. It is the only authoritative source for the repository
 tree migration; the shape block below remains the as-built inventory until the
 migration is promoted.

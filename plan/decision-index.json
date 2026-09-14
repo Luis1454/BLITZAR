@@ -350,6 +350,10 @@
     {
       "path": "plan/decisions/084-collision-and-merger-scope.md",
       "lifecycle": "active"
+    },
+    {
+      "path": "plan/decisions/085-sph-particle-and-neighbor-state.md",
+      "lifecycle": "active"
     }
   ]
 }

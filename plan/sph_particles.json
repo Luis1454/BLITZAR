@@ -1,0 +1,66 @@
+{
+  "schema_version": 1,
+  "plan_version": "1.0.69",
+  "decision_id": "P8-SPH-001",
+  "phase": "P10",
+  "status": "frozen",
+  "description": "SPH particle-field, smoothing-length, support-radius, neighbor-view, and ownership contract. Hydrodynamic state is owned separately from gravity state while sharing the particle identity of the existing SoA boundaries. No equation of state is chosen here.",
+  "shared_identity": "hydro execution state lives per particle of the existing SoA; identity is the stable particle ID and active mask of the particle arena; hydrodynamic fields never create or destroy particles, never fork the mask, and never mutate mass, position, or canonical velocity",
+  "fields": {
+    "density": {
+      "symbol": "rho_i",
+      "units": "mass / length^3 (simulation units)",
+      "lifetime": "hydro execution state, recomputed each hydro update from the deterministic neighbor summation rho_i = sum_j m_j W(r_ij, h_i)",
+      "initialization": "rest-lattice summation over the deterministic local-neighbor index contract or an explicit run parameter; the uniform rest lattice reproduces the analytic rho_0 to the symmetric-kernel tolerance"
+    },
+    "pressure": {
+      "symbol": "P_i",
+      "units": "mass / (length time^2)",
+      "lifetime": "derived quantity, recomputed from density and the chosen EOS at every hydro update; never stored as restart state",
+      "initialization": "derived, never a run parameter",
+      "eos_policy": "the concrete EOS is selected by P8-SPH-002; Tait with gamma = 7 is the wcsp-v1 contract default and the only retained candidate until the EOS issue decides"
+    },
+    "specific_internal_energy": {
+      "symbol": "u_i",
+      "units": "length^2 / time^2",
+      "lifetime": "integrated state of the energy slot of the existing fixed-step split, checkpointed with the run state",
+      "initialization": "isotropic reference internal energy derived from the rest density and sound speed, or an explicit run parameter"
+    },
+    "smoothing_length": {
+      "symbol": "h_i",
+      "units": "length",
+      "lifetime": "per-particle hydro execution state resolved each hydro update; compact support radius is exactly 2 h_i",
+      "initialization": "rest-lattice spacing-derived value h_0 = (m_0 / rho_0)^(1/3)",
+      "consistency": "h_i and rho_i obey a deterministic fixed-point consistency h_i = eta (m_i / rho_i)^(1/3) with a declared iteration count, evaluated over the same neighbor index; the tolerance and iteration count are recorded parameters"
+    },
+    "reserved_entropy_slot": {
+      "symbol": "A_i",
+      "units": "mass / length^(3 gamma - 3) for the retained entropy form",
+      "lifetime": "reserved; not initialized and not integrated until P8-SPH-007 freezes the ysph-v1 definition",
+      "policy": "no production code may read or write the slot before that confirmation"
+    }
+  },
+  "neighbor_views": {
+    "index": "the deterministic local-neighbor index contract of plan/neighborhood.json (bounded, non-allocating, candidate cell-linked-v1 selected)",
+    "extent": "support radius 2 h_i plus the index skin, evaluated with the inclusive squared-distance comparison",
+    "iteration": "neighbor views iterate in ascending native target and source index order; iteration is deterministic and bounded by the index capacity",
+    "allocation": "neighbor views do not allocate during a step; steady state after warmup stays allocation-free",
+    "candidates": "cell-linked, hash, Octree, and k-d candidates interoperate through the same index boundary; no hydro code builds a spatial index of its own"
+  },
+  "cases": {
+    "empty": "a particle with no source within support has rho_i = 0; validation rejects zero and non-finite densities before any update and rolls back to the step checkpoint with a recorded failure",
+    "boundary": "periodic boundaries follow the PBC contract with the symmetric-kernel summation giving an identical neighbor set on both sides; finite boxes follow the neighborhood finite-box probe",
+    "duplicate": "the index guarantees each directed (target, source) pair at most once; a duplicate entry is a quality error of the index, not a hydro condition"
+  },
+  "ownership": {
+    "local": "each owned particle owns its density, pressure, energy, and smoothing length; the owner rank evaluates the full hydro update from its deterministic views",
+    "mpi": "MPI-owned particles (P8) carry hydrodynamic state through the same index and ownership bundles; no hydro quantity is ghosted and no cross-rank momentum or energy exchange exists beyond the P8 migration contract",
+    "identity": "ownership transfer and restart (P9) move hydrodynamic state together with the particle identity; snapshots publish the hydro state of the active set"
+  },
+  "interface_rules": [
+    "hydro implementation evaluates through the existing SolverForceEvaluation boundary; no new solver entry point",
+    "gravity fields, integrator splits, checkpoint, rollback, and no-hot-path-allocation rules match the KDK/comoving integrators",
+    "gravity-only trajectories and all pre-existing test ids are unchanged",
+    "new hydro tests and quality phases use the P10 phase with TST-P10-* ids"
+  ]
+}
